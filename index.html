@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" data-theme="dark">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -19,12 +19,12 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://chatclaud.netlify.app/">
     <meta property="og:title" content="ChatClaud — ИИ-чат и ClaudForge Pro">
-    <meta property="og:description" content="Быстрый ИИ-помощник: код, сайты, игры, ответы на любые вопросы.">
+    <meta property="og:description" content="Fast ИИ-помощник: код, сайты, игры, ответы на любые вопросы.">
     <meta property="og:image" content="https://chatclaud.netlify.app/og.png">
     <meta property="og:locale" content="ru_RU">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="ChatClaud — ИИ-чат и ClaudForge Pro">
-    <meta name="twitter:description" content="Быстрый ИИ-помощник: код, сайты, игры.">
+    <meta name="twitter:description" content="Fast ИИ-помощник: код, сайты, игры.">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -6679,6 +6679,130 @@ body {
   box-shadow: 0 0 28px rgba(255,255,255,0.35), 0 6px 18px rgba(0,0,0,0.4) !important;
 }
 
+
+/* ===== Imagine (Runway) ===== */
+.cc-imagine-btn {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.35rem 0.75rem; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+  color: #fff; font-size: 0.78rem; font-weight: 600; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+  backdrop-filter: blur(12px);
+  transition: transform 0.2s, background 0.2s;
+}
+.cc-imagine-btn:hover { transform: translateY(-1px); background: rgba(255,255,255,0.16); }
+.cc-imagine-btn svg { width: 14px; height: 14px; }
+.cc-imagine-modal {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.72); backdrop-filter: blur(10px);
+  display: none; align-items: center; justify-content: center; padding: 1rem;
+}
+.cc-imagine-modal.open { display: flex; }
+.cc-imagine-panel {
+  width: min(420px, 100%);
+  background: rgba(22,22,28,0.96);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 1.5rem;
+  padding: 1.25rem;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+  animation: messageSpring 0.45s cubic-bezier(0.16,1,0.3,1);
+}
+.cc-imagine-panel h3 {
+  font-size: 1.05rem; margin-bottom: 0.35rem; color: #fff;
+  letter-spacing: -0.02em;
+}
+.cc-imagine-limits {
+  font-size: 0.75rem; color: rgba(255,255,255,0.55); margin-bottom: 0.9rem;
+}
+.cc-imagine-tabs { display: flex; gap: 0.4rem; margin-bottom: 0.75rem; }
+.cc-imagine-tab {
+  flex: 1; padding: 0.5rem; border-radius: 0.75rem;
+  border: 1px solid rgba(255,255,255,0.1); background: transparent;
+  color: rgba(255,255,255,0.7); font-size: 0.82rem; cursor: pointer;
+}
+.cc-imagine-tab.active {
+  background: rgba(255,255,255,0.12); color: #fff; border-color: rgba(255,255,255,0.2);
+}
+.cc-imagine-panel textarea {
+  width: 100%; min-height: 88px; resize: vertical;
+  background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 0.9rem; color: #fff; padding: 0.75rem;
+  font-size: 0.9rem; margin-bottom: 0.75rem;
+}
+.cc-imagine-go {
+  width: 100%; padding: 0.75rem; border: none; border-radius: 999px;
+  background: #fff; color: #000; font-weight: 700; cursor: pointer;
+  font-size: 0.9rem;
+}
+.cc-imagine-go:disabled { opacity: 0.5; cursor: wait; }
+.cc-imagine-card {
+  margin: 0.5rem 0; border-radius: 1.2rem;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(20,20,26,0.9);
+  overflow: hidden; max-width: 320px;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.45);
+}
+.cc-imagine-card .cc-im-status {
+  padding: 0.75rem 1rem; font-size: 0.82rem; color: rgba(255,255,255,0.7);
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.cc-imagine-card img, .cc-imagine-card video {
+  width: 100%; display: block; max-height: 420px; object-fit: cover;
+}
+.cc-imagine-card .cc-im-prompt {
+  padding: 0.55rem 0.85rem 0.85rem; font-size: 0.75rem;
+  color: rgba(255,255,255,0.5);
+}
+
+
+/* English-only UI */
+[data-lang-picker], .lang-row, #langSelect, .lang-switch { display: none !important; }
+.cc-imagine-card {
+  position: relative;
+  border-radius: 1.35rem !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  background: linear-gradient(165deg, rgba(36,36,44,0.98), rgba(12,12,16,0.98)) !important;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.05) inset !important;
+  overflow: hidden;
+  max-width: min(340px, 92vw) !important;
+}
+.cc-imagine-card::before {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 30% 0%, rgba(255,255,255,0.08), transparent 55%);
+}
+.cc-imagine-card .cc-im-status {
+  padding: 1rem 1.1rem !important;
+  font-size: 0.85rem !important;
+  letter-spacing: -0.01em;
+}
+.cc-imagine-card img, .cc-imagine-card video {
+  border-radius: 0 !important;
+  max-height: 480px !important;
+}
+.cc-imagine-card .cc-im-prompt {
+  padding: 0.65rem 1rem 1rem !important;
+  font-size: 0.72rem !important;
+  line-height: 1.4;
+  color: rgba(255,255,255,0.45) !important;
+}
+.cc-im-opts {
+  display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.65rem;
+}
+.cc-im-opts button {
+  padding: 0.35rem 0.65rem; border-radius: 999px; font-size: 0.72rem;
+  border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.75); cursor: pointer;
+}
+.cc-im-opts button.active {
+  background: rgba(255,255,255,0.18); color: #fff; border-color: rgba(255,255,255,0.28);
+}
+.cc-im-enhance {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.78rem; color: rgba(255,255,255,0.65); margin-bottom: 0.65rem;
+}
+
 </style>
     </div>
     <div id="bootError" role="alert">
@@ -6865,7 +6989,7 @@ body {
                 </button>
             </div>
             <input type="email" class="field" id="emailInput" placeholder="Email" autocomplete="email">
-            <input type="password" class="field" id="passwordInput" placeholder="Пароль" autocomplete="current-password">
+            <input type="password" class="field" id="passwordInput" placeholder="Password" autocomplete="current-password">
             <label class="agree-row" id="agreeRow" for="agreeTerms">
                 <input type="checkbox" id="agreeTerms" name="agreeTerms">
                 <span class="agree-box" aria-hidden="true"></span>
@@ -6887,7 +7011,7 @@ body {
         <div class="profile-box">
             <div class="welcome-icon">&#9672;</div>
             <h2>Добро пожаловать</h2>
-            <input type="text" class="field" id="nameInput" placeholder="Ваше имя">
+            <input type="text" class="field" id="nameInput" placeholder="Your name">
             <input type="text" class="field" id="usernameInput" placeholder="Username для Plus (например slava_8383)" maxlength="32" autocomplete="off" style="margin-top:0.5rem;">
             <p style="font-size:0.72rem;color:#888;margin:0.4rem 0 0.8rem;line-height:1.35;">Этот username укажи боту после оплаты Stars — на него придёт Plus.</p>
             <div class="year-scroll" id="yearScroll" style="display:flex;overflow-x:auto;gap:0.8rem;margin-bottom:1.2rem;padding-bottom:0.4rem;"></div>
@@ -6913,10 +7037,10 @@ body {
                 <div class="settings-token"><span>Видео сегодня</span><span id="usageVideos">0</span></div>
             </div>
             <div class="settings-section">
-                <label style="font-size:0.75rem;color:#888;">Тема</label>
+                <label style="font-size:0.75rem;color:#888;">Theme</label>
                 <select id="themeModeSelect" class="field">
-                    <option value="dark">Тёмная</option>
-                    <option value="light">Светлая</option>
+                    <option value="dark">Dark</option>
+                    <option value="light">Light</option>
                     <option value="auto">Как в системе</option>
                 </select>
             </div>
@@ -6927,20 +7051,20 @@ body {
                     <option value="en">English</option>
                 </select>
             </div>
-            <a class="settings-link-btn" id="buyPlusLink" href="https://t.me/Milanchik_boks" target="_blank" rel="noopener">Купить Plus в боте · Stars</a>
+            <a class="settings-link-btn" id="buyPlusLink" href="https://t.me/Milanchik_boks" target="_blank" rel="noopener">Get Plus в боте · Stars</a>
             <button type="button" class="btn-black" id="copyUsernameBtn" style="width:100%;margin-top:0.45rem;background:transparent;border:1px solid var(--border);font-size:0.85rem;">Скопировать username для бота</button>
             <p id="plusHintText" style="font-size:0.72rem;color:#888;margin:0.5rem 0 0;line-height:1.4;">После оплаты Stars бот спросит username — вставь скопированный.</p>
             <div class="settings-section">
                 <label style="font-size:0.75rem;color:#888;">Написать администратору</label>
-                <textarea id="adminReportInput" class="field" rows="3" placeholder="Ошибка или вопрос..." style="resize:vertical;min-height:70px;"></textarea>
+                <textarea id="adminReportInput" class="field" rows="3" placeholder="Bug or question..." style="resize:vertical;min-height:70px;"></textarea>
                 <button class="btn-black" id="sendAdminReportBtn" style="margin-top:0.5rem;width:100%;">Отправить</button>
             </div>
             <div class="settings-section">
-                <button class="btn-black" id="settingsNewChatBtn" style="width:100%;margin-bottom:0.45rem;">Новый чат</button>
+                <button class="btn-black" id="settingsNewChatBtn" style="width:100%;margin-bottom:0.45rem;">New chat</button>
                 <button class="btn-black" id="settingsClearChatsBtn" style="width:100%;margin-bottom:0.45rem;background:transparent;border:1px solid var(--border);">Очистить историю чатов</button>
                 <button class="btn-black" id="settingsClearGalleryBtn" style="width:100%;margin-bottom:0.45rem;background:transparent;border:1px solid var(--border);">Очистить галерею</button>
             </div>
-            <button class="btn-black" id="logoutBtn" style="margin-top:0.5rem;width:100%;">Выйти из аккаунта</button>
+            <button class="btn-black" id="logoutBtn" style="margin-top:0.5rem;width:100%;">Sign out из аккаунта</button>
             <button class="btn-black" id="settingsBackBtn" style="margin-top:0.5rem;width:100%;background:transparent;border:1px solid var(--border);">Назад</button>
         </div>
     </div>
@@ -6967,7 +7091,8 @@ body {
                 <div class="title" id="flashTitle" style="display:none">ChatClaud</div>
                 <div class="top-bar-actions">
                     <button type="button" class="voice-btn" id="flashVoiceBtn" title="Голос" style="display:none!important" aria-hidden="true">Голос</button>
-                    <button type="button" id="flashNewChat" class="cc-newchat-logo" title="Новый чат" aria-label="New chat"><img src="IMG_5637.jpeg" alt="" width="22" height="22"></button>
+                    <button type="button" id="flashNewChat" class="cc-newchat-logo" title="New chat" aria-label="New chat"><img src="IMG_5637.jpeg" alt="" width="22" height="22"></button>
+<button type="button" class="cc-imagine-btn" id="ccImagineBtn" title="Imagine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/><path d="M19 13l.8 2.2L22 16l-2.2.8L19 19l-.8-2.2L16 16l2.2-.8L19 13z"/></svg> Imagine</button>
                     <button type="button" id="flashSettingsBtn" style="display:none">Settings</button>
                 </div>
             </div>
@@ -6987,11 +7112,11 @@ body {
                 <div class="sb-nav">
                     <button type="button" class="sb-nav-item" id="sbGalleryBtn">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 16l-5-5-4 4-2-2-5 5"/></svg>
-                        Галерея
+                        Gallery
                     </button>
                     <button type="button" class="sb-nav-item" data-open-settings>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2"/></svg>
-                        Настройки
+                        Settings
                     </button>
                 </div>
                 <div class="sb-section">Разговоры</div>
@@ -7001,7 +7126,7 @@ body {
                     <div class="gallery-grid" id="flashGalleryGrid"></div>
                 </div>
                 <div style="display:none">
-                    <button id="themeToggleBtn">Тема</button>
+                    <button id="themeToggleBtn">Theme</button>
                     <select id="flashPersonaSelect"><option value="default">Нейтральный</option><option value="cheerful">Весёлый</option><option value="harsh">Дерзкий</option><option value="custom">Свой</option></select>
                     <input id="flashCustomPersona" class="field">
                     <select id="flashLangSelect"><option value="ru">Русский</option><option value="en">English</option></select>
@@ -7016,7 +7141,7 @@ body {
                 </div>
                 <div class="sb-foot">
                     <input type="search" class="sb-search" id="flashSearchInput" placeholder="Search" autocomplete="off">
-                    <button type="button" class="sb-ico-btn" data-open-settings title="Настройки">
+                    <button type="button" class="sb-ico-btn" data-open-settings title="Settings">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2"/></svg>
                     </button>
                     <button type="button" class="sb-ico-btn" id="sbNewChatBtn" title="Новый">
@@ -7091,7 +7216,7 @@ body {
                 <div class="title" id="expertTitle">ClaudForge <span class="beta-pill">Beta</span></div>
                 <div class="top-bar-actions">
                     <button type="button" class="voice-btn" id="expertVoiceBtn" title="Голосовой чат">Голос</button>
-                    <button type="button" id="expertNewChat" title="Новый чат">+</button>
+                    <button type="button" id="expertNewChat" title="New chat">+</button>
                     <button type="button" id="expertProjectBtn">Проекты</button>
                     <button type="button" id="expertPreviewBtn">Превью</button>
                     <button type="button" id="expertDeployTopBtn">Деплой</button>
@@ -7112,7 +7237,7 @@ body {
                 </div>
                 <div class="sidebar-pane" data-spane="chats" id="expertChatsPane">
 
-                <button class="btn-black" id="themeToggleBtn2" style="margin-bottom:0.8rem;">Светлая тема</button>
+                <button class="btn-black" id="themeToggleBtn2" style="margin-bottom:0.8rem;">Light тема</button>
                 <label style="font-size:0.8rem;color:#888;">Провайдер</label>
                 <select id="expertProviderSelect" class="field"><option value="chatclaud" selected>ChatClaud Smart</option><option value="groq">ChatClaud Reasoning</option><option value="mistral">ChatClaud Balanced</option><option value="hf">ChatClaud Vision</option></select>
                 <select id="expertModelSelect" class="field"></select>
@@ -7121,7 +7246,7 @@ body {
                 <select id="expertLangSelect" class="field"><option value="ru">Русский</option><option value="en">English</option></select>
                 </div><!-- expertChatsPane -->
                 <div style="margin:1rem 0;"><button class="btn-black" id="expertDeployBtn">Задеплоить проект</button></div>
-                <input type="text" class="field" id="expertSearchInput" placeholder="Поиск чата...">
+                <input type="text" class="field" id="expertSearchInput" placeholder="Search chats...">
                 <div class="prompt-templates" id="expertTemplates">
                     <button class="prompt-chip" data-prompt="Сделай современный лендинг на HTML/CSS/JS">Лендинг</button>
                     <button class="prompt-chip" data-prompt="Исправь этот код и объясни ошибку:">Исправить код</button>
@@ -7214,7 +7339,28 @@ body {
         </div>
     </div>
 
-    <div class="toast" id="toast"></div>
+    
+<div class="cc-imagine-modal" id="ccImagineModal" aria-hidden="true">
+  <div class="cc-imagine-panel">
+    <h3>✦ Imagine</h3>
+    <div class="cc-imagine-limits" id="ccImagineLimits">Free · 5 photos / 2 videos per day</div>
+    <div class="cc-imagine-tabs">
+      <button type="button" class="cc-imagine-tab active" data-kind="image" id="ccImTabImg">Photo</button>
+      <button type="button" class="cc-imagine-tab" data-kind="video" id="ccImTabVid">Video</button>
+    </div>
+    <div class="cc-im-opts" id="ccImRatio">
+      <button type="button" data-ratio="portrait" class="active">Portrait</button>
+      <button type="button" data-ratio="landscape">Landscape</button>
+      <button type="button" data-ratio="square">Square</button>
+    </div>
+    <label class="cc-im-enhance"><input type="checkbox" id="ccImEnhance" checked> Enhance prompt (HF)</label>
+    <textarea id="ccImaginePrompt" placeholder="Describe the image or video..." maxlength="900"></textarea>
+    <button type="button" class="cc-imagine-go" id="ccImagineGo">Generate</button>
+    <button type="button" id="ccImagineClose" style="margin-top:0.55rem;width:100%;background:transparent;border:none;color:rgba(255,255,255,0.5);font-size:0.8rem;cursor:pointer;">Close</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -8275,7 +8421,7 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
 
         // ==================== ЛОКАЛИЗАЦИЯ ====================
         const translations = {
-            ru: { welcome: 'Добро пожаловать', namePlaceholder: 'Ваше имя', continue: 'Продолжить', newChat: '+ новый', back: '← выход', clearChat: 'Очистить чат', exportChats: 'Экспорт чатов', importChats: 'Импорт чатов', search: 'Поиск чата...', lightTheme: 'Светлая тема', darkTheme: 'Тёмная тема', deploy: 'Задеплоить проект', personaDefault: 'Нейтральный', personaHarsh: 'Дерзкий', personaCustom: 'Свой промпт', langLabel: 'Язык интерфейса', send: 'Отправить', inputPlaceholder: 'Type a message...' },
+            ru: { welcome: 'Добро пожаловать', namePlaceholder: 'Your name', continue: 'Продолжить', newChat: '+ новый', back: '← выход', clearChat: 'Очистить чат', exportChats: 'Экспорт чатов', importChats: 'Импорт чатов', search: 'Search chats...', lightTheme: 'Light тема', darkTheme: 'Dark тема', deploy: 'Задеплоить проект', personaDefault: 'Нейтральный', personaHarsh: 'Дерзкий', personaCustom: 'Свой промпт', langLabel: 'Язык интерфейса', send: 'Отправить', inputPlaceholder: 'Type a message...' },
             en: { welcome: 'Welcome', namePlaceholder: 'Your name', continue: 'Continue', newChat: '+ new', back: '← back', clearChat: 'Clear chat', exportChats: 'Export chats', importChats: 'Import chats', search: 'Search chat...', lightTheme: 'Light theme', darkTheme: 'Dark theme', deploy: 'Deploy project', personaDefault: 'Neutral', personaHarsh: 'Harsh', personaCustom: 'Custom prompt', langLabel: 'Language', send: 'Send', inputPlaceholder: 'Type your message...' }
         };
         let currentLang = globalSettings.lang || 'ru';
@@ -8299,9 +8445,9 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
                 flashInput: 'Type a message...',
                 expertInput: 'Опишите задачу...',
                 emailInput: 'Email',
-                passwordInput: 'Пароль',
+                passwordInput: 'Password',
                 authBtn: 'Войти',
-                nameInput: 'Ваше имя'
+                nameInput: 'Your name'
             };
             Object.keys(map).forEach(id => {
                 const el = document.getElementById(id);
@@ -8780,7 +8926,7 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
             localStorage.setItem('themeMode', mode);
             localStorage.setItem('theme', htmlEl.getAttribute('data-theme'));
             document.querySelectorAll('#themeToggleBtn, #themeToggleBtn2').forEach(b => {
-                if (b) b.textContent = htmlEl.getAttribute('data-theme') === 'light' ? 'Тёмная тема' : 'Светлая тема';
+                if (b) b.textContent = htmlEl.getAttribute('data-theme') === 'light' ? 'Dark тема' : 'Light тема';
             });
         }
         (function initThemeMode() {
@@ -9103,7 +9249,7 @@ function setAppLang(lang) {
             } catch(e) {}
         }
         try { setAppLang(localStorage.getItem('cc_lang') || 'ru'); } catch(e) {}
-        function toggleTheme() { const html = document.documentElement; const current = html.getAttribute('data-theme'); const next = current === 'light' ? 'dark' : 'light'; html.setAttribute('data-theme', next); document.querySelectorAll('#themeToggleBtn, #themeToggleBtn2').forEach(b => b.textContent = next === 'light' ? 'Тёмная тема' : 'Светлая тема'); localStorage.setItem('theme', next); }
+        function toggleTheme() { const html = document.documentElement; const current = html.getAttribute('data-theme'); const next = current === 'light' ? 'dark' : 'light'; html.setAttribute('data-theme', next); document.querySelectorAll('#themeToggleBtn, #themeToggleBtn2').forEach(b => b.textContent = next === 'light' ? 'Dark тема' : 'Light тема'); localStorage.setItem('theme', next); }
         document.getElementById('themeToggleBtn').addEventListener('click', toggleTheme);
         document.getElementById('themeToggleBtn2').addEventListener('click', toggleTheme);
         const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -9443,17 +9589,17 @@ function buildImageUrl(userPrompt, opts) {
             saveActiveSession() {
                 if (!this.activeSessionId) {
                     this.activeSessionId = 's_' + Date.now();
-                    this.sessions.unshift({ id: this.activeSessionId, name: (this.history[0]?.content || 'Новый чат').slice(0, 40), messages: [] });
+                    this.sessions.unshift({ id: this.activeSessionId, name: (this.history[0]?.content || 'New chat').slice(0, 40), messages: [] });
                 }
                 this.saveQueue = this.saveQueue.then(() => {
                     let session = this.sessions.find(s => s.id === this.activeSessionId);
                     if (session) {
                         session.messages = this.history.slice(-80);
-                        if ((!session.name || session.name === 'Новый чат') && this.history[0]) {
-                            session.name = String(this.history[0].content || '').slice(0, 40) || 'Новый чат';
+                        if ((!session.name || session.name === 'New chat') && this.history[0]) {
+                            session.name = String(this.history[0].content || '').slice(0, 40) || 'New chat';
                         }
                     } else {
-                        this.sessions.unshift({ id: this.activeSessionId, name: (this.history[0]?.content || 'Новый чат').slice(0, 40), messages: this.history.slice(-80) });
+                        this.sessions.unshift({ id: this.activeSessionId, name: (this.history[0]?.content || 'New chat').slice(0, 40), messages: this.history.slice(-80) });
                     }
                     try { this.saveSessions(); } catch (e) { showToast('Ошибка сохранения'); }
                 }).catch(() => {});
@@ -11989,7 +12135,7 @@ function buildImageUrl(userPrompt, opts) {
                 code: '<path d="M8 7l-4 5 4 5M16 7l4 5-4 5"/>',
                 voice: '<path d="M12 3a3 3 0 00-3 3v6a3 3 0 006 0V6a3 3 0 00-3-3z"/><path d="M19 10v1a7 7 0 01-14 0v-1M12 19v3"/>'
             };
-            const names = { fast: 'Быстрый', think: 'Думает', code: 'Код', voice: 'Голос' };
+            const names = { fast: 'Fast', think: 'Думает', code: 'Код', voice: 'Голос' };
             function apply(mode) {
                 const ico = btn.querySelector('.mode-ico');
                 if (ico) {
@@ -12353,7 +12499,7 @@ function buildImageUrl(userPrompt, opts) {
                     try {
                         localStorage.removeItem('chatclaud_gallery');
                         if (typeof renderGallery === 'function') renderGallery();
-                        showToast('Галерея очищена');
+                        showToast('Gallery очищена');
                     } catch (e) {}
                     return;
                 }
@@ -12470,7 +12616,7 @@ function buildImageUrl(userPrompt, opts) {
             const label = document.getElementById('flashModeLabel');
             if (!btn || !pop) { console.warn('mode UI missing'); return; }
             const names = { fast: 'ʙыᴄᴛʀый', think: 'ᴅᴜᴍᴀᴇᴛ', code: 'ᴋᴏᴅ', voice: 'гᴏʟᴏᴄ' };
-            const plain = { fast: 'Быстрый', think: 'Думает', code: 'Код', voice: 'Голос', live: 'Live' };
+            const plain = { fast: 'Fast', think: 'Думает', code: 'Код', voice: 'Голос', live: 'Live' };
             const icons = {
                 fast: '<path d="M13 3L4 14h7l-1 7 9-11h-7l1-7z"/>',
                 think: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
@@ -12568,7 +12714,7 @@ function buildImageUrl(userPrompt, opts) {
             const label = document.getElementById('flashModeLabel');
             if (!btn || !pop) return;
             const names = { fast: 'ʙыᴄᴛʀый', think: 'ᴅᴜᴍᴀᴇᴛ', code: 'ᴋᴏᴅ', voice: 'гᴏʟᴏᴄ', live: 'Live' };
-            const plain = { fast: 'Быстрый', think: 'Думает', code: 'Код', voice: 'Голос', live: 'Live' };
+            const plain = { fast: 'Fast', think: 'Думает', code: 'Код', voice: 'Голос', live: 'Live' };
             function apply(mode) {
                 mode = mode || 'fast';
                 if (!names[mode]) mode = 'fast';
@@ -12702,7 +12848,7 @@ function buildImageUrl(userPrompt, opts) {
         // ===== ChatClaud core (ClaudForge + Nova) — never expose vendors =====
         
         const CC_MODE_PROMPTS = {
-          fast: 'Режим Быстрый: отвечай чётко и по делу. Можно развёрнуто до ~10000 слов, если задача требует. Не лей воду.',
+          fast: 'Режим Fast: отвечай чётко и по делу. Можно развёрнуто до ~10000 слов, если задача требует. Не лей воду.',
           think: 'Режим Думает: сначала кратко план (1–3 пункта), потом ответ. Глубокий разбор, факты, до ~10500 слов при необходимости.',
           code: 'Режим Код: пиши полный рабочий код, комментарии по делу. Можно длинный HTML/JS/CSS до ~17000 токенов. Не обрезай файлы без нужды.',
           voice: 'Режим Голос: короткие устные фразы, естественно.',
@@ -12995,6 +13141,124 @@ function buildImageUrl(userPrompt, opts) {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fix);
   setInterval(fix, 2000);
 })();
+
+
+/* ChatClaud Imagine (Runway) */
+(function(){
+  var kind = 'image';
+  function $(id){ return document.getElementById(id); }
+  function isPlusUser(){
+    try {
+      if (typeof isPlus === 'function') return isPlus();
+      var s = JSON.parse(localStorage.getItem('cc_settings')||'{}');
+      return !!(s.isPlus || (s.plusUntil && new Date(s.plusUntil)>new Date()));
+    } catch(e){ return false; }
+  }
+  function dayKey(k){ return 'cc_imagine_'+k+'_'+new Date().toISOString().slice(0,10); }
+  function localLeft(k){
+    var max = k==='video' ? (isPlusUser()?15:2) : (isPlusUser()?50:5);
+    var used = parseInt(localStorage.getItem(dayKey(k))||'0',10)||0;
+    return { used: used, left: Math.max(0, max-used), max: max };
+  }
+  function bumpLocal(k){
+    var used = parseInt(localStorage.getItem(dayKey(k))||'0',10)||0;
+    localStorage.setItem(dayKey(k), String(used+1));
+  }
+  function refreshLimits(){
+    var img = localLeft('image'), vid = localLeft('video');
+    var el = $('ccImagineLimits');
+    if (el) el.textContent = (isPlusUser()?'Plus':'Free') + ' · Photos '+img.used+'/'+img.max+' · Videos '+vid.used+'/'+vid.max;
+  }
+  function openModal(){
+    var m = $('ccImagineModal');
+    if (!m) return;
+    m.classList.add('open');
+    m.setAttribute('aria-hidden','false');
+    refreshLimits();
+    setTimeout(function(){ var t=$('ccImaginePrompt'); if(t) t.focus(); }, 100);
+  }
+  function closeModal(){
+    var m = $('ccImagineModal');
+    if (!m) return;
+    m.classList.remove('open');
+    m.setAttribute('aria-hidden','true');
+  }
+  function appendCard(statusHtml){
+    var box = document.querySelector('#flashMessages, .messages, #messages');
+    if (!box) return null;
+    var card = document.createElement('div');
+    card.className = 'cc-imagine-card';
+    card.innerHTML = statusHtml;
+    box.appendChild(card);
+    try { box.scrollTop = box.scrollHeight; } catch(e){}
+    return card;
+  }
+  async function generate(){
+    var prompt = ($('ccImaginePrompt')&&$('ccImaginePrompt').value||'').trim();
+    if (prompt.length < 2) return;
+    var lim = localLeft(kind);
+    if (lim.left <= 0) {
+      alert(kind==='video' ? 'Daily video limit reached' : 'Daily photo limit reached');
+      return;
+    }
+    var go = $('ccImagineGo');
+    if (go) { go.disabled = true; go.textContent = 'Generating…'; }
+    closeModal();
+    var card = appendCard('<div class="cc-im-status"><span class="cc-mini-orb" style="width:22px;height:22px;border-radius:50%;display:inline-block;background:#fff;"></span> Creating '+kind+'…</div>');
+    try {
+      var urlApi = (window.ccApiUrl||function(p){return p;})(kind==='video'?'/api/imagine/video':'/api/imagine/image');
+      var res = await fetch(urlApi, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: prompt, plus: isPlusUser(), ratio: (window.__ccImRatio||'portrait'), enhance: !!(document.getElementById('ccImEnhance')&&document.getElementById('ccImEnhance').checked) })
+      });
+      var data = await res.json().catch(function(){return {};});
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      bumpLocal(kind);
+      if (card) {
+        if (kind === 'video') {
+          card.innerHTML = '<video src="'+data.url+'" controls playsinline style="width:100%"></video><div class="cc-im-prompt">'+prompt.replace(/</g,'&lt;')+'</div>';
+        } else {
+          card.innerHTML = '<img src="'+data.url+'" alt="Imagine"/><div class="cc-im-prompt">'+prompt.replace(/</g,'&lt;')+'</div>';
+        }
+      }
+      try {
+        var gal = JSON.parse(localStorage.getItem('cc_gallery')||'[]');
+        gal.unshift({ url: data.url, type: kind, prompt: prompt, t: Date.now() });
+        localStorage.setItem('cc_gallery', JSON.stringify(gal.slice(0,80)));
+      } catch(e){}
+    } catch (e) {
+      if (card) card.innerHTML = '<div class="cc-im-status">Error: '+(e.message||'failed')+'</div>';
+    }
+    if (go) { go.disabled = false; go.textContent = 'Generate'; }
+    refreshLimits();
+  }
+  function bind(){
+    var btn = $('ccImagineBtn');
+    if (btn) btn.addEventListener('click', openModal);
+    var c = $('ccImagineClose');
+    if (c) c.addEventListener('click', closeModal);
+    var modal = $('ccImagineModal');
+    if (modal) modal.addEventListener('click', function(e){ if (e.target === modal) closeModal(); });
+    var ti = $('ccImTabImg'), tv = $('ccImTabVid');
+    if (ti) ti.addEventListener('click', function(){ kind='image'; ti.classList.add('active'); if(tv)tv.classList.remove('active'); });
+    if (tv) tv.addEventListener('click', function(){ kind='video'; tv.classList.add('active'); if(ti)ti.classList.remove('active'); });
+    var go = $('ccImagineGo');
+    if (go) go.addEventListener('click', generate);
+    window.__ccImRatio = 'portrait';
+    var ratioBox = $('ccImRatio');
+    if (ratioBox) ratioBox.querySelectorAll('button').forEach(function(b){
+      b.addEventListener('click', function(){
+        ratioBox.querySelectorAll('button').forEach(function(x){ x.classList.remove('active'); });
+        b.classList.add('active');
+        window.__ccImRatio = b.getAttribute('data-ratio') || 'portrait';
+      });
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
+})();
+
 </script>
 
 </body>

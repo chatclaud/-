@@ -1,28 +1,15 @@
-# ChatClaud — Render Environment Variables
-# Секреты ТОЛЬКО здесь. Никогда не в index.html.
-
+# Render Environment Variables (DO NOT commit real secrets to GitHub)
 GROQ_KEY=
 GROQ_MODEL=openai/gpt-oss-120b
-
 MISTRAL_API_KEY=
 MISTRAL_MODEL=mistral-medium-latest
-
-# Vision + voice (оба имени работают)
 HF_KEY=
 HF_KEY2=
-HF_TOKEN=
-# Также: HF_KEY_1, HF_KEY_2, HUGGINGFACE_TOKEN
-
+HF_IMAGE_MODEL=black-forest-labs/FLUX.1-schnell
+HF_PROMPT_MODEL=HuggingFaceH4/zephyr-7b-beta
 NOVA_URL=https://nova-brawser.onrender.com
 NOVA_AIP_TOKEN=
-# Также: NOVA_API_TOKEN
-
-SERPER_KEY=
+NOVA_API_TOKEN=
 TAVILY_KEY=
-
-NETLIFY_DEPLOY_TOKEN=
-NETLIFY_SITE_ID=
-
-PLUS_BOT_SECRET=
-ADMIN_SECRET=
-PORT=10000
+RUNWAYML_API_SECRET=
+RUNWAY_VIDEO_MODEL=gen4.5
