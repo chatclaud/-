@@ -6721,7 +6721,7 @@ html.plus-active .cc-think {
 
     <div id="welcomeScreen" class="screen hidden">
         <div class="welcome-inner">
-            <div class="welcome-logo"><img src="/icon-512.png" alt="" onerror="this.style.display='none'"></div>
+            <div class="welcome-logo"><img src="icon-512.png" alt="ChatClaud" style="width:72px;height:72px;border-radius:18px;object-fit:cover;" onerror="this.onerror=null;this.src='icon-192.png';this.onerror=function(){this.src='apple-touch-icon.png';};"></div>
             <div class="welcome-text">Welcome by ChatClaud</div>
             <div class="welcome-sub">Готовим пространство…</div>
         </div>
@@ -6856,7 +6856,7 @@ html.plus-active .cc-think {
                     </button>
                 </div>
                 <div class="sb-promo">
-                    <div style="flex:1;min-width:0"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">ᴄʜᴀᴛᴄʟᴀᴜᴅ ᴘʟᴜꜱ</div><div style="opacity:.85;font-size:0.72rem;white-space:nowrap">Plus · приоритет и расширенные возможности</div></div>
+                    <div style="flex:1;min-width:0"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">ChatClaud Plus</div><div style="opacity:.85;font-size:0.72rem;white-space:nowrap">Plus · приоритет и расширенные возможности</div></div>
                     <button type="button" id="sbPlusBtn">Plus</button>
                 </div>
                 <div class="sb-nav">
@@ -9353,7 +9353,20 @@ function buildImageUrl(userPrompt, opts) {
                 filtered.forEach(s => {
                     const item = document.createElement('div'); item.className = `chat-item ${s.id === this.activeSessionId ? 'active' : ''}`;
                     const lastMsg = s.messages?.[s.messages.length - 1];
-                    const time = lastMsg ? new Date(parseInt(s.id)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                    let time = '';
+                    try {
+                        let ts = s.updatedAt || s.createdAt || null;
+                        if (ts && typeof ts === 'object' && typeof ts.toDate === 'function') ts = ts.toDate().getTime();
+                        if (ts && typeof ts === 'object' && ts.seconds) ts = ts.seconds * 1000;
+                        if (!ts && s.id != null) {
+                            const n = Number(s.id);
+                            if (Number.isFinite(n) && n > 1e11) ts = n;
+                        }
+                        if (ts) {
+                            const d = new Date(ts);
+                            if (!isNaN(d.getTime())) time = d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+                        }
+                    } catch (e) { time = ''; }
                     item.innerHTML = `<div class="chat-info"><span>${s.name}</span><span class="chat-time">${time}</span></div>`;
                     const delBtn = document.createElement('button'); delBtn.className = 'delete-btn'; delBtn.innerHTML = 'X';
                     delBtn.onclick = (e) => { e.stopPropagation(); this.deleteSession(s.id); };
@@ -10681,7 +10694,7 @@ function buildImageUrl(userPrompt, opts) {
             projects.forEach((p, i) => {
                 const card = document.createElement('div');
                 card.className = 'project-card';
-                card.innerHTML = `<h4>${p.name || 'Проект ' + (i+1)}</h4><p>${p.desc || 'Без описания'} · ${new Date(p.created).toLocaleDateString()}</p>`;
+                card.innerHTML = `<h4>${p.name || 'Проект ' + (i+1)}</h4><p>${p.desc || 'Без описания'} · ${(function(){try{var d=new Date(p.created);return isNaN(d.getTime())?'':d.toLocaleDateString('ru-RU');}catch(e){return '';}})()}</p>`;
                 card.onclick = () => {
                     // load project context into expert
                     if (p.messages && expertSession) {
@@ -11819,14 +11832,15 @@ function buildImageUrl(userPrompt, opts) {
 
         
         function toFancy(str) {
+            // Только латиница → small-caps. Кириллицу НЕ трогаем (иначе «приоритет» → PPIOPITET).
             const map = {
                 a:'ᴀ',b:'ʙ',c:'ᴄ',d:'ᴅ',e:'ᴇ',f:'ꜰ',g:'ɢ',h:'ʜ',i:'ɪ',j:'ᴊ',k:'ᴋ',l:'ʟ',m:'ᴍ',
-                n:'ɴ',o:'ᴏ',p:'ᴘ',q:'ǫ',r:'ʀ',s:'ꜱ',t:'ᴛ',u:'ᴜ',v:'ᴠ',w:'ᴡ',x:'x',y:'ʏ',z:'ᴢ',
-                'а':'ᴀ','б':'ʙ','в':'ʙ','г':'ɢ','д':'ᴅ','е':'ᴇ','ё':'ᴇ','ж':'ᴢ','з':'ᴢ','и':'ɪ',
-                'й':'ɪ','к':'ᴋ','л':'ʟ','м':'ᴍ','н':'ɴ','о':'ᴏ','п':'ᴘ','р':'ᴘ','с':'ꜱ','т':'ᴛ',
-                'у':'ᴜ','ф':'ꜰ','х':'ʜ','ц':'ᴄ','ч':'ᴄ','ш':'ꜱ','щ':'ꜱ','ы':'ʏ','э':'ᴇ','ю':'ʏ','я':'ʏ'
+                n:'ɴ',o:'ᴏ',p:'ᴘ',q:'ǫ',r:'ʀ',s:'ꜱ',t:'ᴛ',u:'ᴜ',v:'ᴠ',w:'ᴡ',x:'x',y:'ʏ',z:'ᴢ'
             };
             return String(str||'').split('').map(ch => {
+                const code = ch.charCodeAt(0);
+                // Cyrillic block — leave unchanged
+                if (code >= 0x0400 && code <= 0x04FF) return ch;
                 const low = ch.toLowerCase();
                 return map[low] || ch;
             }).join('');
@@ -12047,9 +12061,9 @@ function buildImageUrl(userPrompt, opts) {
                 }
             });
             var pl = document.querySelector('.sb-promo div div');
-            if (pl) pl.textContent = toFancy('ChatClaud Plus');
+            if (pl) pl.textContent = 'ChatClaud Plus';
             var pl2 = document.querySelector('.sb-promo div div + div');
-            if (pl2) pl2.textContent = toFancy('Plus · приоритет и расширенные возможности');
+            if (pl2) pl2.textContent = 'Plus · приоритет и расширенные возможности';
         })();
 
         setupMic('flashMicBtn', document.getElementById('flashInput'), () => flashSession);

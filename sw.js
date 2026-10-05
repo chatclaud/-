@@ -1,4 +1,4 @@
-const CACHE = 'chatclaud-runtime-v14-icon';
+const CACHE = 'chatclaud-runtime-v15-bugs';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {
