@@ -6554,6 +6554,74 @@ html.plus-active .cc-think {
   background: transparent !important; border: none !important; box-shadow: none !important;
 }
 /* === end v4 === */
+
+/* ===== ChatClaud polish 2026 ===== */
+.message {
+  box-shadow: 0 8px 28px rgba(0,0,0,0.45), 0 1px 0 rgba(255,255,255,0.04) inset !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+}
+.user-msg, .message.user {
+  box-shadow: 0 10px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08) !important;
+}
+.bot-msg, .message.bot, .agent-message {
+  box-shadow: 0 6px 24px rgba(0,0,0,0.4) !important;
+  background: rgba(22,22,26,0.92) !important;
+}
+.cc-mini-orb {
+  box-shadow: 0 0 24px rgba(255,255,255,0.25), 0 8px 20px rgba(0,0,0,0.4) !important;
+  animation: ccOrbFloat 3.2s ease-in-out infinite !important;
+  transition: transform 0.35s ease, box-shadow 0.35s ease !important;
+}
+@keyframes ccOrbFloat {
+  0%,100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1.03); }
+}
+.cc-sources-toggle {
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
+  background: rgba(255,255,255,0.06) !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25) !important;
+  padding: 0.35rem 0.7rem !important;
+  transition: background 0.25s, border-color 0.25s, transform 0.2s !important;
+}
+.cc-sources-toggle:hover {
+  background: rgba(255,255,255,0.12) !important;
+  transform: translateY(-1px);
+}
+.input-row {
+  box-shadow: 0 -8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.06) inset !important;
+  backdrop-filter: blur(20px) saturate(1.2) !important;
+  border-radius: 1.25rem !important;
+}
+[data-theme="light"] {
+  --bg: #f2f2f7 !important;
+  --surface: rgba(255,255,255,0.88) !important;
+  --text: #1c1c1e !important;
+  --border: rgba(0,0,0,0.08) !important;
+}
+[data-theme="light"] .message {
+  box-shadow: 0 4px 18px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.9) inset !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+}
+[data-theme="light"] .bot-msg, [data-theme="light"] .message.bot {
+  background: #fff !important;
+  color: #1c1c1e !important;
+}
+[data-theme="light"] .user-msg, [data-theme="light"] .message.user {
+  background: #e8e0ff !important;
+  color: #1a1230 !important;
+}
+[data-theme="light"] .input-row {
+  background: rgba(255,255,255,0.95) !important;
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.06) !important;
+}
+[data-theme="light"] .cc-sources-toggle {
+  background: rgba(0,0,0,0.04) !important;
+  border-color: rgba(0,0,0,0.1) !important;
+  color: #333 !important;
+}
+
 </style>
     </div>
     <div id="bootError" role="alert">
@@ -6723,7 +6791,7 @@ html.plus-active .cc-think {
         <div class="welcome-inner">
             <div class="welcome-logo"><img src="icon-512.png" alt="ChatClaud" style="width:72px;height:72px;border-radius:18px;object-fit:cover;" onerror="this.onerror=null;this.src='icon-192.png';this.onerror=function(){this.src='apple-touch-icon.png';};"></div>
             <div class="welcome-text">Welcome by ChatClaud</div>
-            <div class="welcome-sub">Готовим пространство…</div>
+            <div class="welcome-sub">Preparing workspace…</div>
         </div>
     </div>
 <div id="landingScreen" class="screen hidden">
@@ -6772,7 +6840,7 @@ html.plus-active .cc-think {
 
     <div id="settingsScreen" class="screen hidden">
         <div class="settings-box" style="max-width:400px;text-align:left;">
-            <h2 style="text-align:center;margin-bottom:1.2rem;">Настройки</h2>
+            <h2 style="text-align:center;margin-bottom:1.2rem;">Settings</h2>
             <div class="settings-profile">
                 <div class="settings-avatar" id="settingsAvatar">C</div>
                 <div>
@@ -6821,7 +6889,7 @@ html.plus-active .cc-think {
     </div>
 
     <div id="selectionScreen" class="screen hidden">
-        <button type="button" id="openSettingsBtn" style="position:absolute;top:calc(0.8rem + env(safe-area-inset-top));right:1rem;z-index:5;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#ccc;border-radius:2rem;padding:0.4rem 0.9rem;font-size:0.8rem;cursor:pointer;">Настройки</button>
+        <button type="button" id="openSettingsBtn" style="position:absolute;top:calc(0.8rem + env(safe-area-inset-top));right:1rem;z-index:5;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#ccc;border-radius:2rem;padding:0.4rem 0.9rem;font-size:0.8rem;cursor:pointer;">Settings</button>
 
         <div class="cards">
             <div class="card" data-target="flash">
@@ -6843,7 +6911,7 @@ html.plus-active .cc-think {
                 <div class="top-bar-actions">
                     <button type="button" class="voice-btn" id="flashVoiceBtn" title="Голос" style="display:none!important" aria-hidden="true">Голос</button>
                     <button type="button" id="flashNewChat" class="cc-newchat-logo" title="Новый чат" aria-label="New chat"><img src="IMG_5637.jpeg" alt="" width="22" height="22"></button>
-                    <button type="button" id="flashSettingsBtn" style="display:none">Настройки</button>
+                    <button type="button" id="flashSettingsBtn" style="display:none">Settings</button>
                 </div>
             </div>
                         <div class="sidebar-overlay" id="flashSidebarOverlay"></div>
@@ -6856,7 +6924,7 @@ html.plus-active .cc-think {
                     </button>
                 </div>
                 <div class="sb-promo">
-                    <div style="flex:1;min-width:0"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">ChatClaud Plus</div><div style="opacity:.85;font-size:0.72rem;white-space:nowrap">Plus · приоритет и расширенные возможности</div></div>
+                    <div style="flex:1;min-width:0"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">ChatClaud Plus</div><div style="opacity:.85;font-size:0.72rem;white-space:nowrap">Plus · priority & extended limits</div></div>
                     <button type="button" id="sbPlusBtn">Plus</button>
                 </div>
                 <div class="sb-nav">
@@ -6886,11 +6954,11 @@ html.plus-active .cc-think {
                     <input type="file" id="flashImportInput" accept=".json" hidden>
                     <button id="flashExportMdBtn"></button>
                     <button id="flashClearContextBtn"></button>
-                    <div class="sidebar-tabs"><button class="sidebar-tab active" data-stab="chats">Чаты</button><button class="sidebar-tab" data-stab="gallery">Галерея</button></div>
+                    <div class="sidebar-tabs"><button class="sidebar-tab active" data-stab="chats">Чаты</button><button class="sidebar-tab" data-stab="gallery">Gallery</button></div>
                     <div class="sidebar-pane" data-spane="chats" id="flashChatsPane"></div>
                 </div>
                 <div class="sb-foot">
-                    <input type="search" class="sb-search" id="flashSearchInput" placeholder="Поиск" autocomplete="off">
+                    <input type="search" class="sb-search" id="flashSearchInput" placeholder="Search" autocomplete="off">
                     <button type="button" class="sb-ico-btn" data-open-settings title="Настройки">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2"/></svg>
                     </button>
@@ -6934,7 +7002,7 @@ html.plus-active .cc-think {
                             <span>Код</span>
                         </button>
                     </div>
-                    <textarea id="flashInput" placeholder="Спроси что угодно" rows="1" maxlength="4000"></textarea>
+                    <textarea id="flashInput" placeholder="Ask anything..." rows="1" maxlength="4000"></textarea>
                     <div class="input-shell-bottom">
                         <label class="attach-icon" id="flashAttachBtn" for="flashFileInput" title="Добавить"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></label>
                         <input type="file" id="flashFileInput" accept="image/*,.txt,.js,.html,.css,.json,.md,.py,.zip,.ts,.tsx,.jsx,.csv" hidden>
@@ -6970,7 +7038,7 @@ html.plus-active .cc-think {
                     <button type="button" id="expertProjectBtn">Проекты</button>
                     <button type="button" id="expertPreviewBtn">Превью</button>
                     <button type="button" id="expertDeployTopBtn">Деплой</button>
-                    <button type="button" id="expertSettingsBtn">Настройки</button>
+                    <button type="button" id="expertSettingsBtn">Settings</button>
                 </div>
             </div>
             <div class="beta-banner">Beta</div>
@@ -6979,7 +7047,7 @@ html.plus-active .cc-think {
                 <h3>Меню</h3>
                 <div class="sidebar-tabs" id="expertSideTabs">
                     <button type="button" class="sidebar-tab active" data-stab="chats">Чаты</button>
-                    <button type="button" class="sidebar-tab" data-stab="gallery">Галерея</button>
+                    <button type="button" class="sidebar-tab" data-stab="gallery">Gallery</button>
                 </div>
                 <div class="sidebar-pane" data-spane="gallery" id="expertGalleryPane" style="display:none;">
                     <div class="gallery-count" id="expertGalleryCount">0 фото</div>
@@ -7005,7 +7073,7 @@ html.plus-active .cc-think {
                 </div>
                 <div class="chat-list" id="expertChatList"></div>
                 <div class="sidebar-footer">
-                    <button type="button" class="btn-black" data-open-settings>Настройки</button>
+                    <button type="button" class="btn-black" data-open-settings>Settings</button>
                     <button class="btn-black" data-back="selection">← Назад</button>
                 </div>
                 <div style="display:none" aria-hidden="true">
@@ -7018,7 +7086,7 @@ html.plus-active .cc-think {
             <div class="input-row">
                 <label class="attach-icon" for="expertFileInput"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></label>
                 <input type="file" id="expertFileInput" accept="image/*,.txt,.js,.html,.css,.json,.md,.py,.zip,.ts,.tsx,.jsx,.csv" hidden>
-                <textarea id="expertInput" placeholder="Опишите задачу..." rows="1" maxlength="10000"></textarea>
+                <textarea id="expertInput" placeholder="Describe the task..." rows="1" maxlength="10000"></textarea>
                 <button class="auto-btn" id="expertAutoBtn" title="Улучшить текст"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
                 <button class="mic-btn" id="expertMicBtn" title="Голосовой ввод"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
                 <button type="button" class="stop-gen-btn" id="expertStopBtn" title="Стоп"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg></button>
@@ -7891,16 +7959,18 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
 
         async function duckSearch(query) { return multiWebSearch(query); }
         function needsWebSearch(text) {
-            const t = (text || '').trim().toLowerCase();
-            if (!t || t.length < 3) return false;
-            if (/^\/(img|gif|help|clear|deploy)\b/i.test(t)) return false;
-            if (/^\/search\b/i.test(t)) return true;
-            if (/^(привет|здарова|хай|бро|ку|ок|ладно|спасибо|пока|да|нет|лол|ахах|хм+|хорошо|норм|понял)\s*[!.]?$/i.test(t)) return false;
-            if (/(не ищи|без поиска|просто поговор|просто ответь)/i.test(t)) return false;
-            // always search for find/links/media/news
-            if (/(найди|найти|поищи|поиск|ссылк|сайт|ютуб|youtube|video|видео|тикток|tiktok|google|гугл|новост|актуальн|сейчас|сегодня|сколько|подписчик|рейтинг|курс|цена|погода|кто такой|что такое|where|how many|latest|2024|2025|2026)/i.test(t)) return true;
-            if (/(steam|epic|игры|магазин|скачать|watch|канал)/i.test(t)) return true;
-            if (t.length > 40) return true; // long questions often need facts
+            const t = (text || '').trim();
+            if (!t || t.length < 2) return false;
+            if (/^\/(img|gif|help|clear|deploy|plus|settings)\b/i.test(t)) return false;
+            // Explicit commands — ALWAYS search (every time, not only first)
+            if (/^\/(search|find|seasch|nova)\b/i.test(t)) return true;
+            if (/^(найди|поищи|загугли|погугли|найти)\b/i.test(t)) return true;
+            if (/^(search|find|look\s*up|google)\b/i.test(t)) return true;
+            if (/^(привет|hello|hi|hey|здарова|хай|бро|ку|ок|ладно|спасибо|thanks|пока|bye|да|нет|yes|no|лол|ахах|хм+|хорошо|норм|понял|ok)\s*[!.]?$/i.test(t)) return false;
+            if (/(не ищи|без поиска|просто поговор|просто ответь|no search|don't search)/i.test(t)) return false;
+            if (/(найди|найти|поищи|поиск|ссылк|сайт|ютуб|youtube|video|видео|тикток|tiktok|google|гугл|новост|актуальн|сейчас|сегодня|сколько|подписчик|рейтинг|курс|цена|погода|кто такой|что такое|where|how many|latest|look\s*up|what is|who is|2024|2025|2026)/i.test(t)) return true;
+            if (/(steam|epic|игры|магазин|скачать|watch|канал|news)/i.test(t)) return true;
+            if (t.length > 40) return true;
             return false;
         }
 
@@ -8147,7 +8217,7 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
 
         // ==================== ЛОКАЛИЗАЦИЯ ====================
         const translations = {
-            ru: { welcome: 'Добро пожаловать', namePlaceholder: 'Ваше имя', continue: 'Продолжить', newChat: '+ новый', back: '← выход', clearChat: 'Очистить чат', exportChats: 'Экспорт чатов', importChats: 'Импорт чатов', search: 'Поиск чата...', lightTheme: 'Светлая тема', darkTheme: 'Тёмная тема', deploy: 'Задеплоить проект', personaDefault: 'Нейтральный', personaHarsh: 'Дерзкий', personaCustom: 'Свой промпт', langLabel: 'Язык интерфейса', send: 'Отправить', inputPlaceholder: 'Введите запрос...' },
+            ru: { welcome: 'Добро пожаловать', namePlaceholder: 'Ваше имя', continue: 'Продолжить', newChat: '+ новый', back: '← выход', clearChat: 'Очистить чат', exportChats: 'Экспорт чатов', importChats: 'Импорт чатов', search: 'Поиск чата...', lightTheme: 'Светлая тема', darkTheme: 'Тёмная тема', deploy: 'Задеплоить проект', personaDefault: 'Нейтральный', personaHarsh: 'Дерзкий', personaCustom: 'Свой промпт', langLabel: 'Язык интерфейса', send: 'Отправить', inputPlaceholder: 'Type a message...' },
             en: { welcome: 'Welcome', namePlaceholder: 'Your name', continue: 'Continue', newChat: '+ new', back: '← back', clearChat: 'Clear chat', exportChats: 'Export chats', importChats: 'Import chats', search: 'Search chat...', lightTheme: 'Light theme', darkTheme: 'Dark theme', deploy: 'Deploy project', personaDefault: 'Neutral', personaHarsh: 'Harsh', personaCustom: 'Custom prompt', langLabel: 'Language', send: 'Send', inputPlaceholder: 'Type your message...' }
         };
         let currentLang = globalSettings.lang || 'ru';
@@ -8168,7 +8238,7 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
                 authBtn: 'Sign in',
                 nameInput: 'Your name'
             } : {
-                flashInput: 'Введите запрос...',
+                flashInput: 'Type a message...',
                 expertInput: 'Опишите задачу...',
                 emailInput: 'Email',
                 passwordInput: 'Пароль',
@@ -9734,7 +9804,7 @@ function buildImageUrl(userPrompt, opts) {
                 }
                 let fullPrompt = text || '';
                 if (this.currentFileText) { fullPrompt = `[Файл]:\n${this.currentFileText}\n\n[Запрос пользователя]:\n${text}`; }
-                if (text && (String(text).startsWith('/search') || (typeof needsWebSearch === 'function' && needsWebSearch(text)))) {
+                if (text && (/^\/(search|find|seasch|nova)\b/i.test(String(text)) || /^(найди|поищи|загугли|search|find|look\s*up|google)\b/i.test(String(text).trim()) || (typeof needsWebSearch === 'function' && needsWebSearch(text)))) {
                     let statusEl = null;
                     try {
                         statusEl = this.addMsg('', 'bot', false);
@@ -9748,7 +9818,7 @@ function buildImageUrl(userPrompt, opts) {
                         };
                         await new Promise(r => setTimeout(r, 200));
                         setThink('Thinking…');
-                        const searchQ = String(text).replace(/^\/search\s*/i, '').trim() || text;
+                        const searchQ = String(text).replace(/^\/(search|find|seasch|nova)\s*/i, '').replace(/^(найди|поищи|загугли|погугли|search|find|look\s*up|google)\s+/i, '').trim() || text;
                         const snips = await duckSearch(searchQ);
                         setThink('Reading sources');
                         await new Promise(r => setTimeout(r, 200));
@@ -12063,7 +12133,7 @@ function buildImageUrl(userPrompt, opts) {
             var pl = document.querySelector('.sb-promo div div');
             if (pl) pl.textContent = 'ChatClaud Plus';
             var pl2 = document.querySelector('.sb-promo div div + div');
-            if (pl2) pl2.textContent = 'Plus · приоритет и расширенные возможности';
+            if (pl2) pl2.textContent = 'Plus · priority & extended limits';
         })();
 
         setupMic('flashMicBtn', document.getElementById('flashInput'), () => flashSession);

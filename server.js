@@ -550,9 +550,21 @@ async function groqChat(messages, system, reasoning = false) {
 }
 function sanitizeProviderIdentity(text){
   let s=String(text||'');
-  s=s.replace(/\b(OpenAI|GPT(?:-?OSS)?|Claude|Anthropic|Gemini|Google AI|Grok|xAI|Llama|Meta AI|Mistral|Groq|DeepSeek|Copilot|OpenRouter)\b/gi,'ChatClaud');
+  s=s.replace(/\b(OpenAI|GPT(?:-?OSS)?|Claude|Anthropic|Gemini|Google AI|Grok|xAI|Llama|Meta AI|Mistral|Groq|DeepSeek|Copilot|OpenRouter|Hugging\s*Face|HF)\b/gi,'ChatClaud');
+  s=s.replace(/\b(as an? (AI|language model) (made by|from|by|powered by) [^.\n]+)/gi,'as ChatClaud');
+  s=s.replace(/\b(I('m| am) (an? )?(AI )?(assistant|model) (from|by|built by) [^.\n]+)/gi,"I'm ChatClaud");
+  s=s.replace(/\b(my training (data|cutoff)|knowledge cutoff)[^.\n]*/gi,'I use current ChatClaud knowledge and live search when available');
   return s;
 }
+
+const CC_SYSTEM = `You are ChatClaud — independent AI by milanmichaimilan / ChatClaud (2026).
+Never claim to be OpenAI, GPT, Claude, Anthropic, Gemini, Google, Grok, xAI, Llama, Meta, Mistral, Groq, DeepSeek, Copilot, OpenRouter or any third-party API.
+If asked who you are: "I'm ChatClaud."
+Match user language (English or Russian).
+When Live web results are provided, USE them, prefer facts from those sources, and mention links when helpful.
+Commands: /search /find /img /veo /plus /settings.
+Be direct and useful.`;
+
 
 function mistralKeys() {
   const out = [];
@@ -951,8 +963,14 @@ const server = http.createServer(async (req, res) => {
         const greetingRe = /^(привет|здравствуй|хай|hello|hi|ку|йо|как дела|спасибо|пока|ок|окей|да|нет)\W*$/i;
         let q3 = lastUser3.trim();
         // Always search when user asks to find / look up (any message count)
-        const intentSearch = /(?:^|\s)(\/search|\/seasch|\/nova|найди|найди\s+мне|поищи|поиск|погугли|гугл|search|find|look\s*up|мем|meme|новост|ти[кк]\s*ток|tiktok|кто\s+такой|что\s+такое|сколько|когда\s+вышел|актуальн)/i.test(q3);
-        const forceSearch = intentSearch || /^\/search\b/i.test(q3) || /^\/seasch\b/i.test(q3) || /^\/nova\b/i.test(q3);
+        const intentSearch = /(?:^|\s)(\/search|\/find|\/seasch|\/nova|найди|найди\s+мне|поищи|поиск|погугли|загугли|гугл|search\b|find\b|look\s*up|google\b|what\s+is\b|who\s+is\b|how\s+many\b|when\s+did\b|latest\b|news\b|мем|meme|новост|ти[кк]\s*ток|tiktok|кто\s+такой|что\s+такое|сколько|когда\s+вышел|актуальн)/i.test(q3);
+        const forceSearch = intentSearch
+          || /^\/search\b/i.test(q3)
+          || /^\/find\b/i.test(q3)
+          || /^\/seasch\b/i.test(q3)
+          || /^\/nova\b/i.test(q3)
+          || /^(найди|поищи|загугли|погугли)\b/i.test(q3)
+          || /^(search|find|look\s*up|google)\b/i.test(q3);
         if (/^\/(search|seasch|nova)\b/i.test(q3)) q3 = q3.replace(/^\/(search|seasch|nova)\s*/i, '').trim();
         const looksLikeQuery = forceSearch || (q3.length >= 4 && !greetingRe.test(q3));
         // video queries still go through search (Nova can resolve TikTok etc.)
@@ -999,8 +1017,8 @@ const server = http.createServer(async (req, res) => {
       const failures = [];
       const isReasoning = !!body.reason || /^(think|reason|reasoning)$/i.test(String(body.mode || ''));
       const providers = isReasoning
-        ? [['groq', () => groqChat(trimmed, body.system, true)], ['hf', () => hfChat(trimmed, body.system)], ['mistral', () => mistralChat(trimmed, body.system)]]
-        : [['groq', () => groqChat(trimmed, body.system, false)], ['mistral', () => mistralChat(trimmed, body.system)], ['hf', () => hfChat(trimmed, body.system)]];
+        ? [['groq', () => groqChat(trimmed, [CC_SYSTEM, body.system].filter(Boolean).join('\n\n'), true)], ['hf', () => hfChat(trimmed, [CC_SYSTEM, body.system].filter(Boolean).join('\n\n'))], ['mistral', () => mistralChat(trimmed, [CC_SYSTEM, body.system].filter(Boolean).join('\n\n'))]]
+        : [['groq', () => groqChat(trimmed, [CC_SYSTEM, body.system].filter(Boolean).join('\n\n'), false)], ['mistral', () => mistralChat(trimmed, [CC_SYSTEM, body.system].filter(Boolean).join('\n\n'))], ['hf', () => hfChat(trimmed, [CC_SYSTEM, body.system].filter(Boolean).join('\n\n'))]];
       for (const [name, call] of providers) {
         try {
           result = await call();
