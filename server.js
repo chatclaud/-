@@ -557,7 +557,8 @@ function sanitizeProviderIdentity(text){
   return s;
 }
 
-const CC_SYSTEM = `You are ChatClaud — independent AI by milanmichaimilan / ChatClaud (2026).
+const CC_SYSTEM = `You are ChatClaud — independent AI by milanmichaimilan / ChatClaud.
+Today is October 5, 2026 (use real current date when asked; never invent September 13 2026 unless search says so).
 Never claim to be OpenAI, GPT, Claude, Anthropic, Gemini, Google, Grok, xAI, Llama, Meta, Mistral, Groq, DeepSeek, Copilot, OpenRouter or any third-party API.
 If asked who you are: "I'm ChatClaud."
 Match user language (English or Russian).
@@ -665,28 +666,62 @@ async function webSearch(q, type) {
   const searchType = ['videos', 'images', 'news', 'search'].includes(type) ? type : 'search';
   const parts = [];
   const sources = [];
-  const novaUrl = process.env.NOVA_URL || 'https://nova-brawser.onrender.com';
 
-  // Nova is the primary web-search provider. Serper/Tavily are fallbacks.
-  try {
-    const data = await novaRequest('/api/search', { q: query, type: searchType });
-    const items = (data && (data.organic || data.results || data.videos || data.images || data.news)) || [];
-    if (data && data.answer) parts.push({ title: 'Кратко', text: data.answer, url: '', src: 'nova' });
-    (Array.isArray(items) ? items : []).slice(0, 8).forEach((r) => {
-      parts.push({
-        title: r.title || r.name || '',
-        text: r.snippet || r.description || r.content || r.text || r.date || '',
-        url: r.link || r.url || '',
-        src: 'nova',
-        imageUrl: r.imageUrl || r.thumbnailUrl || r.image || '',
+  // 1) Tavily first (reliable when NOVA_URL is down)
+  const tavily = process.env.TAVILY_KEY || process.env.TAVILY_API_KEY || '';
+  if (tavily && searchType === 'search') {
+    try {
+      const res = await fetch('https://api.tavily.com/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          api_key: tavily,
+          query,
+          search_depth: 'advanced',
+          include_answer: true,
+          max_results: 6,
+        }),
       });
-    });
-  } catch (e) {
-    console.warn('nova search', e.message);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.answer) parts.push({ title: 'Summary', text: data.answer, url: '', src: 'tavily' });
+        (data.results || []).forEach((r) => {
+          parts.push({
+            title: r.title || '',
+            text: r.content || r.snippet || '',
+            url: r.url || '',
+            src: 'tavily',
+          });
+        });
+      }
+    } catch (e) {
+      console.warn('tavily', e.message);
+    }
   }
 
+  // 2) Nova
+  if (parts.length < 2) {
+    try {
+      const data = await novaRequest('/api/search', { q: query, type: searchType });
+      const items = (data && (data.organic || data.results || data.videos || data.images || data.news)) || [];
+      if (data && data.answer) parts.push({ title: 'Summary', text: data.answer, url: '', src: 'nova' });
+      (Array.isArray(items) ? items : []).slice(0, 8).forEach((r) => {
+        parts.push({
+          title: r.title || r.name || '',
+          text: r.snippet || r.description || r.content || r.text || r.date || '',
+          url: r.link || r.url || '',
+          src: 'nova',
+          imageUrl: r.imageUrl || r.thumbnailUrl || r.image || '',
+        });
+      });
+    } catch (e) {
+      console.warn('nova search', e.message);
+    }
+  }
+
+  // 3) Serper
   const serper = process.env.SERPER_KEY || '';
-  if (serper) {
+  if (serper && parts.length < 2) {
     try {
       const endpoints = {
         search: 'https://google.serper.dev/search',
@@ -697,7 +732,7 @@ async function webSearch(q, type) {
       const res = await fetch(endpoints[searchType] || endpoints.search, {
         method: 'POST',
         headers: { 'X-API-KEY': serper, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: query, num: 5, gl: 'ru', hl: 'ru' }),
+        body: JSON.stringify({ q: query, num: 6, gl: 'ru', hl: 'ru' }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -711,7 +746,7 @@ async function webSearch(q, type) {
             title: r.title || '',
             text: r.snippet || r.description || r.date || '',
             url: r.link || r.url || '',
-            src: searchType,
+            src: 'serper',
             imageUrl: r.imageUrl || r.thumbnailUrl || '',
           });
         });
@@ -719,38 +754,24 @@ async function webSearch(q, type) {
     } catch (e) {}
   }
 
-  const tavily = process.env.TAVILY_KEY || '';
-  if (tavily && searchType === 'search' && parts.length < 2) {
-    try {
-      const res = await fetch('https://api.tavily.com/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ api_key: tavily, query, search_depth: 'basic', include_answer: true, max_results: 5 }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.answer) parts.push({ title: 'Кратко', text: data.answer, url: '', src: 'web' });
-        (data.results || []).forEach((r) => {
-          parts.push({ title: r.title || '', text: r.content || r.snippet || '', url: r.url || '', src: 'web' });
-        });
-      }
-    } catch (e) {}
-  }
-
   parts.forEach((p) => {
-    if (p.url && sources.length < 8) sources.push({ title: p.title || p.url, url: p.url });
+    if (p.url && sources.length < 10) sources.push({ title: p.title || p.url, url: p.url, src: p.src || 'web' });
   });
 
-  let text = parts.map((p, i) => {
-    let line = i + 1 + '. ' + (p.title || '');
-    if (p.url) line += '\n' + p.url;
-    if (p.text) line += '\n' + String(p.text).slice(0, 180);
-    return line;
-  }).join('\n\n').slice(0, 4000);
+  let text = parts
+    .map((p, i) => {
+      let line = i + 1 + '. ' + (p.title || '');
+      if (p.url) line += '\n' + p.url;
+      if (p.text) line += '\n' + String(p.text).slice(0, 220);
+      return line;
+    })
+    .join('\n\n')
+    .slice(0, 5000);
 
-  if (!text) text = 'Ничего не найдено по запросу.';
+  if (!text) text = 'Nothing found for this query.';
   return { text, sources, count: parts.length, type: searchType, query };
 }
+
 
 function contentType(filePath) {
   const ext = path.extname(filePath).toLowerCase();
@@ -970,7 +991,9 @@ const server = http.createServer(async (req, res) => {
           || /^\/seasch\b/i.test(q3)
           || /^\/nova\b/i.test(q3)
           || /^(найди|поищи|загугли|погугли)\b/i.test(q3)
-          || /^(search|find|look\s*up|google)\b/i.test(q3);
+          || /^(search|find|look\s*up|google)\b/i.test(q3)
+          || /(поищи|найди).{0,12}(ещ[её]|again|once more)/i.test(q3)
+          || /(search|find).{0,12}(again|more)/i.test(q3);
         if (/^\/(search|seasch|nova)\b/i.test(q3)) q3 = q3.replace(/^\/(search|seasch|nova)\s*/i, '').trim();
         const looksLikeQuery = forceSearch || (q3.length >= 4 && !greetingRe.test(q3));
         // video queries still go through search (Nova can resolve TikTok etc.)

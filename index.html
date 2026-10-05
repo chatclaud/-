@@ -6622,6 +6622,63 @@ html.plus-active .cc-think {
   color: #333 !important;
 }
 
+
+/* ===== ChatGPT-like glass UI (ChatClaud) ===== */
+html, body {
+  background: #000 !important;
+  overscroll-behavior: none;
+}
+body {
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+}
+.messages {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(80,80,100,0.25), transparent 55%),
+    #000 !important;
+}
+.message, .bot-msg, .user-msg, .agent-message {
+  border-radius: 1.35rem !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04) inset,
+    0 8px 32px rgba(0,0,0,0.55) !important;
+  backdrop-filter: blur(16px) saturate(1.15) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.15) !important;
+}
+.user-msg, .message.user {
+  background: rgba(40,40,48,0.95) !important;
+  color: #f5f5f7 !important;
+  margin-left: auto;
+}
+.bot-msg, .message.bot, .agent-message {
+  background: rgba(28,28,32,0.88) !important;
+  color: #ececf1 !important;
+}
+.input-row {
+  background: rgba(20,20,24,0.92) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-radius: 1.75rem !important;
+  box-shadow: 0 0 24px rgba(255,255,255,0.06), 0 12px 40px rgba(0,0,0,0.5) !important;
+  backdrop-filter: blur(24px) !important;
+  margin: 0.5rem 0.75rem calc(0.5rem + env(safe-area-inset-bottom, 0px)) !important;
+}
+.input-row textarea, #flashInput {
+  background: transparent !important;
+  border: none !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+.top-bar, .chat-header {
+  background: rgba(0,0,0,0.55) !important;
+  backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+}
+.cc-mini-orb {
+  background: radial-gradient(circle at 35% 30%, #fff, #c8c8d0 45%, #888 100%) !important;
+  box-shadow: 0 0 28px rgba(255,255,255,0.35), 0 6px 18px rgba(0,0,0,0.4) !important;
+}
+
 </style>
     </div>
     <div id="bootError" role="alert">
@@ -7965,6 +8022,7 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
             // Explicit commands — ALWAYS search (every time, not only first)
             if (/^\/(search|find|seasch|nova)\b/i.test(t)) return true;
             if (/^(найди|поищи|загугли|погугли|найти)\b/i.test(t)) return true;
+            if (/(поищи|найди).{0,15}(ещ[её]|again)/i.test(t)) return true;
             if (/^(search|find|look\s*up|google)\b/i.test(t)) return true;
             if (/^(привет|hello|hi|hey|здарова|хай|бро|ку|ок|ладно|спасибо|thanks|пока|bye|да|нет|yes|no|лол|ахах|хм+|хорошо|норм|понял|ok)\s*[!.]?$/i.test(t)) return false;
             if (/(не ищи|без поиска|просто поговор|просто ответь|no search|don't search)/i.test(t)) return false;
