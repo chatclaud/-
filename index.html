@@ -6530,84 +6530,6 @@ html.plus-active .cc-think {
   background: transparent !important; border: none !important; box-shadow: none !important;
 }
 /* === end v4 === */
-
-/* slash command palette */
-.cc-slash-menu {
-  position: absolute; left: 0; right: 0; bottom: calc(100% + 8px);
-  background: rgba(22,22,26,0.96); border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 14px; padding: 0.35rem; max-height: 240px; overflow-y: auto;
-  display: none; z-index: 80; backdrop-filter: blur(16px);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
-}
-.cc-slash-menu.open { display: block; }
-.cc-slash-item {
-  display: flex; gap: 0.65rem; align-items: center; padding: 0.55rem 0.7rem;
-  border-radius: 10px; cursor: pointer; color: #ccc; font-size: 0.85rem;
-}
-.cc-slash-item:hover, .cc-slash-item.active { background: rgba(255,255,255,0.08); color: #fff; }
-.cc-slash-item code { color: #ddd; font-size: 0.8rem; min-width: 4.5rem; font-weight: 600; }
-
-
-.bot-msg, .agent-message, .msg.bot, .message.bot {
-  box-shadow: 0 6px 24px rgba(0,0,0,0.28) !important;
-}
-.user-msg, .msg.user, .message.user {
-  box-shadow: 0 6px 20px rgba(0,0,0,0.32) !important;
-}
-
-
-/* Sources book — clean integrated style */
-.cc-sources {
-  margin-top: 0.55rem;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.4rem;
-}
-.cc-sources-toggle {
-  display: inline-flex !important;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.35rem 0.7rem !important;
-  border-radius: 999px !important;
-  background: rgba(255,255,255,0.06) !important;
-  border: 1px solid rgba(255,255,255,0.12) !important;
-  color: rgba(255,255,255,0.75) !important;
-  font-size: 0.78rem !important;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-.cc-sources-toggle:hover {
-  background: rgba(255,255,255,0.1) !important;
-  color: #fff !important;
-  border-color: rgba(255,255,255,0.22) !important;
-}
-.cc-source-list {
-  display: none;
-  flex-direction: column;
-  gap: 0.35rem;
-  width: 100%;
-  max-width: 420px;
-  padding: 0.4rem 0;
-}
-.cc-sources.is-open .cc-source-list { display: flex !important; }
-.cc-source {
-  display: flex;
-  gap: 0.55rem;
-  align-items: flex-start;
-  padding: 0.55rem 0.7rem;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  text-decoration: none !important;
-  color: #ddd !important;
-  transition: 0.15s;
-}
-.cc-source:hover {
-  background: rgba(255,255,255,0.08);
-  border-color: rgba(255,255,255,0.16);
-}
-
 </style>
     </div>
     <div id="bootError" role="alert">
@@ -8634,215 +8556,11 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
                 let src = codeText || '';
                 const l = (lang || '').toLowerCase();
                 if (l === 'css') {
-                    src = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>' + codeText + '</style></head><body>
-<script>
-(function(){
-  var CMDS = [
-    { cmd: '/img', desc: 'Generate image (Pollination)' },
-    { cmd: '/veo', desc: 'Short video frames' },
-    { cmd: '/search', desc: 'Force web search (Nova)' },
-    { cmd: '/nova', desc: 'Search via Nova browser' },
-    { cmd: '/plus', desc: 'Plus subscription' },
-    { cmd: '/settings', desc: 'Open settings' },
-    { cmd: '/help', desc: 'Show commands' }
-  ];
-  function ensureMenu() {
-    var m = document.getElementById('ccSlashMenu');
-    if (m) return m;
-    var row = document.querySelector('.input-row') || document.querySelector('#flashInput')?.parentElement;
-    if (!row) return null;
-    m = document.createElement('div');
-    m.id = 'ccSlashMenu';
-    m.className = 'cc-slash-menu';
-    row.style.position = row.style.position || 'relative';
-    row.appendChild(m);
-    return m;
-  }
-  function render(filter) {
-    var m = ensureMenu();
-    if (!m) return;
-    var f = (filter || '').toLowerCase();
-    var list = CMDS.filter(function(c){ return !f || c.cmd.indexOf(f) === 0 || c.desc.toLowerCase().indexOf(f) >= 0; });
-    if (!list.length) { m.classList.remove('open'); return; }
-    m.innerHTML = list.map(function(c){
-      return '<div class="cc-slash-item" data-cmd="'+c.cmd+'"><code>'+c.cmd+'</code><span>'+c.desc+'</span></div>';
-    }).join('');
-    m.classList.add('open');
-    m.querySelectorAll('.cc-slash-item').forEach(function(el){
-      el.onclick = function(){
-        var inp = document.getElementById('flashInput') || document.querySelector('.input-row textarea');
-        if (inp) {
-          inp.value = el.getAttribute('data-cmd') + ' ';
-          inp.focus();
-          try { inp.dispatchEvent(new Event('input')); } catch(e){}
-        }
-        m.classList.remove('open');
-      };
-    });
-  }
-  function bind() {
-    var inp = document.getElementById('flashInput') || document.querySelector('.input-row textarea');
-    if (!inp || inp.__ccSlash) return;
-    inp.__ccSlash = true;
-    inp.addEventListener('input', function(){
-      var v = inp.value || '';
-      if (v.charAt(0) === '/') render(v.split(/\s/)[0]);
-      else {
-        var m = document.getElementById('ccSlashMenu');
-        if (m) m.classList.remove('open');
-      }
-    });
-    document.addEventListener('click', function(e){
-      var m = document.getElementById('ccSlashMenu');
-      if (m && !m.contains(e.target) && e.target !== inp) m.classList.remove('open');
-    });
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
-  else setTimeout(bind, 400);
-})();
-</script>
-
-</body></html>';
+                    src = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>' + codeText + '</style></head><body></body></html>';
                 } else if (l === 'javascript' || l === 'js') {
-                    src = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="font-family:system-ui;padding:1rem;background:#111;color:#eee"><h3>JS</h3><pre id="out"></pre><script>try{\n' + codeText + '\n}catch(e){document.getElementById("out").textContent=String(e);}\n<\/script>
-<script>
-(function(){
-  var CMDS = [
-    { cmd: '/img', desc: 'Generate image (Pollination)' },
-    { cmd: '/veo', desc: 'Short video frames' },
-    { cmd: '/search', desc: 'Force web search (Nova)' },
-    { cmd: '/nova', desc: 'Search via Nova browser' },
-    { cmd: '/plus', desc: 'Plus subscription' },
-    { cmd: '/settings', desc: 'Open settings' },
-    { cmd: '/help', desc: 'Show commands' }
-  ];
-  function ensureMenu() {
-    var m = document.getElementById('ccSlashMenu');
-    if (m) return m;
-    var row = document.querySelector('.input-row') || document.querySelector('#flashInput')?.parentElement;
-    if (!row) return null;
-    m = document.createElement('div');
-    m.id = 'ccSlashMenu';
-    m.className = 'cc-slash-menu';
-    row.style.position = row.style.position || 'relative';
-    row.appendChild(m);
-    return m;
-  }
-  function render(filter) {
-    var m = ensureMenu();
-    if (!m) return;
-    var f = (filter || '').toLowerCase();
-    var list = CMDS.filter(function(c){ return !f || c.cmd.indexOf(f) === 0 || c.desc.toLowerCase().indexOf(f) >= 0; });
-    if (!list.length) { m.classList.remove('open'); return; }
-    m.innerHTML = list.map(function(c){
-      return '<div class="cc-slash-item" data-cmd="'+c.cmd+'"><code>'+c.cmd+'</code><span>'+c.desc+'</span></div>';
-    }).join('');
-    m.classList.add('open');
-    m.querySelectorAll('.cc-slash-item').forEach(function(el){
-      el.onclick = function(){
-        var inp = document.getElementById('flashInput') || document.querySelector('.input-row textarea');
-        if (inp) {
-          inp.value = el.getAttribute('data-cmd') + ' ';
-          inp.focus();
-          try { inp.dispatchEvent(new Event('input')); } catch(e){}
-        }
-        m.classList.remove('open');
-      };
-    });
-  }
-  function bind() {
-    var inp = document.getElementById('flashInput') || document.querySelector('.input-row textarea');
-    if (!inp || inp.__ccSlash) return;
-    inp.__ccSlash = true;
-    inp.addEventListener('input', function(){
-      var v = inp.value || '';
-      if (v.charAt(0) === '/') render(v.split(/\s/)[0]);
-      else {
-        var m = document.getElementById('ccSlashMenu');
-        if (m) m.classList.remove('open');
-      }
-    });
-    document.addEventListener('click', function(e){
-      var m = document.getElementById('ccSlashMenu');
-      if (m && !m.contains(e.target) && e.target !== inp) m.classList.remove('open');
-    });
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
-  else setTimeout(bind, 400);
-})();
-</script>
-
-</body></html>';
+                    src = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="font-family:system-ui;padding:1rem;background:#111;color:#eee"><h3>JS</h3><pre id="out"></pre><script>try{\n' + codeText + '\n}catch(e){document.getElementById("out").textContent=String(e);}\n<\/script></body></html>';
                 } else if (!/<!DOCTYPE/i.test(src) && !/<html[\s>]/i.test(src)) {
-                    src = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:-apple-system,system-ui,sans-serif;margin:0;padding:1rem;background:#fff;color:#111}</style></head><body>' + codeText + '
-<script>
-(function(){
-  var CMDS = [
-    { cmd: '/img', desc: 'Generate image (Pollination)' },
-    { cmd: '/veo', desc: 'Short video frames' },
-    { cmd: '/search', desc: 'Force web search (Nova)' },
-    { cmd: '/nova', desc: 'Search via Nova browser' },
-    { cmd: '/plus', desc: 'Plus subscription' },
-    { cmd: '/settings', desc: 'Open settings' },
-    { cmd: '/help', desc: 'Show commands' }
-  ];
-  function ensureMenu() {
-    var m = document.getElementById('ccSlashMenu');
-    if (m) return m;
-    var row = document.querySelector('.input-row') || document.querySelector('#flashInput')?.parentElement;
-    if (!row) return null;
-    m = document.createElement('div');
-    m.id = 'ccSlashMenu';
-    m.className = 'cc-slash-menu';
-    row.style.position = row.style.position || 'relative';
-    row.appendChild(m);
-    return m;
-  }
-  function render(filter) {
-    var m = ensureMenu();
-    if (!m) return;
-    var f = (filter || '').toLowerCase();
-    var list = CMDS.filter(function(c){ return !f || c.cmd.indexOf(f) === 0 || c.desc.toLowerCase().indexOf(f) >= 0; });
-    if (!list.length) { m.classList.remove('open'); return; }
-    m.innerHTML = list.map(function(c){
-      return '<div class="cc-slash-item" data-cmd="'+c.cmd+'"><code>'+c.cmd+'</code><span>'+c.desc+'</span></div>';
-    }).join('');
-    m.classList.add('open');
-    m.querySelectorAll('.cc-slash-item').forEach(function(el){
-      el.onclick = function(){
-        var inp = document.getElementById('flashInput') || document.querySelector('.input-row textarea');
-        if (inp) {
-          inp.value = el.getAttribute('data-cmd') + ' ';
-          inp.focus();
-          try { inp.dispatchEvent(new Event('input')); } catch(e){}
-        }
-        m.classList.remove('open');
-      };
-    });
-  }
-  function bind() {
-    var inp = document.getElementById('flashInput') || document.querySelector('.input-row textarea');
-    if (!inp || inp.__ccSlash) return;
-    inp.__ccSlash = true;
-    inp.addEventListener('input', function(){
-      var v = inp.value || '';
-      if (v.charAt(0) === '/') render(v.split(/\s/)[0]);
-      else {
-        var m = document.getElementById('ccSlashMenu');
-        if (m) m.classList.remove('open');
-      }
-    });
-    document.addEventListener('click', function(e){
-      var m = document.getElementById('ccSlashMenu');
-      if (m && !m.contains(e.target) && e.target !== inp) m.classList.remove('open');
-    });
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
-  else setTimeout(bind, 400);
-})();
-</script>
-
-</body></html>';
+                    src = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:-apple-system,system-ui,sans-serif;margin:0;padding:1rem;background:#fff;color:#111}</style></head><body>' + codeText + '</body></html>';
                 }
                 window._previewSrc = src;
                 if (window._previewBlobUrl) {
@@ -9476,7 +9194,6 @@ function buildImageUrl(userPrompt, opts) {
             const fullPrompt = (core + quality + antiGirl).slice(0, 900);
             const seed = (Date.now() % 1e9) ^ Math.floor(Math.random() * 1e9);
             const base = 'https://image.pollinations.ai/prompt/';
-            // Portrait 4K-class (Pollinations supports up to ~2048)
             const w = 1280, h = 1920;
             const enc = encodeURIComponent(fullPrompt);
             const shortCore = encodeURIComponent((person || scene || raw).slice(0, 120) + (person ? ', photorealistic portrait 8k' : ' scene, no random faces, photorealistic 8k'));
@@ -10817,75 +10534,7 @@ function buildImageUrl(userPrompt, opts) {
                     domainEl.textContent = url;
                     let src = codeToPublish;
                     if (!/<html/i.test(src)) {
-                        src = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + slug + '</title></head><body>' + src + '
-<script>
-(function(){
-  var CMDS = [
-    { cmd: '/img', desc: 'Generate image (Pollination)' },
-    { cmd: '/veo', desc: 'Short video frames' },
-    { cmd: '/search', desc: 'Force web search (Nova)' },
-    { cmd: '/nova', desc: 'Search via Nova browser' },
-    { cmd: '/plus', desc: 'Plus subscription' },
-    { cmd: '/settings', desc: 'Open settings' },
-    { cmd: '/help', desc: 'Show commands' }
-  ];
-  function ensureMenu() {
-    var m = document.getElementById('ccSlashMenu');
-    if (m) return m;
-    var row = document.querySelector('.input-row') || document.querySelector('#flashInput')?.parentElement;
-    if (!row) return null;
-    m = document.createElement('div');
-    m.id = 'ccSlashMenu';
-    m.className = 'cc-slash-menu';
-    row.style.position = row.style.position || 'relative';
-    row.appendChild(m);
-    return m;
-  }
-  function render(filter) {
-    var m = ensureMenu();
-    if (!m) return;
-    var f = (filter || '').toLowerCase();
-    var list = CMDS.filter(function(c){ return !f || c.cmd.indexOf(f) === 0 || c.desc.toLowerCase().indexOf(f) >= 0; });
-    if (!list.length) { m.classList.remove('open'); return; }
-    m.innerHTML = list.map(function(c){
-      return '<div class="cc-slash-item" data-cmd="'+c.cmd+'"><code>'+c.cmd+'</code><span>'+c.desc+'</span></div>';
-    }).join('');
-    m.classList.add('open');
-    m.querySelectorAll('.cc-slash-item').forEach(function(el){
-      el.onclick = function(){
-        var inp = document.getElementById('flashInput') || document.querySelector('.input-row textarea');
-        if (inp) {
-          inp.value = el.getAttribute('data-cmd') + ' ';
-          inp.focus();
-          try { inp.dispatchEvent(new Event('input')); } catch(e){}
-        }
-        m.classList.remove('open');
-      };
-    });
-  }
-  function bind() {
-    var inp = document.getElementById('flashInput') || document.querySelector('.input-row textarea');
-    if (!inp || inp.__ccSlash) return;
-    inp.__ccSlash = true;
-    inp.addEventListener('input', function(){
-      var v = inp.value || '';
-      if (v.charAt(0) === '/') render(v.split(/\s/)[0]);
-      else {
-        var m = document.getElementById('ccSlashMenu');
-        if (m) m.classList.remove('open');
-      }
-    });
-    document.addEventListener('click', function(e){
-      var m = document.getElementById('ccSlashMenu');
-      if (m && !m.contains(e.target) && e.target !== inp) m.classList.remove('open');
-    });
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
-  else setTimeout(bind, 400);
-})();
-</script>
-
-</body></html>';
+                        src = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + slug + '</title></head><body>' + src + '</body></html>';
                     }
                     let liveUrl = url;
                     let autoOk = false;
@@ -13176,70 +12825,71 @@ function buildImageUrl(userPrompt, opts) {
 </script>
 
 
-<script>
+<style id="cc-slash-css">
+.cc-slash-menu{position:absolute;left:0;right:0;bottom:calc(100% + 8px);background:rgba(22,22,26,.96);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:.35rem;max-height:240px;overflow-y:auto;display:none;z-index:80;backdrop-filter:blur(16px);box-shadow:0 12px 40px rgba(0,0,0,.45)}
+.cc-slash-menu.open{display:block}
+.cc-slash-item{display:flex;gap:.65rem;align-items:center;padding:.55rem .7rem;border-radius:10px;cursor:pointer;color:#ccc;font-size:.85rem}
+.cc-slash-item:hover,.cc-slash-item.active{background:rgba(255,255,255,.08);color:#fff}
+.cc-slash-item code{color:#ddd;font-size:.8rem;min-width:4.5rem;font-weight:600}
+</style>
+
+<script id="cc-slash-js">
 (function(){
-  var CMDS = [
-    { cmd: '/img', desc: 'Generate image (Pollination)' },
-    { cmd: '/veo', desc: 'Short video frames' },
-    { cmd: '/search', desc: 'Force web search (Nova)' },
-    { cmd: '/nova', desc: 'Search via Nova browser' },
-    { cmd: '/plus', desc: 'Plus subscription' },
-    { cmd: '/settings', desc: 'Open settings' },
-    { cmd: '/help', desc: 'Show commands' }
+  var CMDS=[
+    {cmd:'/img',desc:'Generate image'},
+    {cmd:'/veo',desc:'Short video frames'},
+    {cmd:'/search',desc:'Force web search'},
+    {cmd:'/nova',desc:'Search via Nova'},
+    {cmd:'/plus',desc:'Plus subscription'},
+    {cmd:'/settings',desc:'Open settings'},
+    {cmd:'/help',desc:'Show commands'}
   ];
-  function ensureMenu() {
-    var m = document.getElementById('ccSlashMenu');
-    if (m) return m;
-    var row = document.querySelector('.input-row') || document.querySelector('#flashInput')?.parentElement;
-    if (!row) return null;
-    m = document.createElement('div');
-    m.id = 'ccSlashMenu';
-    m.className = 'cc-slash-menu';
-    row.style.position = row.style.position || 'relative';
+  function ensureMenu(){
+    var m=document.getElementById('ccSlashMenu');
+    if(m)return m;
+    var inp=document.getElementById('flashInput')||document.querySelector('.input-row textarea');
+    if(!inp)return null;
+    var row=inp.closest('.input-row')||inp.parentElement;
+    if(!row)return null;
+    m=document.createElement('div');
+    m.id='ccSlashMenu';
+    m.className='cc-slash-menu';
+    row.style.position=row.style.position||'relative';
     row.appendChild(m);
     return m;
   }
-  function render(filter) {
-    var m = ensureMenu();
-    if (!m) return;
-    var f = (filter || '').toLowerCase();
-    var list = CMDS.filter(function(c){ return !f || c.cmd.indexOf(f) === 0 || c.desc.toLowerCase().indexOf(f) >= 0; });
-    if (!list.length) { m.classList.remove('open'); return; }
-    m.innerHTML = list.map(function(c){
-      return '<div class="cc-slash-item" data-cmd="'+c.cmd+'"><code>'+c.cmd+'</code><span>'+c.desc+'</span></div>';
-    }).join('');
+  function render(filter){
+    var m=ensureMenu();
+    if(!m)return;
+    var f=(filter||'').toLowerCase();
+    var list=CMDS.filter(function(c){return !f||c.cmd.indexOf(f)===0||c.desc.toLowerCase().indexOf(f)>=0;});
+    if(!list.length){m.classList.remove('open');return;}
+    m.innerHTML=list.map(function(c){return '<div class="cc-slash-item" data-cmd="'+c.cmd+'"><code>'+c.cmd+'</code><span>'+c.desc+'</span></div>';}).join('');
     m.classList.add('open');
     m.querySelectorAll('.cc-slash-item').forEach(function(el){
-      el.onclick = function(){
-        var inp = document.getElementById('flashInput') || document.querySelector('.input-row textarea');
-        if (inp) {
-          inp.value = el.getAttribute('data-cmd') + ' ';
-          inp.focus();
-          try { inp.dispatchEvent(new Event('input')); } catch(e){}
-        }
+      el.onclick=function(){
+        var inp=document.getElementById('flashInput')||document.querySelector('.input-row textarea');
+        if(inp){inp.value=el.getAttribute('data-cmd')+' ';inp.focus();try{inp.dispatchEvent(new Event('input'));}catch(e){}}
         m.classList.remove('open');
       };
     });
   }
-  function bind() {
-    var inp = document.getElementById('flashInput') || document.querySelector('.input-row textarea');
-    if (!inp || inp.__ccSlash) return;
-    inp.__ccSlash = true;
-    inp.addEventListener('input', function(){
-      var v = inp.value || '';
-      if (v.charAt(0) === '/') render(v.split(/\s/)[0]);
-      else {
-        var m = document.getElementById('ccSlashMenu');
-        if (m) m.classList.remove('open');
-      }
+  function bind(){
+    var inp=document.getElementById('flashInput')||document.querySelector('.input-row textarea');
+    if(!inp||inp.__ccSlash)return;
+    inp.__ccSlash=true;
+    inp.addEventListener('input',function(){
+      var v=inp.value||'';
+      if(v.charAt(0)==='/')render(v.split(/\s/)[0]);
+      else{var m=document.getElementById('ccSlashMenu');if(m)m.classList.remove('open');}
     });
-    document.addEventListener('click', function(e){
-      var m = document.getElementById('ccSlashMenu');
-      if (m && !m.contains(e.target) && e.target !== inp) m.classList.remove('open');
+    document.addEventListener('click',function(e){
+      var m=document.getElementById('ccSlashMenu');
+      if(m&&!m.contains(e.target)&&e.target!==inp)m.classList.remove('open');
     });
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
-  else setTimeout(bind, 400);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);
+  else setTimeout(bind,500);
 })();
 </script>
 

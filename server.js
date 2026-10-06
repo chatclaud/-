@@ -530,13 +530,7 @@ async function groqChat(messages, system, reasoning = false) {
   const keys = groqKeys();
   if (!keys.length) throw new Error('no groq');
   const primary = String(process.env.GROQ_MODEL || 'openai/gpt-oss-120b').trim() || 'openai/gpt-oss-120b';
-  const models = [
-    primary,
-    'openai/gpt-oss-120b',
-    'openai/gpt-oss-20b',
-    'llama-3.3-70b-versatile',
-    'llama-3.1-8b-instant'
-  ].filter((m, i, a) => m && a.indexOf(m) === i);
+  const models = [primary, 'openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'llama-3.3-70b-versatile', 'llama-3.1-8b-instant'].filter(function(m,i,a){ return m && a.indexOf(m)===i; });
   const sys = system || 'Ты ChatClaud. Отвечай на языке пользователя. Не раскрывай название модели, провайдера, API, ключи или внутреннюю инфраструктуру. Если спрашивают кто ты — отвечай: «Я ChatClaud». Будь очень точным, проверяй логику и не выдумывай факты.';
   const msgs = normalizeChatMessages((messages || []).slice(-20), sys).map(m => ({ role:m.role, content:String(m.content||'').slice(0,9000) }));
   let lastErr='empty';

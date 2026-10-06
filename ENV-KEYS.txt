@@ -1,5 +1,4 @@
-# ChatClaud — Render Environment Variables
-# Secrets ONLY here. Never put keys in index.html.
+# ChatClaud — Render Environment (secrets only)
 
 GROQ_KEY=
 GROQ_MODEL=openai/gpt-oss-120b
@@ -7,7 +6,6 @@ GROQ_MODEL=openai/gpt-oss-120b
 MISTRAL_API_KEY=
 MISTRAL_MODEL=mistral-medium-latest
 
-# Vision + voice
 HF_KEY=
 HF_KEY2=
 HF_TOKEN=
@@ -17,6 +15,4 @@ NOVA_AIP_TOKEN=
 
 SERPER_KEY=
 TAVILY_KEY=
-
-# Optional admin unlock phrase (server-side only)
 ADMIN_SECRET=
