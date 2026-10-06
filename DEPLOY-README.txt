@@ -1,18 +1,17 @@
-ChatClaud — GitHub Pages + Render
+ChatClaud package — Oct 2026
 
-1) GitHub Pages = this ZIP (frontend only)
-2) Render Web Service = server.js + package.json
-   Start: node server.js
-   ENV: see ENV-KEYS.txt
+DEPLOY
+1) GitHub Pages: upload index.html, manifest.json, sw.js, icons
+2) Render: server.js + package.json, set Environment from ENV-KEYS.txt
 
-Frontend API base: https://chatclaud.onrender.com
-(override: localStorage.setItem('cc_api_base','https://xxx.onrender.com'))
+SEARCH (priority)
+1. Nova (NOVA_URL + NOVA_AIP_TOKEN or NOVA_API_TOKEN)
+2. Tavily (fallback)
+3. Serper (optional)
 
-If error "не JSON":
-- Open https://chatclaud.onrender.com/api/health in browser
-- Must return JSON { ok: true, ... }
-- If HTML or 502 → Render sleeping/crashed → redeploy server.js
+IMAGINE
+- Photos: HuggingFace FLUX (HF_KEY / HF_KEY2), optional Runway
+- Videos: Runway if RUNWAYML_API_SECRET set; prompt enhanced via HF
+- Free limits: 5 photos / 2 videos per day per IP
 
-UI labels: normal Russian (no fancy small-caps)
-Images: Pollination 1280x1920
-Commands: type / in input
+NEVER put API keys in index.html or GitHub.

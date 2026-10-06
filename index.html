@@ -1,9 +1,16 @@
 <!DOCTYPE html>
-<html lang="ru" data-theme="dark">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>ChatClaud</title>
+    <link rel="icon" href="IMG_5637.jpeg" type="image/jpeg">
+    <link rel="icon" href="IMG_5637.jpeg" type="image/png" sizes="192x192">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="apple-touch-icon" href="IMG_5637.jpeg">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-title" content="ChatClaud">
+
     <meta name="description" content="ChatClaud — быстрый ИИ-помощник. Пишет код, создаёт сайты и игры, отвечает на любые вопросы. ClaudForge Pro для сложных проектов.">
     <meta name="keywords" content="ChatClaud, ИИ, AI чат, код, ClaudForge, генерация сайтов, нейросеть">
     <meta name="author" content="milanmichaimilan">
@@ -12,15 +19,12 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://chatclaud.netlify.app/">
     <meta property="og:title" content="ChatClaud — ИИ-чат и ClaudForge Pro">
-    <meta property="og:description" content="Быстрый ИИ-помощник: код, сайты, игры, ответы на любые вопросы.">
+    <meta property="og:description" content="Fast ИИ-помощник: код, сайты, игры, ответы на любые вопросы.">
     <meta property="og:image" content="https://chatclaud.netlify.app/og.png">
     <meta property="og:locale" content="ru_RU">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="ChatClaud — ИИ-чат и ClaudForge Pro">
-    <meta name="twitter:description" content="Быстрый ИИ-помощник: код, сайты, игры.">
-    <link rel="icon" href="icon-512.png" type="image/png">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    <meta name="apple-mobile-web-app-title" content="ChatClaud">
+    <meta name="twitter:description" content="Fast ИИ-помощник: код, сайты, игры.">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -3355,7 +3359,7 @@ body.is-generating .send-icon::after {
   width: 84px; height: 84px;
   border-radius: 20px;
   margin: 0 auto 1.1rem;
-  background: #000 url('icon-192.png') center/cover no-repeat;
+  background: #000 url('IMG_5637.jpeg') center/cover no-repeat;
   box-shadow: 0 12px 36px rgba(0,0,0,0.55);
   border: 1px solid rgba(255,255,255,0.1);
 }
@@ -3609,10 +3613,10 @@ body {
 
 /* gen card large ChatGPT-style */
 .gen-card, .generation-card.gen-card {
-  width: min(100%, 340px) !important;
+  width: min(100%, 380px) !important;
   max-width: 100% !important;
-  aspect-ratio: 3 / 4 !important;
-  min-height: 320px !important;
+  aspect-ratio: 1 !important;
+  min-height: 280px !important;
   border-radius: 1.35rem !important;
   margin: 0.5rem 0 0.75rem !important;
   background: #1a1a1c !important;
@@ -3722,6 +3726,26 @@ setTimeout(function() {
 }, 15000);
 </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<script>
+/* MUST load first — GitHub Pages → backend URL */
+(function () {
+  var def = 'https://chatclaud.onrender.com';
+  try {
+    var s = localStorage.getItem('CC_API_BASE');
+    if (s && String(s).trim()) def = String(s).trim();
+  } catch (e) {}
+  window.CC_API_BASE = String(def).replace(/\/+$/, '');
+  window.ccApiUrl = function (path) {
+    path = String(path || '');
+    if (path.charAt(0) !== '/') path = '/' + path;
+    var base = window.CC_API_BASE || '';
+    if (!base) return path;
+    return base + path;
+  };
+})();
+</script>
+
 </head>
 <body>
 <div id="appSkeleton" class="screen" style="z-index:999; background:#000;">
@@ -6530,6 +6554,255 @@ html.plus-active .cc-think {
   background: transparent !important; border: none !important; box-shadow: none !important;
 }
 /* === end v4 === */
+
+/* ===== ChatClaud polish 2026 ===== */
+.message {
+  box-shadow: 0 8px 28px rgba(0,0,0,0.45), 0 1px 0 rgba(255,255,255,0.04) inset !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+}
+.user-msg, .message.user {
+  box-shadow: 0 10px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08) !important;
+}
+.bot-msg, .message.bot, .agent-message {
+  box-shadow: 0 6px 24px rgba(0,0,0,0.4) !important;
+  background: rgba(22,22,26,0.92) !important;
+}
+.cc-mini-orb {
+  box-shadow: 0 0 24px rgba(255,255,255,0.25), 0 8px 20px rgba(0,0,0,0.4) !important;
+  animation: ccOrbFloat 3.2s ease-in-out infinite !important;
+  transition: transform 0.35s ease, box-shadow 0.35s ease !important;
+}
+@keyframes ccOrbFloat {
+  0%,100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1.03); }
+}
+.cc-sources-toggle {
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
+  background: rgba(255,255,255,0.06) !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25) !important;
+  padding: 0.35rem 0.7rem !important;
+  transition: background 0.25s, border-color 0.25s, transform 0.2s !important;
+}
+.cc-sources-toggle:hover {
+  background: rgba(255,255,255,0.12) !important;
+  transform: translateY(-1px);
+}
+.input-row {
+  box-shadow: 0 -8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.06) inset !important;
+  backdrop-filter: blur(20px) saturate(1.2) !important;
+  border-radius: 1.25rem !important;
+}
+[data-theme="light"] {
+  --bg: #f2f2f7 !important;
+  --surface: rgba(255,255,255,0.88) !important;
+  --text: #1c1c1e !important;
+  --border: rgba(0,0,0,0.08) !important;
+}
+[data-theme="light"] .message {
+  box-shadow: 0 4px 18px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.9) inset !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+}
+[data-theme="light"] .bot-msg, [data-theme="light"] .message.bot {
+  background: #fff !important;
+  color: #1c1c1e !important;
+}
+[data-theme="light"] .user-msg, [data-theme="light"] .message.user {
+  background: #e8e0ff !important;
+  color: #1a1230 !important;
+}
+[data-theme="light"] .input-row {
+  background: rgba(255,255,255,0.95) !important;
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.06) !important;
+}
+[data-theme="light"] .cc-sources-toggle {
+  background: rgba(0,0,0,0.04) !important;
+  border-color: rgba(0,0,0,0.1) !important;
+  color: #333 !important;
+}
+
+
+/* ===== ChatGPT-like glass UI (ChatClaud) ===== */
+html, body {
+  background: #000 !important;
+  overscroll-behavior: none;
+}
+body {
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+}
+.messages {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(80,80,100,0.25), transparent 55%),
+    #000 !important;
+}
+.message, .bot-msg, .user-msg, .agent-message {
+  border-radius: 1.35rem !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04) inset,
+    0 8px 32px rgba(0,0,0,0.55) !important;
+  backdrop-filter: blur(16px) saturate(1.15) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.15) !important;
+}
+.user-msg, .message.user {
+  background: rgba(40,40,48,0.95) !important;
+  color: #f5f5f7 !important;
+  margin-left: auto;
+}
+.bot-msg, .message.bot, .agent-message {
+  background: rgba(28,28,32,0.88) !important;
+  color: #ececf1 !important;
+}
+.input-row {
+  background: rgba(20,20,24,0.92) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-radius: 1.75rem !important;
+  box-shadow: 0 0 24px rgba(255,255,255,0.06), 0 12px 40px rgba(0,0,0,0.5) !important;
+  backdrop-filter: blur(24px) !important;
+  margin: 0.5rem 0.75rem calc(0.5rem + env(safe-area-inset-bottom, 0px)) !important;
+}
+.input-row textarea, #flashInput {
+  background: transparent !important;
+  border: none !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+.top-bar, .chat-header {
+  background: rgba(0,0,0,0.55) !important;
+  backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+}
+.cc-mini-orb {
+  background: radial-gradient(circle at 35% 30%, #fff, #c8c8d0 45%, #888 100%) !important;
+  box-shadow: 0 0 28px rgba(255,255,255,0.35), 0 6px 18px rgba(0,0,0,0.4) !important;
+}
+
+
+/* ===== Imagine (Runway) ===== */
+.cc-imagine-btn {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  padding: 0.35rem 0.75rem; border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+  color: #fff; font-size: 0.78rem; font-weight: 600; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+  backdrop-filter: blur(12px);
+  transition: transform 0.2s, background 0.2s;
+}
+.cc-imagine-btn:hover { transform: translateY(-1px); background: rgba(255,255,255,0.16); }
+.cc-imagine-btn svg { width: 14px; height: 14px; }
+.cc-imagine-modal {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.72); backdrop-filter: blur(10px);
+  display: none; align-items: center; justify-content: center; padding: 1rem;
+}
+.cc-imagine-modal.open { display: flex; }
+.cc-imagine-panel {
+  width: min(420px, 100%);
+  background: rgba(22,22,28,0.96);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 1.5rem;
+  padding: 1.25rem;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+  animation: messageSpring 0.45s cubic-bezier(0.16,1,0.3,1);
+}
+.cc-imagine-panel h3 {
+  font-size: 1.05rem; margin-bottom: 0.35rem; color: #fff;
+  letter-spacing: -0.02em;
+}
+.cc-imagine-limits {
+  font-size: 0.75rem; color: rgba(255,255,255,0.55); margin-bottom: 0.9rem;
+}
+.cc-imagine-tabs { display: flex; gap: 0.4rem; margin-bottom: 0.75rem; }
+.cc-imagine-tab {
+  flex: 1; padding: 0.5rem; border-radius: 0.75rem;
+  border: 1px solid rgba(255,255,255,0.1); background: transparent;
+  color: rgba(255,255,255,0.7); font-size: 0.82rem; cursor: pointer;
+}
+.cc-imagine-tab.active {
+  background: rgba(255,255,255,0.12); color: #fff; border-color: rgba(255,255,255,0.2);
+}
+.cc-imagine-panel textarea {
+  width: 100%; min-height: 88px; resize: vertical;
+  background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 0.9rem; color: #fff; padding: 0.75rem;
+  font-size: 0.9rem; margin-bottom: 0.75rem;
+}
+.cc-imagine-go {
+  width: 100%; padding: 0.75rem; border: none; border-radius: 999px;
+  background: #fff; color: #000; font-weight: 700; cursor: pointer;
+  font-size: 0.9rem;
+}
+.cc-imagine-go:disabled { opacity: 0.5; cursor: wait; }
+.cc-imagine-card {
+  margin: 0.5rem 0; border-radius: 1.2rem;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(20,20,26,0.9);
+  overflow: hidden; max-width: 320px;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.45);
+}
+.cc-imagine-card .cc-im-status {
+  padding: 0.75rem 1rem; font-size: 0.82rem; color: rgba(255,255,255,0.7);
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.cc-imagine-card img, .cc-imagine-card video {
+  width: 100%; display: block; max-height: 420px; object-fit: cover;
+}
+.cc-imagine-card .cc-im-prompt {
+  padding: 0.55rem 0.85rem 0.85rem; font-size: 0.75rem;
+  color: rgba(255,255,255,0.5);
+}
+
+
+/* English-only UI */
+[data-lang-picker], .lang-row, #langSelect, .lang-switch { display: none !important; }
+.cc-imagine-card {
+  position: relative;
+  border-radius: 1.35rem !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  background: linear-gradient(165deg, rgba(36,36,44,0.98), rgba(12,12,16,0.98)) !important;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.05) inset !important;
+  overflow: hidden;
+  max-width: min(340px, 92vw) !important;
+}
+.cc-imagine-card::before {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 30% 0%, rgba(255,255,255,0.08), transparent 55%);
+}
+.cc-imagine-card .cc-im-status {
+  padding: 1rem 1.1rem !important;
+  font-size: 0.85rem !important;
+  letter-spacing: -0.01em;
+}
+.cc-imagine-card img, .cc-imagine-card video {
+  border-radius: 0 !important;
+  max-height: 480px !important;
+}
+.cc-imagine-card .cc-im-prompt {
+  padding: 0.65rem 1rem 1rem !important;
+  font-size: 0.72rem !important;
+  line-height: 1.4;
+  color: rgba(255,255,255,0.45) !important;
+}
+.cc-im-opts {
+  display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.65rem;
+}
+.cc-im-opts button {
+  padding: 0.35rem 0.65rem; border-radius: 999px; font-size: 0.72rem;
+  border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.75); cursor: pointer;
+}
+.cc-im-opts button.active {
+  background: rgba(255,255,255,0.18); color: #fff; border-color: rgba(255,255,255,0.28);
+}
+.cc-im-enhance {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.78rem; color: rgba(255,255,255,0.65); margin-bottom: 0.65rem;
+}
+
 </style>
     </div>
     <div id="bootError" role="alert">
@@ -6697,9 +6970,9 @@ html.plus-active .cc-think {
 
     <div id="welcomeScreen" class="screen hidden">
         <div class="welcome-inner">
-            <div class="welcome-logo"><img src="/icon-512.png" alt="" onerror="this.style.display='none'"></div>
+            <div class="welcome-logo"><img src="icon-512.png" alt="ChatClaud" style="width:72px;height:72px;border-radius:18px;object-fit:cover;" onerror="this.onerror=null;this.src='icon-192.png';this.onerror=function(){this.src='apple-touch-icon.png';};"></div>
             <div class="welcome-text">Welcome by ChatClaud</div>
-            <div class="welcome-sub">Готовим пространство…</div>
+            <div class="welcome-sub">Preparing workspace…</div>
         </div>
     </div>
 <div id="landingScreen" class="screen hidden">
@@ -6716,7 +6989,7 @@ html.plus-active .cc-think {
                 </button>
             </div>
             <input type="email" class="field" id="emailInput" placeholder="Email" autocomplete="email">
-            <input type="password" class="field" id="passwordInput" placeholder="Пароль" autocomplete="current-password">
+            <input type="password" class="field" id="passwordInput" placeholder="Password" autocomplete="current-password">
             <label class="agree-row" id="agreeRow" for="agreeTerms">
                 <input type="checkbox" id="agreeTerms" name="agreeTerms">
                 <span class="agree-box" aria-hidden="true"></span>
@@ -6738,7 +7011,7 @@ html.plus-active .cc-think {
         <div class="profile-box">
             <div class="welcome-icon">&#9672;</div>
             <h2>Добро пожаловать</h2>
-            <input type="text" class="field" id="nameInput" placeholder="Ваше имя">
+            <input type="text" class="field" id="nameInput" placeholder="Your name">
             <input type="text" class="field" id="usernameInput" placeholder="Username для Plus (например slava_8383)" maxlength="32" autocomplete="off" style="margin-top:0.5rem;">
             <p style="font-size:0.72rem;color:#888;margin:0.4rem 0 0.8rem;line-height:1.35;">Этот username укажи боту после оплаты Stars — на него придёт Plus.</p>
             <div class="year-scroll" id="yearScroll" style="display:flex;overflow-x:auto;gap:0.8rem;margin-bottom:1.2rem;padding-bottom:0.4rem;"></div>
@@ -6748,7 +7021,7 @@ html.plus-active .cc-think {
 
     <div id="settingsScreen" class="screen hidden">
         <div class="settings-box" style="max-width:400px;text-align:left;">
-            <h2 style="text-align:center;margin-bottom:1.2rem;">Настройки</h2>
+            <h2 style="text-align:center;margin-bottom:1.2rem;">Settings</h2>
             <div class="settings-profile">
                 <div class="settings-avatar" id="settingsAvatar">C</div>
                 <div>
@@ -6764,10 +7037,10 @@ html.plus-active .cc-think {
                 <div class="settings-token"><span>Видео сегодня</span><span id="usageVideos">0</span></div>
             </div>
             <div class="settings-section">
-                <label style="font-size:0.75rem;color:#888;">Тема</label>
+                <label style="font-size:0.75rem;color:#888;">Theme</label>
                 <select id="themeModeSelect" class="field">
-                    <option value="dark">Тёмная</option>
-                    <option value="light">Светлая</option>
+                    <option value="dark">Dark</option>
+                    <option value="light">Light</option>
                     <option value="auto">Как в системе</option>
                 </select>
             </div>
@@ -6778,26 +7051,26 @@ html.plus-active .cc-think {
                     <option value="en">English</option>
                 </select>
             </div>
-            <a class="settings-link-btn" id="buyPlusLink" href="https://t.me/Milanchik_boks" target="_blank" rel="noopener">Купить Plus в боте · Stars</a>
+            <a class="settings-link-btn" id="buyPlusLink" href="https://t.me/Milanchik_boks" target="_blank" rel="noopener">Get Plus в боте · Stars</a>
             <button type="button" class="btn-black" id="copyUsernameBtn" style="width:100%;margin-top:0.45rem;background:transparent;border:1px solid var(--border);font-size:0.85rem;">Скопировать username для бота</button>
             <p id="plusHintText" style="font-size:0.72rem;color:#888;margin:0.5rem 0 0;line-height:1.4;">После оплаты Stars бот спросит username — вставь скопированный.</p>
             <div class="settings-section">
                 <label style="font-size:0.75rem;color:#888;">Написать администратору</label>
-                <textarea id="adminReportInput" class="field" rows="3" placeholder="Ошибка или вопрос..." style="resize:vertical;min-height:70px;"></textarea>
+                <textarea id="adminReportInput" class="field" rows="3" placeholder="Bug or question..." style="resize:vertical;min-height:70px;"></textarea>
                 <button class="btn-black" id="sendAdminReportBtn" style="margin-top:0.5rem;width:100%;">Отправить</button>
             </div>
             <div class="settings-section">
-                <button class="btn-black" id="settingsNewChatBtn" style="width:100%;margin-bottom:0.45rem;">Новый чат</button>
+                <button class="btn-black" id="settingsNewChatBtn" style="width:100%;margin-bottom:0.45rem;">New chat</button>
                 <button class="btn-black" id="settingsClearChatsBtn" style="width:100%;margin-bottom:0.45rem;background:transparent;border:1px solid var(--border);">Очистить историю чатов</button>
                 <button class="btn-black" id="settingsClearGalleryBtn" style="width:100%;margin-bottom:0.45rem;background:transparent;border:1px solid var(--border);">Очистить галерею</button>
             </div>
-            <button class="btn-black" id="logoutBtn" style="margin-top:0.5rem;width:100%;">Выйти из аккаунта</button>
+            <button class="btn-black" id="logoutBtn" style="margin-top:0.5rem;width:100%;">Sign out из аккаунта</button>
             <button class="btn-black" id="settingsBackBtn" style="margin-top:0.5rem;width:100%;background:transparent;border:1px solid var(--border);">Назад</button>
         </div>
     </div>
 
     <div id="selectionScreen" class="screen hidden">
-        <button type="button" id="openSettingsBtn" style="position:absolute;top:calc(0.8rem + env(safe-area-inset-top));right:1rem;z-index:5;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#ccc;border-radius:2rem;padding:0.4rem 0.9rem;font-size:0.8rem;cursor:pointer;">Настройки</button>
+        <button type="button" id="openSettingsBtn" style="position:absolute;top:calc(0.8rem + env(safe-area-inset-top));right:1rem;z-index:5;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#ccc;border-radius:2rem;padding:0.4rem 0.9rem;font-size:0.8rem;cursor:pointer;">Settings</button>
 
         <div class="cards">
             <div class="card" data-target="flash">
@@ -6818,8 +7091,9 @@ html.plus-active .cc-think {
                 <div class="title" id="flashTitle" style="display:none">ChatClaud</div>
                 <div class="top-bar-actions">
                     <button type="button" class="voice-btn" id="flashVoiceBtn" title="Голос" style="display:none!important" aria-hidden="true">Голос</button>
-                    <button type="button" id="flashNewChat" class="cc-newchat-logo" title="Новый чат" aria-label="New chat"><img src="icon-192.png" alt="" width="22" height="22"></button>
-                    <button type="button" id="flashSettingsBtn" style="display:none">Настройки</button>
+                    <button type="button" id="flashNewChat" class="cc-newchat-logo" title="New chat" aria-label="New chat"><img src="IMG_5637.jpeg" alt="" width="22" height="22"></button>
+<button type="button" class="cc-imagine-btn" id="ccImagineBtn" title="Imagine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/><path d="M19 13l.8 2.2L22 16l-2.2.8L19 19l-.8-2.2L16 16l2.2-.8L19 13z"/></svg> Imagine</button>
+                    <button type="button" id="flashSettingsBtn" style="display:none">Settings</button>
                 </div>
             </div>
                         <div class="sidebar-overlay" id="flashSidebarOverlay"></div>
@@ -6832,17 +7106,17 @@ html.plus-active .cc-think {
                     </button>
                 </div>
                 <div class="sb-promo">
-                    <div style="flex:1;min-width:0"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">ᴄʜᴀᴛᴄʟᴀᴜᴅ ᴘʟᴜꜱ</div><div style="opacity:.85;font-size:0.72rem;white-space:nowrap">Plus · приоритет и расширенные возможности</div></div>
+                    <div style="flex:1;min-width:0"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">ChatClaud Plus</div><div style="opacity:.85;font-size:0.72rem;white-space:nowrap">Plus · priority & extended limits</div></div>
                     <button type="button" id="sbPlusBtn">Plus</button>
                 </div>
                 <div class="sb-nav">
                     <button type="button" class="sb-nav-item" id="sbGalleryBtn">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 16l-5-5-4 4-2-2-5 5"/></svg>
-                        Галерея
+                        Gallery
                     </button>
                     <button type="button" class="sb-nav-item" data-open-settings>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2"/></svg>
-                        Настройки
+                        Settings
                     </button>
                 </div>
                 <div class="sb-section">Разговоры</div>
@@ -6852,7 +7126,7 @@ html.plus-active .cc-think {
                     <div class="gallery-grid" id="flashGalleryGrid"></div>
                 </div>
                 <div style="display:none">
-                    <button id="themeToggleBtn">Тема</button>
+                    <button id="themeToggleBtn">Theme</button>
                     <select id="flashPersonaSelect"><option value="default">Нейтральный</option><option value="cheerful">Весёлый</option><option value="harsh">Дерзкий</option><option value="custom">Свой</option></select>
                     <input id="flashCustomPersona" class="field">
                     <select id="flashLangSelect"><option value="ru">Русский</option><option value="en">English</option></select>
@@ -6862,12 +7136,12 @@ html.plus-active .cc-think {
                     <input type="file" id="flashImportInput" accept=".json" hidden>
                     <button id="flashExportMdBtn"></button>
                     <button id="flashClearContextBtn"></button>
-                    <div class="sidebar-tabs"><button class="sidebar-tab active" data-stab="chats">Чаты</button><button class="sidebar-tab" data-stab="gallery">Галерея</button></div>
+                    <div class="sidebar-tabs"><button class="sidebar-tab active" data-stab="chats">Чаты</button><button class="sidebar-tab" data-stab="gallery">Gallery</button></div>
                     <div class="sidebar-pane" data-spane="chats" id="flashChatsPane"></div>
                 </div>
                 <div class="sb-foot">
-                    <input type="search" class="sb-search" id="flashSearchInput" placeholder="Поиск" autocomplete="off">
-                    <button type="button" class="sb-ico-btn" data-open-settings title="Настройки">
+                    <input type="search" class="sb-search" id="flashSearchInput" placeholder="Search" autocomplete="off">
+                    <button type="button" class="sb-ico-btn" data-open-settings title="Settings">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2"/></svg>
                     </button>
                     <button type="button" class="sb-ico-btn" id="sbNewChatBtn" title="Новый">
@@ -6910,7 +7184,7 @@ html.plus-active .cc-think {
                             <span>Код</span>
                         </button>
                     </div>
-                    <textarea id="flashInput" placeholder="Спроси что угодно" rows="1" maxlength="4000"></textarea>
+                    <textarea id="flashInput" placeholder="Ask anything..." rows="1" maxlength="4000"></textarea>
                     <div class="input-shell-bottom">
                         <label class="attach-icon" id="flashAttachBtn" for="flashFileInput" title="Добавить"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></label>
                         <input type="file" id="flashFileInput" accept="image/*,.txt,.js,.html,.css,.json,.md,.py,.zip,.ts,.tsx,.jsx,.csv" hidden>
@@ -6942,11 +7216,11 @@ html.plus-active .cc-think {
                 <div class="title" id="expertTitle">ClaudForge <span class="beta-pill">Beta</span></div>
                 <div class="top-bar-actions">
                     <button type="button" class="voice-btn" id="expertVoiceBtn" title="Голосовой чат">Голос</button>
-                    <button type="button" id="expertNewChat" title="Новый чат">+</button>
+                    <button type="button" id="expertNewChat" title="New chat">+</button>
                     <button type="button" id="expertProjectBtn">Проекты</button>
                     <button type="button" id="expertPreviewBtn">Превью</button>
                     <button type="button" id="expertDeployTopBtn">Деплой</button>
-                    <button type="button" id="expertSettingsBtn">Настройки</button>
+                    <button type="button" id="expertSettingsBtn">Settings</button>
                 </div>
             </div>
             <div class="beta-banner">Beta</div>
@@ -6955,7 +7229,7 @@ html.plus-active .cc-think {
                 <h3>Меню</h3>
                 <div class="sidebar-tabs" id="expertSideTabs">
                     <button type="button" class="sidebar-tab active" data-stab="chats">Чаты</button>
-                    <button type="button" class="sidebar-tab" data-stab="gallery">Галерея</button>
+                    <button type="button" class="sidebar-tab" data-stab="gallery">Gallery</button>
                 </div>
                 <div class="sidebar-pane" data-spane="gallery" id="expertGalleryPane" style="display:none;">
                     <div class="gallery-count" id="expertGalleryCount">0 фото</div>
@@ -6963,7 +7237,7 @@ html.plus-active .cc-think {
                 </div>
                 <div class="sidebar-pane" data-spane="chats" id="expertChatsPane">
 
-                <button class="btn-black" id="themeToggleBtn2" style="margin-bottom:0.8rem;">Светлая тема</button>
+                <button class="btn-black" id="themeToggleBtn2" style="margin-bottom:0.8rem;">Light тема</button>
                 <label style="font-size:0.8rem;color:#888;">Провайдер</label>
                 <select id="expertProviderSelect" class="field"><option value="chatclaud" selected>ChatClaud Smart</option><option value="groq">ChatClaud Reasoning</option><option value="mistral">ChatClaud Balanced</option><option value="hf">ChatClaud Vision</option></select>
                 <select id="expertModelSelect" class="field"></select>
@@ -6972,7 +7246,7 @@ html.plus-active .cc-think {
                 <select id="expertLangSelect" class="field"><option value="ru">Русский</option><option value="en">English</option></select>
                 </div><!-- expertChatsPane -->
                 <div style="margin:1rem 0;"><button class="btn-black" id="expertDeployBtn">Задеплоить проект</button></div>
-                <input type="text" class="field" id="expertSearchInput" placeholder="Поиск чата...">
+                <input type="text" class="field" id="expertSearchInput" placeholder="Search chats...">
                 <div class="prompt-templates" id="expertTemplates">
                     <button class="prompt-chip" data-prompt="Сделай современный лендинг на HTML/CSS/JS">Лендинг</button>
                     <button class="prompt-chip" data-prompt="Исправь этот код и объясни ошибку:">Исправить код</button>
@@ -6981,7 +7255,7 @@ html.plus-active .cc-think {
                 </div>
                 <div class="chat-list" id="expertChatList"></div>
                 <div class="sidebar-footer">
-                    <button type="button" class="btn-black" data-open-settings>Настройки</button>
+                    <button type="button" class="btn-black" data-open-settings>Settings</button>
                     <button class="btn-black" data-back="selection">← Назад</button>
                 </div>
                 <div style="display:none" aria-hidden="true">
@@ -6994,7 +7268,7 @@ html.plus-active .cc-think {
             <div class="input-row">
                 <label class="attach-icon" for="expertFileInput"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></label>
                 <input type="file" id="expertFileInput" accept="image/*,.txt,.js,.html,.css,.json,.md,.py,.zip,.ts,.tsx,.jsx,.csv" hidden>
-                <textarea id="expertInput" placeholder="Опишите задачу..." rows="1" maxlength="10000"></textarea>
+                <textarea id="expertInput" placeholder="Describe the task..." rows="1" maxlength="10000"></textarea>
                 <button class="auto-btn" id="expertAutoBtn" title="Улучшить текст"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
                 <button class="mic-btn" id="expertMicBtn" title="Голосовой ввод"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
                 <button type="button" class="stop-gen-btn" id="expertStopBtn" title="Стоп"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg></button>
@@ -7065,31 +7339,32 @@ html.plus-active .cc-think {
         </div>
     </div>
 
-    <div class="toast" id="toast"></div>
+    
+<div class="cc-imagine-modal" id="ccImagineModal" aria-hidden="true">
+  <div class="cc-imagine-panel">
+    <h3>✦ Imagine</h3>
+    <div class="cc-imagine-limits" id="ccImagineLimits">Free · 5 photos / 2 videos per day</div>
+    <div class="cc-imagine-tabs">
+      <button type="button" class="cc-imagine-tab active" data-kind="image" id="ccImTabImg">Photo</button>
+      <button type="button" class="cc-imagine-tab" data-kind="video" id="ccImTabVid">Video</button>
+    </div>
+    <div class="cc-im-opts" id="ccImRatio">
+      <button type="button" data-ratio="portrait" class="active">Portrait</button>
+      <button type="button" data-ratio="landscape">Landscape</button>
+      <button type="button" data-ratio="square">Square</button>
+    </div>
+    <label class="cc-im-enhance"><input type="checkbox" id="ccImEnhance" checked> Enhance prompt (HF)</label>
+    <textarea id="ccImaginePrompt" placeholder="Describe the image or video..." maxlength="900"></textarea>
+    <button type="button" class="cc-imagine-go" id="ccImagineGo">Generate</button>
+    <button type="button" id="ccImagineClose" style="margin-top:0.55rem;width:100%;background:transparent;border:none;color:rgba(255,255,255,0.5);font-size:0.8rem;cursor:pointer;">Close</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
-<script id="cc-api-base">
-(function(){
-  var def = 'https://chatclaud.onrender.com';
-  try {
-    var saved = localStorage.getItem('cc_api_base');
-    if (saved && /^https?:\/\//i.test(saved)) def = saved.replace(/\/+$/,'');
-  } catch(e){}
-  try {
-    if (/onrender\.com$/i.test(location.hostname)) def = location.origin;
-  } catch(e){}
-  window.CC_API_BASE = String(def).replace(/\/+$/,'');
-  window.ccApiUrl = function(path){
-    path = String(path || '');
-    if (path.charAt(0) !== '/') path = '/' + path;
-    return (window.CC_API_BASE || '') + path;
-  };
-})();
-</script>
-
 <script>
         // ==================== ERROR GUARD ====================
         function showBootError(msg) {
@@ -7132,6 +7407,12 @@ html.plus-active .cc-think {
         function ccClientRate() {
             return { ok: true, left: 99999 };
         }
+        
+if (typeof window.ccApiUrl !== 'function') {
+  window.CC_API_BASE = (window.CC_API_BASE || 'https://chatclaud.onrender.com').replace(/\/+$/,'');
+  window.ccApiUrl = function(path){ path=String(path||''); if(path.charAt(0)!=='/') path='/'+path; return (window.CC_API_BASE||'')+path; };
+}
+
         async function ccApiChat(messages, system) {
             var rate = ccClientRate();
             if (!rate.ok) throw new Error(rate.msg);
@@ -7163,7 +7444,7 @@ html.plus-active .cc-think {
             const raw = await res.text().catch(function(){ return ''; });
             let data = {};
             try { data = raw ? JSON.parse(raw) : {}; } catch (e) {
-                throw new Error('Сервер вернул не JSON. Проверь Render: ' + (window.CC_API_BASE||'') + ' — service должен быть Live, ключи в Environment.');
+                throw new Error('Сервер вернул не JSON. Проверь, что опубликован server.js, а не страница обслуживания.');
             }
             if (!res.ok) {
                 var err = (data && data.error) ? String(data.error) : ('HTTP ' + res.status);
@@ -7881,16 +8162,19 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
 
         async function duckSearch(query) { return multiWebSearch(query); }
         function needsWebSearch(text) {
-            const t = (text || '').trim().toLowerCase();
-            if (!t || t.length < 3) return false;
-            if (/^\/(img|gif|help|clear|deploy)\b/i.test(t)) return false;
-            if (/^\/search\b/i.test(t)) return true;
-            if (/^(привет|здарова|хай|бро|ку|ок|ладно|спасибо|пока|да|нет|лол|ахах|хм+|хорошо|норм|понял)\s*[!.]?$/i.test(t)) return false;
-            if (/(не ищи|без поиска|просто поговор|просто ответь)/i.test(t)) return false;
-            // always search for find/links/media/news
-            if (/(найди|найти|поищи|поиск|ссылк|сайт|ютуб|youtube|video|видео|тикток|tiktok|google|гугл|новост|актуальн|сейчас|сегодня|сколько|подписчик|рейтинг|курс|цена|погода|кто такой|что такое|where|how many|latest|2024|2025|2026)/i.test(t)) return true;
-            if (/(steam|epic|игры|магазин|скачать|watch|канал)/i.test(t)) return true;
-            if (t.length > 40) return true; // long questions often need facts
+            const t = (text || '').trim();
+            if (!t || t.length < 2) return false;
+            if (/^\/(img|gif|help|clear|deploy|plus|settings)\b/i.test(t)) return false;
+            // Explicit commands — ALWAYS search (every time, not only first)
+            if (/^\/(search|find|seasch|nova)\b/i.test(t)) return true;
+            if (/^(найди|поищи|загугли|погугли|найти)\b/i.test(t)) return true;
+            if (/(поищи|найди).{0,15}(ещ[её]|again)/i.test(t)) return true;
+            if (/^(search|find|look\s*up|google)\b/i.test(t)) return true;
+            if (/^(привет|hello|hi|hey|здарова|хай|бро|ку|ок|ладно|спасибо|thanks|пока|bye|да|нет|yes|no|лол|ахах|хм+|хорошо|норм|понял|ok)\s*[!.]?$/i.test(t)) return false;
+            if (/(не ищи|без поиска|просто поговор|просто ответь|no search|don't search)/i.test(t)) return false;
+            if (/(найди|найти|поищи|поиск|ссылк|сайт|ютуб|youtube|video|видео|тикток|tiktok|google|гугл|новост|актуальн|сейчас|сегодня|сколько|подписчик|рейтинг|курс|цена|погода|кто такой|что такое|where|how many|latest|look\s*up|what is|who is|2024|2025|2026)/i.test(t)) return true;
+            if (/(steam|epic|игры|магазин|скачать|watch|канал|news)/i.test(t)) return true;
+            if (t.length > 40) return true;
             return false;
         }
 
@@ -7905,7 +8189,7 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
             try {
                 var uname = globalSettings.username || localStorage.getItem('cc_username') || '';
                 if (!uname) return;
-                var res = await fetch(window.ccApiUrl('/api/plus/check?username=') + encodeURIComponent(uname));
+                var res = await fetch(window.ccApiUrl('/api/plus/check?username=' + encodeURIComponent(uname)));
                 var data = await res.json().catch(function(){ return {}; });
                 if (data && data.plus && data.plusUntil) {
                     var was = isPlus();
@@ -8137,7 +8421,7 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
 
         // ==================== ЛОКАЛИЗАЦИЯ ====================
         const translations = {
-            ru: { welcome: 'Добро пожаловать', namePlaceholder: 'Ваше имя', continue: 'Продолжить', newChat: '+ новый', back: '← выход', clearChat: 'Очистить чат', exportChats: 'Экспорт чатов', importChats: 'Импорт чатов', search: 'Поиск чата...', lightTheme: 'Светлая тема', darkTheme: 'Тёмная тема', deploy: 'Задеплоить проект', personaDefault: 'Нейтральный', personaHarsh: 'Дерзкий', personaCustom: 'Свой промпт', langLabel: 'Язык интерфейса', send: 'Отправить', inputPlaceholder: 'Введите запрос...' },
+            ru: { welcome: 'Добро пожаловать', namePlaceholder: 'Your name', continue: 'Продолжить', newChat: '+ новый', back: '← выход', clearChat: 'Очистить чат', exportChats: 'Экспорт чатов', importChats: 'Импорт чатов', search: 'Search chats...', lightTheme: 'Light тема', darkTheme: 'Dark тема', deploy: 'Задеплоить проект', personaDefault: 'Нейтральный', personaHarsh: 'Дерзкий', personaCustom: 'Свой промпт', langLabel: 'Язык интерфейса', send: 'Отправить', inputPlaceholder: 'Type a message...' },
             en: { welcome: 'Welcome', namePlaceholder: 'Your name', continue: 'Continue', newChat: '+ new', back: '← back', clearChat: 'Clear chat', exportChats: 'Export chats', importChats: 'Import chats', search: 'Search chat...', lightTheme: 'Light theme', darkTheme: 'Dark theme', deploy: 'Deploy project', personaDefault: 'Neutral', personaHarsh: 'Harsh', personaCustom: 'Custom prompt', langLabel: 'Language', send: 'Send', inputPlaceholder: 'Type your message...' }
         };
         let currentLang = globalSettings.lang || 'ru';
@@ -8158,12 +8442,12 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
                 authBtn: 'Sign in',
                 nameInput: 'Your name'
             } : {
-                flashInput: 'Введите запрос...',
+                flashInput: 'Type a message...',
                 expertInput: 'Опишите задачу...',
                 emailInput: 'Email',
-                passwordInput: 'Пароль',
+                passwordInput: 'Password',
                 authBtn: 'Войти',
-                nameInput: 'Ваше имя'
+                nameInput: 'Your name'
             };
             Object.keys(map).forEach(id => {
                 const el = document.getElementById(id);
@@ -8642,7 +8926,7 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
             localStorage.setItem('themeMode', mode);
             localStorage.setItem('theme', htmlEl.getAttribute('data-theme'));
             document.querySelectorAll('#themeToggleBtn, #themeToggleBtn2').forEach(b => {
-                if (b) b.textContent = htmlEl.getAttribute('data-theme') === 'light' ? 'Тёмная тема' : 'Светлая тема';
+                if (b) b.textContent = htmlEl.getAttribute('data-theme') === 'light' ? 'Dark тема' : 'Light тема';
             });
         }
         (function initThemeMode() {
@@ -8965,7 +9249,7 @@ function setAppLang(lang) {
             } catch(e) {}
         }
         try { setAppLang(localStorage.getItem('cc_lang') || 'ru'); } catch(e) {}
-        function toggleTheme() { const html = document.documentElement; const current = html.getAttribute('data-theme'); const next = current === 'light' ? 'dark' : 'light'; html.setAttribute('data-theme', next); document.querySelectorAll('#themeToggleBtn, #themeToggleBtn2').forEach(b => b.textContent = next === 'light' ? 'Тёмная тема' : 'Светлая тема'); localStorage.setItem('theme', next); }
+        function toggleTheme() { const html = document.documentElement; const current = html.getAttribute('data-theme'); const next = current === 'light' ? 'dark' : 'light'; html.setAttribute('data-theme', next); document.querySelectorAll('#themeToggleBtn, #themeToggleBtn2').forEach(b => b.textContent = next === 'light' ? 'Dark тема' : 'Light тема'); localStorage.setItem('theme', next); }
         document.getElementById('themeToggleBtn').addEventListener('click', toggleTheme);
         document.getElementById('themeToggleBtn2').addEventListener('click', toggleTheme);
         const savedTheme = localStorage.getItem('theme') || 'dark';
@@ -9208,26 +9492,27 @@ function buildImageUrl(userPrompt, opts) {
                 : ', NO woman, NO girl, NO female face, NO beauty portrait, NO anime girl, NO random person closeup';
 
             const quality = person
-                ? ', photorealistic, accurate celebrity likeness, natural skin texture, sharp eyes, 8k uhd, masterpiece, professional photography, detailed face'
-                : ', photorealistic, ultra detailed, masterpiece, sharp focus, natural lighting, cinematic composition, 8k uhd, high dynamic range';
+                ? ', photorealistic, accurate face, 8k, real photo'
+                : ', photorealistic wide shot, highly detailed, 8k, cinematic';
 
-            const fullPrompt = (core + quality + antiGirl).slice(0, 900);
+            const fullPrompt = (core + quality + antiGirl).slice(0, 380);
             const seed = (Date.now() % 1e9) ^ Math.floor(Math.random() * 1e9);
             const base = 'https://image.pollinations.ai/prompt/';
-            const w = 1280, h = 1920;
+            const w = 768, h = 1024;
             const enc = encodeURIComponent(fullPrompt);
-            const shortCore = encodeURIComponent((person || scene || raw).slice(0, 120) + (person ? ', photorealistic portrait 8k' : ' scene, no random faces, photorealistic 8k'));
+            // ultra-short fallback for stubborn subjects
+            const shortCore = encodeURIComponent((person || scene || raw).slice(0, 80) + (person ? '' : ' scene, no people faces'));
 
             return {
-                url: base + enc + '?width=' + w + '&height=' + h + '&model=flux&seed=' + seed + '&nologo=true&enhance=true',
+                url: base + enc + '?width=' + w + '&height=' + h + '&model=flux&seed=' + seed + '&nologo=true',
                 enhanced: fullPrompt,
                 width: w,
                 height: h,
                 aspect: 'portrait',
                 fallbacks: [
-                    base + enc + '?width=1024&height=1536&model=flux&seed=' + (seed+1) + '&nologo=true&enhance=true',
-                    base + shortCore + '?width=1024&height=1536&model=flux&seed=' + (seed+2) + '&nologo=true&enhance=true',
-                    base + encodeURIComponent((scene || raw).slice(0, 100) + ', photorealistic, 8k') + '?width=768&height=1024&model=flux&seed=' + (seed+3) + '&nologo=true&enhance=true'
+                    base + enc + '?width=512&height=768&model=flux&seed=' + (seed+1) + '&nologo=true',
+                    base + shortCore + '?width=512&height=768&model=flux&seed=' + (seed+2) + '&nologo=true',
+                    base + encodeURIComponent((scene || raw).slice(0, 60)) + '?width=512&height=512&model=flux&seed=' + (seed+3) + '&nologo=true'
                 ]
             };
         }
@@ -9304,17 +9589,17 @@ function buildImageUrl(userPrompt, opts) {
             saveActiveSession() {
                 if (!this.activeSessionId) {
                     this.activeSessionId = 's_' + Date.now();
-                    this.sessions.unshift({ id: this.activeSessionId, name: (this.history[0]?.content || 'Новый чат').slice(0, 40), messages: [] });
+                    this.sessions.unshift({ id: this.activeSessionId, name: (this.history[0]?.content || 'New chat').slice(0, 40), messages: [] });
                 }
                 this.saveQueue = this.saveQueue.then(() => {
                     let session = this.sessions.find(s => s.id === this.activeSessionId);
                     if (session) {
                         session.messages = this.history.slice(-80);
-                        if ((!session.name || session.name === 'Новый чат') && this.history[0]) {
-                            session.name = String(this.history[0].content || '').slice(0, 40) || 'Новый чат';
+                        if ((!session.name || session.name === 'New chat') && this.history[0]) {
+                            session.name = String(this.history[0].content || '').slice(0, 40) || 'New chat';
                         }
                     } else {
-                        this.sessions.unshift({ id: this.activeSessionId, name: (this.history[0]?.content || 'Новый чат').slice(0, 40), messages: this.history.slice(-80) });
+                        this.sessions.unshift({ id: this.activeSessionId, name: (this.history[0]?.content || 'New chat').slice(0, 40), messages: this.history.slice(-80) });
                     }
                     try { this.saveSessions(); } catch (e) { showToast('Ошибка сохранения'); }
                 }).catch(() => {});
@@ -9342,7 +9627,20 @@ function buildImageUrl(userPrompt, opts) {
                 filtered.forEach(s => {
                     const item = document.createElement('div'); item.className = `chat-item ${s.id === this.activeSessionId ? 'active' : ''}`;
                     const lastMsg = s.messages?.[s.messages.length - 1];
-                    const time = lastMsg ? new Date(parseInt(s.id)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                    let time = '';
+                    try {
+                        let ts = s.updatedAt || s.createdAt || null;
+                        if (ts && typeof ts === 'object' && typeof ts.toDate === 'function') ts = ts.toDate().getTime();
+                        if (ts && typeof ts === 'object' && ts.seconds) ts = ts.seconds * 1000;
+                        if (!ts && s.id != null) {
+                            const n = Number(s.id);
+                            if (Number.isFinite(n) && n > 1e11) ts = n;
+                        }
+                        if (ts) {
+                            const d = new Date(ts);
+                            if (!isNaN(d.getTime())) time = d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+                        }
+                    } catch (e) { time = ''; }
                     item.innerHTML = `<div class="chat-info"><span>${s.name}</span><span class="chat-time">${time}</span></div>`;
                     const delBtn = document.createElement('button'); delBtn.className = 'delete-btn'; delBtn.innerHTML = 'X';
                     delBtn.onclick = (e) => { e.stopPropagation(); this.deleteSession(s.id); };
@@ -9710,7 +10008,7 @@ function buildImageUrl(userPrompt, opts) {
                 }
                 let fullPrompt = text || '';
                 if (this.currentFileText) { fullPrompt = `[Файл]:\n${this.currentFileText}\n\n[Запрос пользователя]:\n${text}`; }
-                if (text && (String(text).startsWith('/search') || (typeof needsWebSearch === 'function' && needsWebSearch(text)))) {
+                if (text && (/^\/(search|find|seasch|nova)\b/i.test(String(text)) || /^(найди|поищи|загугли|search|find|look\s*up|google)\b/i.test(String(text).trim()) || (typeof needsWebSearch === 'function' && needsWebSearch(text)))) {
                     let statusEl = null;
                     try {
                         statusEl = this.addMsg('', 'bot', false);
@@ -9724,7 +10022,7 @@ function buildImageUrl(userPrompt, opts) {
                         };
                         await new Promise(r => setTimeout(r, 200));
                         setThink('Thinking…');
-                        const searchQ = String(text).replace(/^\/search\s*/i, '').trim() || text;
+                        const searchQ = String(text).replace(/^\/(search|find|seasch|nova)\s*/i, '').replace(/^(найди|поищи|загугли|погугли|search|find|look\s*up|google)\s+/i, '').trim() || text;
                         const snips = await duckSearch(searchQ);
                         setThink('Reading sources');
                         await new Promise(r => setTimeout(r, 200));
@@ -10670,7 +10968,7 @@ function buildImageUrl(userPrompt, opts) {
             projects.forEach((p, i) => {
                 const card = document.createElement('div');
                 card.className = 'project-card';
-                card.innerHTML = `<h4>${p.name || 'Проект ' + (i+1)}</h4><p>${p.desc || 'Без описания'} · ${new Date(p.created).toLocaleDateString()}</p>`;
+                card.innerHTML = `<h4>${p.name || 'Проект ' + (i+1)}</h4><p>${p.desc || 'Без описания'} · ${(function(){try{var d=new Date(p.created);return isNaN(d.getTime())?'':d.toLocaleDateString('ru-RU');}catch(e){return '';}})()}</p>`;
                 card.onclick = () => {
                     // load project context into expert
                     if (p.messages && expertSession) {
@@ -11808,8 +12106,18 @@ function buildImageUrl(userPrompt, opts) {
 
         
         function toFancy(str) {
-            // Keep normal readable text — small-caps map broke Russian UI labels
-            return String(str || '');
+            // Только латиница → small-caps. Кириллицу НЕ трогаем (иначе «приоритет» → PPIOPITET).
+            const map = {
+                a:'ᴀ',b:'ʙ',c:'ᴄ',d:'ᴅ',e:'ᴇ',f:'ꜰ',g:'ɢ',h:'ʜ',i:'ɪ',j:'ᴊ',k:'ᴋ',l:'ʟ',m:'ᴍ',
+                n:'ɴ',o:'ᴏ',p:'ᴘ',q:'ǫ',r:'ʀ',s:'ꜱ',t:'ᴛ',u:'ᴜ',v:'ᴠ',w:'ᴡ',x:'x',y:'ʏ',z:'ᴢ'
+            };
+            return String(str||'').split('').map(ch => {
+                const code = ch.charCodeAt(0);
+                // Cyrillic block — leave unchanged
+                if (code >= 0x0400 && code <= 0x04FF) return ch;
+                const low = ch.toLowerCase();
+                return map[low] || ch;
+            }).join('');
         }
         window.toFancy = toFancy;
 
@@ -11827,7 +12135,7 @@ function buildImageUrl(userPrompt, opts) {
                 code: '<path d="M8 7l-4 5 4 5M16 7l4 5-4 5"/>',
                 voice: '<path d="M12 3a3 3 0 00-3 3v6a3 3 0 006 0V6a3 3 0 00-3-3z"/><path d="M19 10v1a7 7 0 01-14 0v-1M12 19v3"/>'
             };
-            const names = { fast: 'Быстрый', think: 'Думает', code: 'Код', voice: 'Голос' };
+            const names = { fast: 'Fast', think: 'Думает', code: 'Код', voice: 'Голос' };
             function apply(mode) {
                 const ico = btn.querySelector('.mode-ico');
                 if (ico) {
@@ -12016,7 +12324,9 @@ function buildImageUrl(userPrompt, opts) {
         (function applyFancyLabels(){
             if (typeof toFancy !== 'function') {
                 window.toFancy = function(str) {
-                    return String(str || '');
+                    const map = {a:'ᴀ',b:'ʙ',c:'ᴄ',d:'ᴅ',e:'ᴇ',f:'ꜰ',g:'ɢ',h:'ʜ',i:'ɪ',j:'ᴊ',k:'ᴋ',l:'ʟ',m:'ᴍ',n:'ɴ',o:'ᴏ',p:'ᴘ',q:'ǫ',r:'ʀ',s:'ꜱ',t:'ᴛ',u:'ᴜ',v:'ᴠ',w:'ᴡ',x:'x',y:'ʏ',z:'ᴢ',
+                    'а':'ᴀ','б':'ʙ','в':'ʙ','г':'ɢ','д':'ᴅ','е':'ᴇ','ё':'ᴇ','ж':'ᴢ','з':'ᴢ','и':'ɪ','й':'ɪ','к':'ᴋ','л':'ʟ','м':'ᴍ','н':'ɴ','о':'ᴏ','п':'ᴘ','р':'ᴘ','с':'ꜱ','т':'ᴛ','у':'ᴜ','ф':'ꜰ','х':'ʜ','ц':'ᴄ','ч':'ᴄ','ш':'ꜱ','щ':'ꜱ','ы':'ʏ','э':'ᴇ','ю':'ʏ','я':'ʏ'};
+                    return String(str||'').split('').map(ch => map[ch.toLowerCase()] || ch).join('');
                 };
             }
             document.querySelectorAll('.sb-promo div div, .sb-section, #plusStatusLabel').forEach(function(el){
@@ -12025,9 +12335,9 @@ function buildImageUrl(userPrompt, opts) {
                 }
             });
             var pl = document.querySelector('.sb-promo div div');
-            if (pl) pl.textContent = toFancy('ChatClaud Plus');
+            if (pl) pl.textContent = 'ChatClaud Plus';
             var pl2 = document.querySelector('.sb-promo div div + div');
-            if (pl2) pl2.textContent = toFancy('Plus · приоритет и расширенные возможности');
+            if (pl2) pl2.textContent = 'Plus · priority & extended limits';
         })();
 
         setupMic('flashMicBtn', document.getElementById('flashInput'), () => flashSession);
@@ -12189,7 +12499,7 @@ function buildImageUrl(userPrompt, opts) {
                     try {
                         localStorage.removeItem('chatclaud_gallery');
                         if (typeof renderGallery === 'function') renderGallery();
-                        showToast('Галерея очищена');
+                        showToast('Gallery очищена');
                     } catch (e) {}
                     return;
                 }
@@ -12306,7 +12616,7 @@ function buildImageUrl(userPrompt, opts) {
             const label = document.getElementById('flashModeLabel');
             if (!btn || !pop) { console.warn('mode UI missing'); return; }
             const names = { fast: 'ʙыᴄᴛʀый', think: 'ᴅᴜᴍᴀᴇᴛ', code: 'ᴋᴏᴅ', voice: 'гᴏʟᴏᴄ' };
-            const plain = { fast: 'Быстрый', think: 'Думает', code: 'Код', voice: 'Голос', live: 'Live' };
+            const plain = { fast: 'Fast', think: 'Думает', code: 'Код', voice: 'Голос', live: 'Live' };
             const icons = {
                 fast: '<path d="M13 3L4 14h7l-1 7 9-11h-7l1-7z"/>',
                 think: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
@@ -12404,7 +12714,7 @@ function buildImageUrl(userPrompt, opts) {
             const label = document.getElementById('flashModeLabel');
             if (!btn || !pop) return;
             const names = { fast: 'ʙыᴄᴛʀый', think: 'ᴅᴜᴍᴀᴇᴛ', code: 'ᴋᴏᴅ', voice: 'гᴏʟᴏᴄ', live: 'Live' };
-            const plain = { fast: 'Быстрый', think: 'Думает', code: 'Код', voice: 'Голос', live: 'Live' };
+            const plain = { fast: 'Fast', think: 'Думает', code: 'Код', voice: 'Голос', live: 'Live' };
             function apply(mode) {
                 mode = mode || 'fast';
                 if (!names[mode]) mode = 'fast';
@@ -12538,7 +12848,7 @@ function buildImageUrl(userPrompt, opts) {
         // ===== ChatClaud core (ClaudForge + Nova) — never expose vendors =====
         
         const CC_MODE_PROMPTS = {
-          fast: 'Режим Быстрый: отвечай чётко и по делу. Можно развёрнуто до ~10000 слов, если задача требует. Не лей воду.',
+          fast: 'Режим Fast: отвечай чётко и по делу. Можно развёрнуто до ~10000 слов, если задача требует. Не лей воду.',
           think: 'Режим Думает: сначала кратко план (1–3 пункта), потом ответ. Глубокий разбор, факты, до ~10500 слов при необходимости.',
           code: 'Режим Код: пиши полный рабочий код, комментарии по делу. Можно длинный HTML/JS/CSS до ~17000 токенов. Не обрезай файлы без нужды.',
           voice: 'Режим Голос: короткие устные фразы, естественно.',
@@ -12585,7 +12895,7 @@ function buildImageUrl(userPrompt, opts) {
                 if (empty) return;
                 var d = document.createElement('div');
                 d.className = 'cc-empty';
-                d.innerHTML = '<img class="cc-empty-logo" src="icon-192.png" alt="ChatClaud" onerror="this.src=\'/chatclaud-avatar-transparent.png\'">'
+                d.innerHTML = '<img class="cc-empty-logo" src="IMG_5637.jpeg" alt="ChatClaud" onerror="this.src=\'/chatclaud-avatar-transparent.png\'">'
                     + '<div class="cc-empty-title">ChatClaud</div>'
                     + '<div class="cc-empty-ask">Ask me</div>';
                 box.appendChild(d);
@@ -12823,7 +13133,7 @@ function buildImageUrl(userPrompt, opts) {
     var b = document.getElementById('flashNewChat');
     if (!b) return;
     if (!b.querySelector('img[src*="icon-192"]')) {
-      b.innerHTML = '<img src="icon-192.png" alt="" width="22" height="22">';
+      b.innerHTML = '<img src="IMG_5637.jpeg" alt="" width="22" height="22">';
     }
     b.classList.add('cc-newchat-logo');
   }
@@ -12831,75 +13141,124 @@ function buildImageUrl(userPrompt, opts) {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fix);
   setInterval(fix, 2000);
 })();
-</script>
 
 
-<style id="cc-slash-css">
-.cc-slash-menu{position:absolute;left:0;right:0;bottom:calc(100% + 8px);background:rgba(22,22,26,.96);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:.35rem;max-height:240px;overflow-y:auto;display:none;z-index:80;backdrop-filter:blur(16px);box-shadow:0 12px 40px rgba(0,0,0,.45)}
-.cc-slash-menu.open{display:block}
-.cc-slash-item{display:flex;gap:.65rem;align-items:center;padding:.55rem .7rem;border-radius:10px;cursor:pointer;color:#ccc;font-size:.85rem}
-.cc-slash-item:hover,.cc-slash-item.active{background:rgba(255,255,255,.08);color:#fff}
-.cc-slash-item code{color:#ddd;font-size:.8rem;min-width:4.5rem;font-weight:600}
-</style>
-
-<script id="cc-slash-js">
+/* ChatClaud Imagine (Runway) */
 (function(){
-  var CMDS=[
-    {cmd:'/img',desc:'Generate image'},
-    {cmd:'/veo',desc:'Short video frames'},
-    {cmd:'/search',desc:'Force web search'},
-    {cmd:'/nova',desc:'Search via Nova'},
-    {cmd:'/plus',desc:'Plus subscription'},
-    {cmd:'/settings',desc:'Open settings'},
-    {cmd:'/help',desc:'Show commands'}
-  ];
-  function ensureMenu(){
-    var m=document.getElementById('ccSlashMenu');
-    if(m)return m;
-    var inp=document.getElementById('flashInput')||document.querySelector('.input-row textarea');
-    if(!inp)return null;
-    var row=inp.closest('.input-row')||inp.parentElement;
-    if(!row)return null;
-    m=document.createElement('div');
-    m.id='ccSlashMenu';
-    m.className='cc-slash-menu';
-    row.style.position=row.style.position||'relative';
-    row.appendChild(m);
-    return m;
+  var kind = 'image';
+  function $(id){ return document.getElementById(id); }
+  function isPlusUser(){
+    try {
+      if (typeof isPlus === 'function') return isPlus();
+      var s = JSON.parse(localStorage.getItem('cc_settings')||'{}');
+      return !!(s.isPlus || (s.plusUntil && new Date(s.plusUntil)>new Date()));
+    } catch(e){ return false; }
   }
-  function render(filter){
-    var m=ensureMenu();
-    if(!m)return;
-    var f=(filter||'').toLowerCase();
-    var list=CMDS.filter(function(c){return !f||c.cmd.indexOf(f)===0||c.desc.toLowerCase().indexOf(f)>=0;});
-    if(!list.length){m.classList.remove('open');return;}
-    m.innerHTML=list.map(function(c){return '<div class="cc-slash-item" data-cmd="'+c.cmd+'"><code>'+c.cmd+'</code><span>'+c.desc+'</span></div>';}).join('');
+  function dayKey(k){ return 'cc_imagine_'+k+'_'+new Date().toISOString().slice(0,10); }
+  function localLeft(k){
+    var max = k==='video' ? (isPlusUser()?15:2) : (isPlusUser()?50:5);
+    var used = parseInt(localStorage.getItem(dayKey(k))||'0',10)||0;
+    return { used: used, left: Math.max(0, max-used), max: max };
+  }
+  function bumpLocal(k){
+    var used = parseInt(localStorage.getItem(dayKey(k))||'0',10)||0;
+    localStorage.setItem(dayKey(k), String(used+1));
+  }
+  function refreshLimits(){
+    var img = localLeft('image'), vid = localLeft('video');
+    var el = $('ccImagineLimits');
+    if (el) el.textContent = (isPlusUser()?'Plus':'Free') + ' · Photos '+img.used+'/'+img.max+' · Videos '+vid.used+'/'+vid.max;
+  }
+  function openModal(){
+    var m = $('ccImagineModal');
+    if (!m) return;
     m.classList.add('open');
-    m.querySelectorAll('.cc-slash-item').forEach(function(el){
-      el.onclick=function(){
-        var inp=document.getElementById('flashInput')||document.querySelector('.input-row textarea');
-        if(inp){inp.value=el.getAttribute('data-cmd')+' ';inp.focus();try{inp.dispatchEvent(new Event('input'));}catch(e){}}
-        m.classList.remove('open');
-      };
-    });
+    m.setAttribute('aria-hidden','false');
+    refreshLimits();
+    setTimeout(function(){ var t=$('ccImaginePrompt'); if(t) t.focus(); }, 100);
+  }
+  function closeModal(){
+    var m = $('ccImagineModal');
+    if (!m) return;
+    m.classList.remove('open');
+    m.setAttribute('aria-hidden','true');
+  }
+  function appendCard(statusHtml){
+    var box = document.querySelector('#flashMessages, .messages, #messages');
+    if (!box) return null;
+    var card = document.createElement('div');
+    card.className = 'cc-imagine-card';
+    card.innerHTML = statusHtml;
+    box.appendChild(card);
+    try { box.scrollTop = box.scrollHeight; } catch(e){}
+    return card;
+  }
+  async function generate(){
+    var prompt = ($('ccImaginePrompt')&&$('ccImaginePrompt').value||'').trim();
+    if (prompt.length < 2) return;
+    var lim = localLeft(kind);
+    if (lim.left <= 0) {
+      alert(kind==='video' ? 'Daily video limit reached' : 'Daily photo limit reached');
+      return;
+    }
+    var go = $('ccImagineGo');
+    if (go) { go.disabled = true; go.textContent = 'Generating…'; }
+    closeModal();
+    var card = appendCard('<div class="cc-im-status"><span class="cc-mini-orb" style="width:22px;height:22px;border-radius:50%;display:inline-block;background:#fff;"></span> Creating '+kind+'…</div>');
+    try {
+      var urlApi = (window.ccApiUrl||function(p){return p;})(kind==='video'?'/api/imagine/video':'/api/imagine/image');
+      var res = await fetch(urlApi, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: prompt, plus: isPlusUser(), ratio: (window.__ccImRatio||'portrait'), enhance: !!(document.getElementById('ccImEnhance')&&document.getElementById('ccImEnhance').checked) })
+      });
+      var data = await res.json().catch(function(){return {};});
+      if (!res.ok) throw new Error(data.error || 'Failed');
+      bumpLocal(kind);
+      if (card) {
+        if (kind === 'video') {
+          card.innerHTML = '<video src="'+data.url+'" controls playsinline style="width:100%"></video><div class="cc-im-prompt">'+prompt.replace(/</g,'&lt;')+'</div>';
+        } else {
+          card.innerHTML = '<img src="'+data.url+'" alt="Imagine"/><div class="cc-im-prompt">'+prompt.replace(/</g,'&lt;')+'</div>';
+        }
+      }
+      try {
+        var gal = JSON.parse(localStorage.getItem('cc_gallery')||'[]');
+        gal.unshift({ url: data.url, type: kind, prompt: prompt, t: Date.now() });
+        localStorage.setItem('cc_gallery', JSON.stringify(gal.slice(0,80)));
+      } catch(e){}
+    } catch (e) {
+      if (card) card.innerHTML = '<div class="cc-im-status">Error: '+(e.message||'failed')+'</div>';
+    }
+    if (go) { go.disabled = false; go.textContent = 'Generate'; }
+    refreshLimits();
   }
   function bind(){
-    var inp=document.getElementById('flashInput')||document.querySelector('.input-row textarea');
-    if(!inp||inp.__ccSlash)return;
-    inp.__ccSlash=true;
-    inp.addEventListener('input',function(){
-      var v=inp.value||'';
-      if(v.charAt(0)==='/')render(v.split(/\s/)[0]);
-      else{var m=document.getElementById('ccSlashMenu');if(m)m.classList.remove('open');}
-    });
-    document.addEventListener('click',function(e){
-      var m=document.getElementById('ccSlashMenu');
-      if(m&&!m.contains(e.target)&&e.target!==inp)m.classList.remove('open');
+    var btn = $('ccImagineBtn');
+    if (btn) btn.addEventListener('click', openModal);
+    var c = $('ccImagineClose');
+    if (c) c.addEventListener('click', closeModal);
+    var modal = $('ccImagineModal');
+    if (modal) modal.addEventListener('click', function(e){ if (e.target === modal) closeModal(); });
+    var ti = $('ccImTabImg'), tv = $('ccImTabVid');
+    if (ti) ti.addEventListener('click', function(){ kind='image'; ti.classList.add('active'); if(tv)tv.classList.remove('active'); });
+    if (tv) tv.addEventListener('click', function(){ kind='video'; tv.classList.add('active'); if(ti)ti.classList.remove('active'); });
+    var go = $('ccImagineGo');
+    if (go) go.addEventListener('click', generate);
+    window.__ccImRatio = 'portrait';
+    var ratioBox = $('ccImRatio');
+    if (ratioBox) ratioBox.querySelectorAll('button').forEach(function(b){
+      b.addEventListener('click', function(){
+        ratioBox.querySelectorAll('button').forEach(function(x){ x.classList.remove('active'); });
+        b.classList.add('active');
+        window.__ccImRatio = b.getAttribute('data-ratio') || 'portrait';
+      });
     });
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);
-  else setTimeout(bind,500);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else bind();
 })();
+
 </script>
 
 </body>
