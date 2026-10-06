@@ -1,0 +1,10 @@
+ChatClaud — Mistral + Nova base
+
+This build starts from ChatClaud-FINAL-FIXED.zip.
+UI/design are preserved. Server additions:
+- Mistral direct Chat Completions provider.
+- Nova primary web search using NOVA_URL and NOVA_AIP_TOKEN.
+- Serper/Tavily remain fallbacks.
+- Reasoning mode prefers OpenAI/Claude.
+- Fast chat prefers Mistral, then Groq, OpenAI, Claude, HF.
+No API secrets are stored in this archive.
