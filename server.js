@@ -264,7 +264,7 @@ async function fetchUrlContent(cleanUrl, maxLength) {
 
 /* ========== Nova ========== */
 async function novaRequest(p, body) {
-  const configuredBase = (process.env.NOVA_URL || process.env.NOVA_BASE || 'https://nova-brawser.onrender.com').replace(/\/$/, '');
+  const configuredBase = (process.env.NOVA_URL || '').replace(/\/$/, '');
   const base = configuredBase;
   const token = process.env.NOVA_API_TOKEN || process.env.NOVA_AIP_TOKEN || process.env.API_TOKEN || '';
   if (!base) throw new Error('NOVA_URL not set');
@@ -530,7 +530,7 @@ async function groqChat(messages, system, reasoning = false) {
   const keys = groqKeys();
   if (!keys.length) throw new Error('no groq');
   const primary = String(process.env.GROQ_MODEL || 'openai/gpt-oss-120b').trim() || 'openai/gpt-oss-120b';
-  const models = [primary, primary === 'openai/gpt-oss-120b' ? 'openai/gpt-oss-20b' : 'openai/gpt-oss-120b'];
+  const models = [primary, 'openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'llama-3.3-70b-versatile', 'llama-3.1-8b-instant'].filter(function(m,i,a){ return m && a.indexOf(m)===i; });
   const sys = system || 'Ты ChatClaud. Отвечай на языке пользователя. Не раскрывай название модели, провайдера, API, ключи или внутреннюю инфраструктуру. Если спрашивают кто ты — отвечай: «Я ChatClaud». Будь очень точным, проверяй логику и не выдумывай факты.';
   const msgs = normalizeChatMessages((messages || []).slice(-20), sys).map(m => ({ role:m.role, content:String(m.content||'').slice(0,9000) }));
   let lastErr='empty';
@@ -550,22 +550,9 @@ async function groqChat(messages, system, reasoning = false) {
 }
 function sanitizeProviderIdentity(text){
   let s=String(text||'');
-  s=s.replace(/\b(OpenAI|GPT(?:-?OSS)?|Claude|Anthropic|Gemini|Google AI|Grok|xAI|Llama|Meta AI|Mistral|Groq|DeepSeek|Copilot|OpenRouter|Hugging\s*Face|HF)\b/gi,'ChatClaud');
-  s=s.replace(/\b(as an? (AI|language model) (made by|from|by|powered by) [^.\n]+)/gi,'as ChatClaud');
-  s=s.replace(/\b(I('m| am) (an? )?(AI )?(assistant|model) (from|by|built by) [^.\n]+)/gi,"I'm ChatClaud");
-  s=s.replace(/\b(my training (data|cutoff)|knowledge cutoff)[^.\n]*/gi,'I use current ChatClaud knowledge and live search when available');
+  s=s.replace(/\b(OpenAI|GPT(?:-?OSS)?|Claude|Anthropic|Gemini|Google AI|Grok|xAI|Llama|Meta AI|Mistral|Groq|DeepSeek|Copilot|OpenRouter)\b/gi,'ChatClaud');
   return s;
 }
-
-const CC_SYSTEM = `You are ChatClaud — independent AI by milanmichaimilan / ChatClaud.
-Today is October 5, 2026 (use real current date when asked; never invent September 13 2026 unless search says so).
-Never claim to be OpenAI, GPT, Claude, Anthropic, Gemini, Google, Grok, xAI, Llama, Meta, Mistral, Groq, DeepSeek, Copilot, OpenRouter or any third-party API.
-If asked who you are: "I'm ChatClaud."
-Match user language (English or Russian).
-When Live web results are provided, USE them, prefer facts from those sources, and mention links when helpful.
-Commands: /search /find /img /veo /plus /settings.
-Be direct and useful.`;
-
 
 function mistralKeys() {
   const out = [];
@@ -659,157 +646,6 @@ async function hfChat(messages, system) {
   throw new Error(String(lastErr).slice(0, 200));
 }
 
-
-
-async function hfEnhancePrompt(userPrompt, kind) {
-  const keys = hfKeys();
-  if (!keys.length) return userPrompt;
-  const sys = kind === 'video'
-    ? 'Expand this into a detailed cinematic video prompt in English. Motion, camera, lighting. Max 80 words. Output ONLY the prompt.'
-    : 'Expand this into a detailed photorealistic image prompt in English. 8k, sharp. Max 70 words. Output ONLY the prompt.';
-  const models = [
-    process.env.HF_PROMPT_MODEL || 'HuggingFaceH4/zephyr-7b-beta',
-    'mistralai/Mistral-7B-Instruct-v0.2',
-  ];
-  for (const key of keys) {
-    for (const model of models) {
-      try {
-        const r = await fetch('https://api-inference.huggingface.co/models/' + model, {
-          method: 'POST',
-          headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            inputs: sys + '\n\nUser: ' + userPrompt + '\n\nPrompt:',
-            parameters: { max_new_tokens: 120, temperature: 0.7, return_full_text: false },
-          }),
-        });
-        if (!r.ok) continue;
-        const data = await r.json();
-        let t = '';
-        if (Array.isArray(data) && data[0] && data[0].generated_text) t = data[0].generated_text;
-        else if (data.generated_text) t = data.generated_text;
-        t = String(t || '').replace(/^Prompt:\s*/i, '').trim();
-        if (t.length > 15) return t.slice(0, 500);
-      } catch (e) {}
-    }
-  }
-  return userPrompt;
-}
-
-async function hfTextToImage(prompt, opts) {
-  const keys = hfKeys();
-  if (!keys.length) throw new Error('HF keys not set');
-  const model = (opts && opts.model) || process.env.HF_IMAGE_MODEL || 'black-forest-labs/FLUX.1-schnell';
-  const w = (opts && opts.width) || 768;
-  const h = (opts && opts.height) || 1344;
-  let lastErr = '';
-  for (const key of keys) {
-    try {
-      const r = await fetch('https://api-inference.huggingface.co/models/' + model, {
-        method: 'POST',
-        headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          inputs: prompt,
-          parameters: { width: w, height: h, num_inference_steps: 4 },
-        }),
-      });
-      if (!r.ok) {
-        lastErr = await r.text().catch(() => 'hf ' + r.status);
-        continue;
-      }
-      const ct = r.headers.get('content-type') || '';
-      if (ct.includes('application/json')) {
-        const j = await r.json();
-        if (j.error) { lastErr = j.error; continue; }
-      }
-      const buf = Buffer.from(await r.arrayBuffer());
-      if (buf.length < 500) { lastErr = 'empty image'; continue; }
-      const b64 = 'data:image/jpeg;base64,' + buf.toString('base64');
-      return { url: b64, model };
-    } catch (e) {
-      lastErr = e.message || String(e);
-    }
-  }
-  throw new Error(String(lastErr).slice(0, 180) || 'HF image failed');
-}
-
-
-/* ========== Runway Imagine (image + video) ========== */
-function runwayKey() {
-  return process.env.RUNWAYML_API_SECRET || process.env.RUNWAY_API_KEY || process.env.RUNWAY_KEY || '';
-}
-const RUNWAY_BASE = 'https://api.dev.runwayml.com';
-const RUNWAY_VER = '2024-11-06';
-
-async function runwayFetch(path, body) {
-  const key = runwayKey();
-  if (!key) throw new Error('Runway key not configured');
-  const r = await fetch(RUNWAY_BASE + path, {
-    method: 'POST',
-    headers: {
-      Authorization: 'Bearer ' + key,
-      'X-Runway-Version': RUNWAY_VER,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
-  const data = await r.json().catch(() => ({}));
-  if (!r.ok) {
-    const msg = data.error || data.message || data.failure || ('Runway HTTP ' + r.status);
-    const err = new Error(typeof msg === 'string' ? msg : JSON.stringify(msg).slice(0, 200));
-    err.statusCode = r.status;
-    throw err;
-  }
-  return data;
-}
-
-async function runwayGetTask(id) {
-  const key = runwayKey();
-  if (!key) throw new Error('Runway key not configured');
-  const r = await fetch(RUNWAY_BASE + '/v1/tasks/' + encodeURIComponent(id), {
-    headers: {
-      Authorization: 'Bearer ' + key,
-      'X-Runway-Version': RUNWAY_VER,
-    },
-  });
-  const data = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(data.error || data.message || 'task poll failed');
-  return data;
-}
-
-async function runwayWaitTask(id, maxMs) {
-  const deadline = Date.now() + (maxMs || 180000);
-  let last = null;
-  while (Date.now() < deadline) {
-    last = await runwayGetTask(id);
-    const st = String(last.status || '').toUpperCase();
-    if (st === 'SUCCEEDED' || st === 'SUCCESS') return last;
-    if (st === 'FAILED' || st === 'CANCELLED') {
-      throw new Error(last.failure || last.failureCode || 'Generation failed');
-    }
-    await new Promise((r) => setTimeout(r, 2500));
-  }
-  throw new Error('Generation timed out');
-}
-
-/** Daily limits free: 5 images, 2 videos (by IP) */
-const imagineUsage = new Map();
-function imagineDayKey(ip, kind) {
-  const d = new Date().toISOString().slice(0, 10);
-  return d + '|' + kind + '|' + (ip || 'x');
-}
-function checkImagineLimit(ip, kind, isPlus) {
-  const max = kind === 'video' ? (isPlus ? 15 : 2) : (isPlus ? 50 : 5);
-  const k = imagineDayKey(ip, kind);
-  const n = imagineUsage.get(k) || 0;
-  if (n >= max) return { ok: false, left: 0, max, used: n };
-  return { ok: true, left: max - n, max, used: n };
-}
-function bumpImagine(ip, kind) {
-  const k = imagineDayKey(ip, kind);
-  imagineUsage.set(k, (imagineUsage.get(k) || 0) + 1);
-}
-
-
 async function webSearch(q, type) {
   const query = String(q || '').trim().slice(0, 300);
   if (query.length < 2) return { text: '', sources: [], type: type || 'search' };
@@ -817,13 +653,14 @@ async function webSearch(q, type) {
   const searchType = ['videos', 'images', 'news', 'search'].includes(type) ? type : 'search';
   const parts = [];
   const sources = [];
+  const novaUrl = process.env.NOVA_URL || 'https://nova-brawser.onrender.com';
 
-  // 1) NOVA primary — real sites + live data
+  // Nova is the primary web-search provider. Serper/Tavily are fallbacks.
   try {
     const data = await novaRequest('/api/search', { q: query, type: searchType });
     const items = (data && (data.organic || data.results || data.videos || data.images || data.news)) || [];
-    if (data && data.answer) parts.push({ title: 'Summary', text: data.answer, url: '', src: 'nova' });
-    (Array.isArray(items) ? items : []).slice(0, 10).forEach((r) => {
+    if (data && data.answer) parts.push({ title: 'Кратко', text: data.answer, url: '', src: 'nova' });
+    (Array.isArray(items) ? items : []).slice(0, 8).forEach((r) => {
       parts.push({
         title: r.title || r.name || '',
         text: r.snippet || r.description || r.content || r.text || r.date || '',
@@ -833,44 +670,11 @@ async function webSearch(q, type) {
       });
     });
   } catch (e) {
-    console.warn('[search] nova', e.message);
+    console.warn('nova search', e.message);
   }
 
-  // 2) Tavily fallback only if Nova weak
-  const tavily = process.env.TAVILY_KEY || process.env.TAVILY_API_KEY || '';
-  if (tavily && searchType === 'search' && parts.length < 2) {
-    try {
-      const res = await fetch('https://api.tavily.com/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          api_key: tavily,
-          query,
-          search_depth: 'basic',
-          include_answer: true,
-          max_results: 5,
-        }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.answer) parts.push({ title: 'Summary', text: data.answer, url: '', src: 'tavily' });
-        (data.results || []).forEach((r) => {
-          parts.push({
-            title: r.title || '',
-            text: r.content || r.snippet || '',
-            url: r.url || '',
-            src: 'tavily',
-          });
-        });
-      }
-    } catch (e) {
-      console.warn('[search] tavily', e.message);
-    }
-  }
-
-  // 3) Serper last
   const serper = process.env.SERPER_KEY || '';
-  if (serper && parts.length < 2) {
+  if (serper) {
     try {
       const endpoints = {
         search: 'https://google.serper.dev/search',
@@ -881,7 +685,7 @@ async function webSearch(q, type) {
       const res = await fetch(endpoints[searchType] || endpoints.search, {
         method: 'POST',
         headers: { 'X-API-KEY': serper, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: query, num: 6, gl: 'us', hl: 'en' }),
+        body: JSON.stringify({ q: query, num: 5, gl: 'ru', hl: 'ru' }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -895,31 +699,46 @@ async function webSearch(q, type) {
             title: r.title || '',
             text: r.snippet || r.description || r.date || '',
             url: r.link || r.url || '',
-            src: 'serper',
+            src: searchType,
+            imageUrl: r.imageUrl || r.thumbnailUrl || '',
           });
         });
       }
     } catch (e) {}
   }
 
+  const tavily = process.env.TAVILY_KEY || '';
+  if (tavily && searchType === 'search' && parts.length < 2) {
+    try {
+      const res = await fetch('https://api.tavily.com/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ api_key: tavily, query, search_depth: 'basic', include_answer: true, max_results: 5 }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.answer) parts.push({ title: 'Кратко', text: data.answer, url: '', src: 'web' });
+        (data.results || []).forEach((r) => {
+          parts.push({ title: r.title || '', text: r.content || r.snippet || '', url: r.url || '', src: 'web' });
+        });
+      }
+    } catch (e) {}
+  }
+
   parts.forEach((p) => {
-    if (p.url && sources.length < 10) sources.push({ title: p.title || p.url, url: p.url, src: p.src || 'web' });
+    if (p.url && sources.length < 8) sources.push({ title: p.title || p.url, url: p.url });
   });
 
-  let text = parts
-    .map((p, i) => {
-      let line = i + 1 + '. ' + (p.title || '');
-      if (p.url) line += '\n' + p.url;
-      if (p.text) line += '\n' + String(p.text).slice(0, 240);
-      return line;
-    })
-    .join('\n\n')
-    .slice(0, 5500);
+  let text = parts.map((p, i) => {
+    let line = i + 1 + '. ' + (p.title || '');
+    if (p.url) line += '\n' + p.url;
+    if (p.text) line += '\n' + String(p.text).slice(0, 180);
+    return line;
+  }).join('\n\n').slice(0, 4000);
 
-  if (!text) text = 'Nothing found for this query.';
+  if (!text) text = 'Ничего не найдено по запросу.';
   return { text, sources, count: parts.length, type: searchType, query };
 }
-
 
 function contentType(filePath) {
   const ext = path.extname(filePath).toLowerCase();
@@ -1132,16 +951,8 @@ const server = http.createServer(async (req, res) => {
         const greetingRe = /^(привет|здравствуй|хай|hello|hi|ку|йо|как дела|спасибо|пока|ок|окей|да|нет)\W*$/i;
         let q3 = lastUser3.trim();
         // Always search when user asks to find / look up (any message count)
-        const intentSearch = /(?:^|\s)(\/search|\/find|\/seasch|\/nova|найди|найди\s+мне|поищи|поиск|погугли|загугли|гугл|search\b|find\b|look\s*up|google\b|what\s+is\b|who\s+is\b|how\s+many\b|when\s+did\b|latest\b|news\b|мем|meme|новост|ти[кк]\s*ток|tiktok|кто\s+такой|что\s+такое|сколько|когда\s+вышел|актуальн)/i.test(q3);
-        const forceSearch = intentSearch
-          || /^\/search\b/i.test(q3)
-          || /^\/find\b/i.test(q3)
-          || /^\/seasch\b/i.test(q3)
-          || /^\/nova\b/i.test(q3)
-          || /^(найди|поищи|загугли|погугли)\b/i.test(q3)
-          || /^(search|find|look\s*up|google)\b/i.test(q3)
-          || /(поищи|найди).{0,12}(ещ[её]|again|once more)/i.test(q3)
-          || /(search|find).{0,12}(again|more)/i.test(q3);
+        const intentSearch = /(?:^|\s)(\/search|\/seasch|\/nova|найди|найди\s+мне|поищи|поиск|погугли|гугл|search|find|look\s*up|мем|meme|новост|ти[кк]\s*ток|tiktok|кто\s+такой|что\s+такое|сколько|когда\s+вышел|актуальн)/i.test(q3);
+        const forceSearch = intentSearch || /^\/search\b/i.test(q3) || /^\/seasch\b/i.test(q3) || /^\/nova\b/i.test(q3);
         if (/^\/(search|seasch|nova)\b/i.test(q3)) q3 = q3.replace(/^\/(search|seasch|nova)\s*/i, '').trim();
         const looksLikeQuery = forceSearch || (q3.length >= 4 && !greetingRe.test(q3));
         // video queries still go through search (Nova can resolve TikTok etc.)
@@ -1188,8 +999,8 @@ const server = http.createServer(async (req, res) => {
       const failures = [];
       const isReasoning = !!body.reason || /^(think|reason|reasoning)$/i.test(String(body.mode || ''));
       const providers = isReasoning
-        ? [['groq', () => groqChat(trimmed, [CC_SYSTEM, body.system].filter(Boolean).join('\n\n'), true)], ['hf', () => hfChat(trimmed, [CC_SYSTEM, body.system].filter(Boolean).join('\n\n'))], ['mistral', () => mistralChat(trimmed, [CC_SYSTEM, body.system].filter(Boolean).join('\n\n'))]]
-        : [['groq', () => groqChat(trimmed, [CC_SYSTEM, body.system].filter(Boolean).join('\n\n'), false)], ['mistral', () => mistralChat(trimmed, [CC_SYSTEM, body.system].filter(Boolean).join('\n\n'))], ['hf', () => hfChat(trimmed, [CC_SYSTEM, body.system].filter(Boolean).join('\n\n'))]];
+        ? [['groq', () => groqChat(trimmed, body.system, true)], ['hf', () => hfChat(trimmed, body.system)], ['mistral', () => mistralChat(trimmed, body.system)]]
+        : [['groq', () => groqChat(trimmed, body.system, false)], ['mistral', () => mistralChat(trimmed, body.system)], ['hf', () => hfChat(trimmed, body.system)]];
       for (const [name, call] of providers) {
         try {
           result = await call();
@@ -1294,111 +1105,6 @@ const server = http.createServer(async (req, res) => {
   }
 
   /* --- /api/search --- */
-  
-  /* --- /api/imagine/image --- */
-  if (pathname === '/api/imagine/image' && req.method === 'POST') {
-    try {
-      if (!runwayKey()) return send(res, 503, { error: 'Imagine not configured' });
-      const body = await readBody(req);
-      let prompt = String(body.prompt || body.text || '').trim().slice(0, 900);
-      if (prompt.length < 2) return send(res, 400, { error: 'prompt required' });
-      const isPlus = !!body.plus;
-      const lim = checkImagineLimit(clientIp(req), 'image', isPlus);
-      if (!lim.ok) return send(res, 429, { error: 'Daily image limit reached', left: 0, max: lim.max });
-      const enhance = body.enhance !== false;
-      if (enhance) {
-        try { prompt = await hfEnhancePrompt(prompt, 'image'); } catch (e) {}
-      }
-      const ratio = String(body.ratio || 'portrait');
-      const dims = ratio === 'landscape' ? { width: 1344, height: 768 }
-        : ratio === 'square' ? { width: 1024, height: 1024 }
-        : { width: 768, height: 1344 };
-      // Prefer HuggingFace (free-ish) then Runway if configured
-      try {
-        const hf = await hfTextToImage(prompt, dims);
-        bumpImagine(clientIp(req), 'image');
-        const left = checkImagineLimit(clientIp(req), 'image', isPlus).left;
-        return send(res, 200, { ok: true, url: hf.url, type: 'image', model: hf.model, prompt, left, provider: 'chatclaud-imagine' });
-      } catch (hfErr) {
-        console.warn('[imagine image hf]', hfErr.message);
-      }
-      if (!runwayKey()) return send(res, 503, { error: 'Image generator unavailable' });
-      const model = String(body.model || process.env.RUNWAY_IMAGE_MODEL || 'gen4_image_turbo');
-      const task = await runwayFetch('/v1/text_to_image', {
-        model: model === 'gen4_image' ? 'gen4_image' : 'gen4_image_turbo',
-        promptText: prompt,
-        ratio: ratio === 'landscape' ? '1920:1080' : ratio === 'square' ? '1440:1440' : '1080:1920',
-      });
-      const id = task.id || task.task_id;
-      if (!id) return send(res, 502, { error: 'No task id from Runway' });
-      const done = await runwayWaitTask(id, 120000);
-      const out = (done.output && done.output[0]) || done.output || (done.artifacts && done.artifacts[0] && done.artifacts[0].url);
-      const url = typeof out === 'string' ? out : (out && (out.url || out.uri)) || '';
-      if (!url) return send(res, 502, { error: 'No image output' });
-      bumpImagine(clientIp(req), 'image');
-      const left = checkImagineLimit(clientIp(req), 'image', isPlus).left;
-      return send(res, 200, { ok: true, url, type: 'image', model, left, provider: 'chatclaud-imagine' });
-    } catch (e) {
-      return send(res, e.statusCode || 503, { error: e.message || 'Image generation failed' });
-    }
-  }
-
-  /* --- /api/imagine/video --- */
-  if (pathname === '/api/imagine/video' && req.method === 'POST') {
-    try {
-      if (!runwayKey()) return send(res, 503, { error: 'Imagine not configured' });
-      const body = await readBody(req);
-      let prompt = String(body.prompt || body.text || '').trim().slice(0, 900);
-      if (prompt.length < 2) return send(res, 400, { error: 'prompt required' });
-      const isPlus = !!body.plus;
-      const lim = checkImagineLimit(clientIp(req), 'video', isPlus);
-      if (!lim.ok) return send(res, 429, { error: 'Daily video limit reached', left: 0, max: lim.max });
-      if (body.enhance !== false) {
-        try { prompt = await hfEnhancePrompt(prompt, 'video'); } catch (e) {}
-      }
-      if (!runwayKey()) {
-        return send(res, 503, { error: 'Video needs RUNWAYML_API_SECRET or use Photo mode (HF)', prompt });
-      }
-      const model = String(body.model || process.env.RUNWAY_VIDEO_MODEL || 'gen4.5');
-      const ratio = String(body.ratio || '720:1280');
-      const duration = Math.min(10, Math.max(2, Number(body.duration) || 5));
-      const payload = {
-        model: model,
-        promptText: prompt,
-        ratio: ratio,
-        duration: duration,
-      };
-      if (body.imageUrl) payload.promptImage = body.imageUrl;
-      const path = body.imageUrl ? '/v1/image_to_video' : '/v1/text_to_video';
-      const task = await runwayFetch(path, payload);
-      const id = task.id || task.task_id;
-      if (!id) return send(res, 502, { error: 'No task id from Runway' });
-      const done = await runwayWaitTask(id, 300000);
-      const out = (done.output && done.output[0]) || done.output;
-      const url = typeof out === 'string' ? out : (out && (out.url || out.uri)) || '';
-      if (!url) return send(res, 502, { error: 'No video output' });
-      bumpImagine(clientIp(req), 'video');
-      const left = checkImagineLimit(clientIp(req), 'video', isPlus).left;
-      return send(res, 200, { ok: true, url, type: 'video', model, left, provider: 'chatclaud-imagine' });
-    } catch (e) {
-      return send(res, e.statusCode || 503, { error: e.message || 'Video generation failed' });
-    }
-  }
-
-  /* --- /api/imagine/limits --- */
-  if (pathname === '/api/imagine/limits' && req.method === 'GET') {
-    const isPlus = (req.url || '').includes('plus=1');
-    const ip = clientIp(req);
-    const img = checkImagineLimit(ip, 'image', isPlus);
-    const vid = checkImagineLimit(ip, 'video', isPlus);
-    return send(res, 200, {
-      image: { used: img.used, left: img.left, max: img.max },
-      video: { used: vid.used, left: vid.left, max: vid.max },
-      hasRunway: !!runwayKey(),
-    });
-  }
-
-
   if (pathname === '/api/search' && req.method === 'POST') {
     try {
       const body = await readBody(req);
