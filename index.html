@@ -6828,27 +6828,27 @@ body {
             </div>
             <div style="display:flex;gap:0.5rem;margin-top:1rem;justify-content:center;">
                 <button class="btn-black" id="acceptPrivacyBtn" style="width:auto;padding:0.5rem 1.5rem;">Принять</button>
-                <button class="btn-black" id="declinePrivacyBtn" style="width:auto;padding:0.5rem 1.5rem;background:transparent;border:1px solid rgba(255,255,255,0.2);">Отмена</button>
+                <button class="btn-black" id="declinePrivacyBtn" style="width:auto;padding:0.5rem 1.5rem;background:transparent;border:1px solid rgba(255,255,255,0.2);">Cancel</button>
             </div>
         </div>
     </div>
 
     <div id="deleteModal" class="modal-overlay">
         <div class="modal-box">
-            <p style="margin-bottom:1.5rem;font-size:1rem;color:#ddd;">Удалить этот чат?</p>
+            <p style="margin-bottom:1.5rem;font-size:1rem;color:#ddd;">Delete этот чат?</p>
             <div class="modal-buttons" style="display:flex;gap:0.6rem;justify-content:center;">
-                <button class="btn-black" id="confirmDeleteBtn" style="width:auto;padding:0.5rem 1.4rem;background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.3);color:#ef4444;">Удалить</button>
-                <button class="btn-black" id="cancelDeleteBtn" style="width:auto;padding:0.5rem 1.4rem;background:transparent;border:1px solid rgba(255,255,255,0.2);">Отмена</button>
+                <button class="btn-black" id="confirmDeleteBtn" style="width:auto;padding:0.5rem 1.4rem;background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.3);color:#ef4444;">Delete</button>
+                <button class="btn-black" id="cancelDeleteBtn" style="width:auto;padding:0.5rem 1.4rem;background:transparent;border:1px solid rgba(255,255,255,0.2);">Cancel</button>
             </div>
         </div>
     </div>
 
     <div id="importConfirmModal" class="modal-overlay">
         <div class="modal-box">
-            <p style="margin-bottom:1.5rem;font-size:1rem;color:#ddd;">Импорт объединит чаты. Продолжить?</p>
+            <p style="margin-bottom:1.5rem;font-size:1rem;color:#ddd;">Импорт объединит чаты. Continue?</p>
             <div class="modal-buttons" style="display:flex;gap:0.6rem;justify-content:center;">
                 <button class="btn-black" id="confirmImportBtn" style="width:auto;padding:0.5rem 1.4rem;">Импортировать</button>
-                <button class="btn-black" id="cancelImportBtn" style="width:auto;padding:0.5rem 1.4rem;background:transparent;border:1px solid rgba(255,255,255,0.2);">Отмена</button>
+                <button class="btn-black" id="cancelImportBtn" style="width:auto;padding:0.5rem 1.4rem;background:transparent;border:1px solid rgba(255,255,255,0.2);">Cancel</button>
             </div>
         </div>
     </div>
@@ -6889,7 +6889,7 @@ body {
             <div id="deployStep2" style="display:none;">
                 <p id="deployPlatLabel" style="color:#ccc;font-size:0.85rem;margin-bottom:0.6rem;"></p>
                 <label style="font-size:0.78rem;color:#aaa;display:block;margin-bottom:0.3rem;">Название проекта</label>
-                <input type="text" id="deployProjectName" class="field" placeholder="my-site" maxlength="40" style="margin-bottom:0.55rem;">
+                <input type="text" id="deployProjectName" class="field" placeholder="Type a message…" maxlength="40" style="margin-bottom:0.55rem;">
                 <label style="font-size:0.78rem;color:#aaa;display:block;margin-bottom:0.3rem;">Файл проекта (HTML/ZIP) — опционально</label>
                 <input type="file" id="deployFileInput" accept=".html,.htm,.zip,.json" class="field" style="padding:0.45rem;margin-bottom:0.55rem;">
                 <p style="font-size:0.72rem;color:#666;margin-bottom:0.55rem;">Если файл не выбран — возьмём последний HTML из чата</p>
@@ -6897,7 +6897,7 @@ body {
                 <div class="deploy-prog"><div class="deploy-prog-fill" id="deployProgFill"></div></div>
                 <div class="deploy-status" id="deployStatusText">Готово</div>
                 <button class="subscribe-btn" id="deployConfirmBtn" style="margin-top:0.75rem;">Задеплоить</button>
-                <button class="btn-black" id="deployBackBtn" style="margin-top:0.45rem;background:transparent;border:1px solid rgba(255,255,255,0.15);">← Назад</button>
+                <button class="btn-black" id="deployBackBtn" style="margin-top:0.45rem;background:transparent;border:1px solid rgba(255,255,255,0.15);">← Back</button>
             </div>
             <button class="btn-black" id="closeDeployBtn" style="margin-top:0.55rem;background:transparent;border:1px solid rgba(255,255,255,0.15);width:100%;">Закрыть</button>
         </div>
@@ -6948,7 +6948,7 @@ body {
             
             <div class="update-card">
                 <h3>ChatClaud 2.0 — в разработке</h3>
-                <div class="upd-item"><span class="upd-num">1</span><div><b>Живое общение</b>Голосовой чат в реальном времени</div></div>
+                <div class="upd-item"><span class="upd-num">1</span><div><b>Живое общение</b>Voiceовой чат в реальном времени</div></div>
                 <div class="upd-item"><span class="upd-num">2</span><div><b>Мгновенные ответы</b>Ещё быстрее, чем сейчас</div></div>
                 <div class="upd-item"><span class="upd-num">3</span><div><b>Адаптация под тебя</b>ИИ запоминает стиль общения</div></div>
                 <div class="upd-item"><span class="upd-num">4</span><div><b>10 000 строк кода</b>Большие проекты за один запрос</div></div>
@@ -6972,7 +6972,7 @@ body {
     <div id="welcomeScreen" class="screen hidden">
         <div class="welcome-inner">
             <div class="welcome-logo"><img src="icon-512.png" alt="ChatClaud" style="width:72px;height:72px;border-radius:18px;object-fit:cover;" onerror="this.onerror=null;this.src='icon-192.png';this.onerror=function(){this.src='apple-touch-icon.png';};"></div>
-            <div class="welcome-text">Welcome by ChatClaud</div>
+            <div class="welcome-text">Welcome to ChatClaud</div>
             <div class="welcome-sub">Preparing workspace…</div>
         </div>
     </div>
@@ -6991,19 +6991,19 @@ body {
                     GitHub
                 </button>
             </div>
-            <input type="email" class="field" id="emailInput" placeholder="Email" autocomplete="email">
-            <input type="password" class="field" id="passwordInput" placeholder="Password" autocomplete="current-password">
+            <input type="email" class="field" id="emailInput" placeholder="Type a message…" autocomplete="email">
+            <input type="password" class="field" id="passwordInput" placeholder="Type a message…" autocomplete="current-password">
             <label class="agree-row" id="agreeRow" for="agreeTerms">
                 <input type="checkbox" id="agreeTerms" name="agreeTerms">
                 <span class="agree-box" aria-hidden="true"></span>
                 <span class="agree-text">Я принимаю условия использования и политику конфиденциальности ChatClaud</span>
             </label>
-            <button class="btn-black" id="authBtn">Войти</button>
+            <button class="btn-black" id="authBtn">Sign in</button>
 
-            <button type="button" id="backToHeroBtn" style="background:none;border:none;color:#666;font-size:0.8rem;margin-top:0.8rem;cursor:pointer;width:100%;">← Назад</button>
+            <button type="button" id="backToHeroBtn" style="background:none;border:none;color:#666;font-size:0.8rem;margin-top:0.8rem;cursor:pointer;width:100%;">← Back</button>
 
-            <div class="link" id="toggleAuth">Нет аккаунта? Зарегистрироваться</div>
-            <div class="link" id="forgotPasswordLink">Забыли пароль?</div>
+            <div class="link" id="toggleAuth">No account yet? Зарегистрироваться</div>
+            <div class="link" id="forgotPasswordLink">Forgot password?</div>
             <div class="company-tag">milanmichaimilan</div>
         </div>
     </div>
@@ -7018,7 +7018,7 @@ body {
             <input type="text" class="field" id="usernameInput" placeholder="Username для Plus (например slava_8383)" maxlength="32" autocomplete="off" style="margin-top:0.5rem;">
             <p style="font-size:0.72rem;color:#888;margin:0.4rem 0 0.8rem;line-height:1.35;">Этот username укажи боту после оплаты Stars — на него придёт Plus.</p>
             <div class="year-scroll" id="yearScroll" style="display:flex;overflow-x:auto;gap:0.8rem;margin-bottom:1.2rem;padding-bottom:0.4rem;"></div>
-            <button class="btn-black" id="saveProfileBtn">Продолжить</button>
+            <button class="btn-black" id="saveProfileBtn">Continue</button>
         </div>
     </div>
 
@@ -7028,25 +7028,25 @@ body {
             <div class="settings-profile">
                 <div class="settings-avatar" id="settingsAvatar">C</div>
                 <div>
-                    <div id="settingsNick" style="font-weight:600;color:#fff;">Пользователь</div>
+                    <div id="settingsNick" style="font-weight:600;color:#fff;">User</div>
                     <div id="settingsUsername" style="font-size:0.8rem;color:#a78bfa;margin-top:0.15rem;">@—</div>
                     <div id="settingsEmail" style="font-size:0.8rem;color:#888;">—</div>
                     <div id="plusStatusLabel" style="font-size:0.75rem;margin-top:0.25rem;color:#aaa;">Free</div>
                 </div>
             </div>
             <div class="settings-section">
-                <div class="settings-token"><span>Сообщения Pro сегодня</span><span id="usageExpert">0</span></div>
-                <div class="settings-token"><span>Изображения сегодня</span><span id="usageImages">0</span></div>
-                <div class="settings-token"><span>Видео сегодня</span><span id="usageVideos">0</span></div>
+                <div class="settings-token"><span>Pro messages today</span><span id="usageExpert">0</span></div>
+                <div class="settings-token"><span>Images today</span><span id="usageImages">0</span></div>
+                <div class="settings-token"><span>Videos today</span><span id="usageVideos">0</span></div>
             </div>
 
             <div class="settings-section">
-                <label style="font-size:0.75rem;color:#888;">Тема чата</label>
+                <label style="font-size:0.75rem;color:#888;">Chat theme</label>
                 <div class="cc-bg-picker">
-                  <button type="button" class="cc-bg-opt active" data-bg="classic"><div class="cc-bg-preview cc-prev-dark"></div>Чёрный</button>
-                  <button type="button" class="cc-bg-opt" data-bg="light"><div class="cc-bg-preview cc-prev-light"></div>Белый</button>
-                  <button type="button" class="cc-bg-opt" data-bg="wave"><div class="cc-bg-preview cc-prev-wave"></div>Волны</button>
-                  <button type="button" class="cc-bg-opt" data-bg="blue"><div class="cc-bg-preview cc-prev-blue"></div>Синий</button>
+                  <button type="button" class="cc-bg-opt active" data-bg="classic"><div class="cc-bg-preview cc-prev-dark"></div>Dark</button>
+                  <button type="button" class="cc-bg-opt" data-bg="light"><div class="cc-bg-preview cc-prev-light"></div>Light</button>
+                  <button type="button" class="cc-bg-opt" data-bg="wave"><div class="cc-bg-preview cc-prev-wave"></div>Waves</button>
+                  <button type="button" class="cc-bg-opt" data-bg="blue"><div class="cc-bg-preview cc-prev-blue"></div>Blue</button>
                 </div>
             </div>
             <div class="settings-section">
@@ -7054,19 +7054,19 @@ body {
                 <select id="themeModeSelect" class="field">
                     <option value="dark">Dark</option>
                     <option value="light">Light</option>
-                    <option value="auto">Как в системе</option>
+                    <option value="auto">System</option>
                 </select>
             </div>
-            <div class="settings-section" id="settingsLangSelectRow">
-                <label style="font-size:0.75rem;color:#888;">Язык / Language</label>
-                <select id="settingsLangSelect" class="field">
-                    <option value="ru">Русский</option>
+            <div class="settings-section" id="settingsLangSelectRow" style="display:none!important">
+                <label style="font-size:0.75rem;color:#888;">Language</label>
+                <select id="settingsLangSelect" style="display:none!important" class="field">
+                    <option value="ru">English</option>
                     <option value="en">English</option>
                 </select>
             </div>
-            <a class="settings-link-btn" id="buyPlusLink" href="https://t.me/Milanchik_boks" target="_blank" rel="noopener">Get Plus в боте · Stars</a>
-            <button type="button" class="btn-black" id="copyUsernameBtn" style="width:100%;margin-top:0.45rem;background:transparent;border:1px solid var(--border);font-size:0.85rem;">Скопировать username для бота</button>
-            <p id="plusHintText" style="font-size:0.72rem;color:#888;margin:0.5rem 0 0;line-height:1.4;">После оплаты Stars бот спросит username — вставь скопированный.</p>
+            <a class="settings-link-btn" id="buyPlusLink" href="https://t.me/Milanchik_boks" target="_blank" rel="noopener">Get Plus in bot · Stars</a>
+            <button type="button" class="btn-black" id="copyUsernameBtn" style="width:100%;margin-top:0.45rem;background:transparent;border:1px solid var(--border);font-size:0.85rem;">Copy username for bot</button>
+            <p id="plusHintText" style="font-size:0.72rem;color:#888;margin:0.5rem 0 0;line-height:1.4;">After paying with Stars, the bot will ask for your username — paste the one you copied.</p>
             <div class="settings-section">
                 <label style="font-size:0.75rem;color:#888;">Написать администратору</label>
                 <textarea id="adminReportInput" class="field" rows="3" placeholder="Bug or question..." style="resize:vertical;min-height:70px;"></textarea>
@@ -7078,7 +7078,7 @@ body {
                 <button class="btn-black" id="settingsClearGalleryBtn" style="width:100%;margin-bottom:0.45rem;background:transparent;border:1px solid var(--border);">Очистить галерею</button>
             </div>
             <button class="btn-black" id="logoutBtn" style="margin-top:0.5rem;width:100%;">Sign out из аккаунта</button>
-            <button class="btn-black" id="settingsBackBtn" style="margin-top:0.5rem;width:100%;background:transparent;border:1px solid var(--border);">Назад</button>
+            <button class="btn-black" id="settingsBackBtn" style="margin-top:0.5rem;width:100%;background:transparent;border:1px solid var(--border);">Back</button>
         </div>
     </div>
 
@@ -7088,7 +7088,7 @@ body {
         <div class="cards">
             <div class="card" data-target="flash">
                 <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
-                <h3>ChatClaud</h3><p>Мгновенный помощник</p>
+                <h3>ChatClaud</h3><p>Instant assistant</p>
             </div>
             <div class="card" data-target="expert" style="display:none!important">
                 <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
@@ -7100,10 +7100,10 @@ body {
     <div id="flashChat" class="screen hidden">
         <div class="chat-layout">
             <div class="top-bar">
-                <button class="burger-btn" id="flashBurger" title="Меню"><span></span><span></span><span></span></button>
+                <button class="burger-btn" id="flashBurger" title="Menu"><span></span><span></span><span></span></button>
                 <div class="title" id="flashTitle" style="display:none">ChatClaud</div>
                 <div class="top-bar-actions">
-                    <button type="button" class="voice-btn" id="flashVoiceBtn" title="Голос" style="display:none!important" aria-hidden="true">Голос</button>
+                    <button type="button" class="voice-btn" id="flashVoiceBtn" title="Voice" style="display:none!important" aria-hidden="true">Voice</button>
                     <button type="button" id="flashNewChat" class="cc-newchat-logo" title="New chat" aria-label="New chat"><img src="icon-192.png" alt="" width="22" height="22"></button>
 <button type="button" class="cc-imagine-btn" id="ccImagineBtn" title="Imagine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/><path d="M19 13l.8 2.2L22 16l-2.2.8L19 19l-.8-2.2L16 16l2.2-.8L19 13z"/></svg> Imagine</button>
                     <button type="button" id="flashSettingsBtn" style="display:none">Settings</button>
@@ -7142,7 +7142,7 @@ body {
                     <button id="themeToggleBtn">Theme</button>
                     <select id="flashPersonaSelect"><option value="default">Нейтральный</option><option value="cheerful">Весёлый</option><option value="harsh">Дерзкий</option><option value="custom">Свой</option></select>
                     <input id="flashCustomPersona" class="field">
-                    <select id="flashLangSelect"><option value="ru">Русский</option><option value="en">English</option></select>
+                    <select id="flashLangSelect"><option value="ru">English</option><option value="en">English</option></select>
                     <div id="flashTemplates"></div>
                     <button id="flashExportBtn"></button>
                     <button id="flashImportBtn"></button>
@@ -7190,7 +7190,7 @@ body {
                         </button>
                         <button type="button" class="mode-opt" data-mode="think" data-label="ᴅᴜᴍᴀᴇᴛ">
                             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2.5"/></svg>
-                            <span>Думает</span>
+                            <span>Thinking</span>
                         </button>
                         <button type="button" class="mode-opt" data-mode="code" data-label="ᴋᴏᴅ">
                             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 7l-4 5 4 5M16 7l4 5-4 5"/></svg>
@@ -7210,7 +7210,7 @@ body {
                         <div class="spacer"></div>
                         <button class="auto-btn" id="flashAutoBtn" style="display:none"></button>
                         <button type="button" class="live-open-btn" id="liveOpenBtn" title="Живой чат">LIVE</button>
-                        <button type="button" class="mic-btn" id="flashMicBtn" title="Голос">
+                        <button type="button" class="mic-btn" id="flashMicBtn" title="Voice">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
                         </button>
                         <button type="button" class="stop-gen-btn" id="flashStopBtn" title="Стоп"><svg viewBox="0 0 24 24" width="12" height="12"><rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor"/></svg></button>
@@ -7224,11 +7224,11 @@ body {
     <div id="expertChat" class="screen hidden">
         <div class="chat-layout">
             <div class="top-bar">
-                <button type="button" class="top-icon-btn" data-back="selection" title="Назад">←</button>
-                <button class="burger-btn" id="expertBurger" title="Меню"><span></span><span></span><span></span></button>
+                <button type="button" class="top-icon-btn" data-back="selection" title="Back">←</button>
+                <button class="burger-btn" id="expertBurger" title="Menu"><span></span><span></span><span></span></button>
                 <div class="title" id="expertTitle">ClaudForge <span class="beta-pill">Beta</span></div>
                 <div class="top-bar-actions">
-                    <button type="button" class="voice-btn" id="expertVoiceBtn" title="Голосовой чат">Голос</button>
+                    <button type="button" class="voice-btn" id="expertVoiceBtn" title="Voiceовой чат">Voice</button>
                     <button type="button" id="expertNewChat" title="New chat">+</button>
                     <button type="button" id="expertProjectBtn">Проекты</button>
                     <button type="button" id="expertPreviewBtn">Превью</button>
@@ -7239,7 +7239,7 @@ body {
             <div class="beta-banner">Beta</div>
             <div class="sidebar-overlay" id="expertSidebarOverlay"></div>
             <div class="sidebar" id="expertSidebar">
-                <h3>Меню</h3>
+                <h3>Menu</h3>
                 <div class="sidebar-tabs" id="expertSideTabs">
                     <button type="button" class="sidebar-tab active" data-stab="chats">Чаты</button>
                     <button type="button" class="sidebar-tab" data-stab="gallery">Gallery</button>
@@ -7256,7 +7256,7 @@ body {
                 <select id="expertModelSelect" class="field"></select>
                 <select id="expertPromptVersion" class="field"><option value="v1">Строгий</option><option value="v2">Креативный</option></select>
                 <label style="font-size:0.8rem;color:#888;">Язык интерфейса</label>
-                <select id="expertLangSelect" class="field"><option value="ru">Русский</option><option value="en">English</option></select>
+                <select id="expertLangSelect" class="field"><option value="ru">English</option><option value="en">English</option></select>
                 </div><!-- expertChatsPane -->
                 <div style="margin:1rem 0;"><button class="btn-black" id="expertDeployBtn">Задеплоить проект</button></div>
                 <input type="text" class="field" id="expertSearchInput" placeholder="Search chats...">
@@ -7269,7 +7269,7 @@ body {
                 <div class="chat-list" id="expertChatList"></div>
                 <div class="sidebar-footer">
                     <button type="button" class="btn-black" data-open-settings>Settings</button>
-                    <button class="btn-black" data-back="selection">← Назад</button>
+                    <button class="btn-black" data-back="selection">← Back</button>
                 </div>
                 <div style="display:none" aria-hidden="true">
                     <button id="expertClearContextBtn"></button>
@@ -7283,7 +7283,7 @@ body {
                 <input type="file" id="expertFileInput" accept="image/*,.txt,.js,.html,.css,.json,.md,.py,.zip,.ts,.tsx,.jsx,.csv" hidden>
                 <textarea id="expertInput" placeholder="Describe the task..." rows="1" maxlength="10000"></textarea>
                 <button class="auto-btn" id="expertAutoBtn" title="Улучшить текст"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
-                <button class="mic-btn" id="expertMicBtn" title="Голосовой ввод"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
+                <button class="mic-btn" id="expertMicBtn" title="Voiceовой ввод"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
                 <button type="button" class="stop-gen-btn" id="expertStopBtn" title="Стоп"><svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg></button>
                 <button class="send-icon" id="expertSend"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2Z"/></svg></button>
             </div>
@@ -7449,7 +7449,7 @@ if (typeof window.ccApiUrl !== 'function') {
                     signal: controller.signal
                 });
             } catch (e) {
-                if (e && e.name === 'AbortError') throw new Error('Сервер не ответил за 55 секунд.');
+                if (e && e.name === 'AbortError') throw new Error('Server did not respond за 55 sec.');
                 throw e;
             } finally {
                 clearTimeout(timer);
@@ -7457,7 +7457,7 @@ if (typeof window.ccApiUrl !== 'function') {
             const raw = await res.text().catch(function(){ return ''; });
             let data = {};
             try { data = raw ? JSON.parse(raw) : {}; } catch (e) {
-                throw new Error('Сервер вернул не JSON. Проверь, что опубликован server.js, а не страница обслуживания.');
+                throw new Error('Server returned non-JSON. Проверь, что опубликован server.js, а не страница обслуживания.');
             }
             if (!res.ok) {
                 var err = (data && data.error) ? String(data.error) : ('HTTP ' + res.status);
@@ -7470,7 +7470,7 @@ if (typeof window.ccApiUrl !== 'function') {
                 throw new Error(err);
             }
             if (!data || typeof data.text !== 'string' || !data.text.trim()) {
-                throw new Error('Сервер вернул пустой ответ.');
+                throw new Error('Server returned an empty response.');
             }
             if (Array.isArray(data.sources) && data.sources.length) {
                 window.__ccLastSources = data.sources.slice(0, 12).map(function(x){
@@ -7619,11 +7619,11 @@ if (typeof window.ccApiUrl !== 'function') {
                 try { showLimitBanner(); } catch(e) {}
             }
             if (u.msgs >= L.msgs) {
-                showToast('ChatClaud: дневной лимит сообщений. Сброс в 00:00.');
+                showToast('ChatClaud: дневной лимит messages. Сброс в 00:00.');
                 return false;
             }
             if (u.msgs >= Math.floor(L.msgs * L.warnAt)) {
-                showToast('Вы почти достигли лимита сообщений на сегодня.');
+                showToast('Вы почти достигли лимита messages на сегодня.');
             }
             return true;
         }
@@ -7700,7 +7700,7 @@ if (typeof window.ccApiUrl !== 'function') {
                 return 'Render отклонил ключ провайдера. Проверь имя переменной, сам ключ и лимиты аккаунта.';
             }
             if (/rate|limit|429|TPM|TPD|quota|credit/i.test(s)) {
-                try { if (typeof showLimitBanner === 'function') try { showToast('Повтори через пару секунд'); } catch(e) {} } catch(e) {}
+                try { if (typeof showLimitBanner === 'function') try { showToast('Повтори через пару sec'); } catch(e) {} } catch(e) {}
                 return 'Провайдер отклонил запрос по лимиту или квоте. Ключ может быть сохранён, но лимит исчерпан.';
             }
             if (/network|fetch|Failed|timeout|abort/i.test(s)) {
@@ -8342,7 +8342,7 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
         function checkExpertLimit() {
             const u = getUsage(); const lim = getLimits();
             if (u.expertMsgs >= lim.expertMsgs) {
-                showToast(isPlus() ? 'Лимит Pro: 50 сообщений/день' : 'Лимит Free: 20 сообщений/день в Pro. Нужен Plus');
+                showToast(isPlus() ? 'Limit Pro: 50 messages/день' : 'Limit Free: 20 messages/день в Pro. Нужен Plus');
                 return false;
             }
             return true;
@@ -8352,21 +8352,21 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
         }
         function checkImageLimit() {
             const u = getUsage(); const lim = getLimits();
-            if (u.images >= lim.images) { showToast('Лимит изображений на сегодня'); return false; }
+            if (u.images >= lim.images) { showToast('Limit изображений на сегодня'); return false; }
             return true;
         }
         function bumpImage() { const u = getUsage(); u.images = (u.images || 0) + 1; saveUsage(u); }
         function checkVideoLimit() {
             if (!isPlus()) { showToast('Видео только в ChatClaud Plus'); return false; }
             const u = getUsage(); const lim = getLimits();
-            if (u.videos >= lim.videos) { showToast('Лимит видео: 15/день'); return false; }
+            if (u.videos >= lim.videos) { showToast('Limit видео: 15/день'); return false; }
             return true;
         }
         function bumpVideo() { const u = getUsage(); u.videos = (u.videos || 0) + 1; saveUsage(u); }
         function checkDeployLimit() {
             if (!isPlus()) { showToast('Деплой только в ChatClaud Plus 🚀'); return false; }
             const u = getUsage();
-            if ((u.deploys || 0) >= 2) { showToast('Лимит: 2 деплоя в день для Plus'); return false; }
+            if ((u.deploys || 0) >= 2) { showToast('Limit: 2 деплоя в день для Plus'); return false; }
             return true;
         }
         function bumpDeploy() { const u = getUsage(); u.deploys = (u.deploys || 0) + 1; saveUsage(u); }
@@ -8418,7 +8418,7 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
             const nick = document.getElementById('settingsNick');
             const email = document.getElementById('settingsEmail');
             const av = document.getElementById('settingsAvatar');
-            if (nick) nick.textContent = globalSettings.userName || (user && user.displayName) || 'Пользователь';
+            if (nick) nick.textContent = globalSettings.userName || (user && user.displayName) || 'User';
             if (email) email.textContent = (user && user.email) || '—';
             if (av) av.textContent = ((globalSettings.userName || (user && user.email) || 'C')[0] || 'C').toUpperCase();
             const u = getUsage();
@@ -8432,7 +8432,7 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
 
         // ==================== ЛОКАЛИЗАЦИЯ ====================
         const translations = {
-            ru: { welcome: 'Добро пожаловать', namePlaceholder: 'Your name', continue: 'Продолжить', newChat: '+ новый', back: '← выход', clearChat: 'Очистить чат', exportChats: 'Экспорт чатов', importChats: 'Импорт чатов', search: 'Search chats...', lightTheme: 'Light тема', darkTheme: 'Dark тема', deploy: 'Задеплоить проект', personaDefault: 'Нейтральный', personaHarsh: 'Дерзкий', personaCustom: 'Свой промпт', langLabel: 'Язык интерфейса', send: 'Отправить', inputPlaceholder: 'Type a message...' },
+            ru: { welcome: 'Добро пожаловать', namePlaceholder: 'Your name', continue: 'Continue', newChat: '+ новый', back: '← выход', clearChat: 'Очистить чат', exportChats: 'Экспорт чатов', importChats: 'Импорт чатов', search: 'Search chats...', lightTheme: 'Light тема', darkTheme: 'Dark тема', deploy: 'Задеплоить проект', personaDefault: 'Нейтральный', personaHarsh: 'Дерзкий', personaCustom: 'Свой промпт', langLabel: 'Язык интерфейса', send: 'Отправить', inputPlaceholder: 'Type a message…' },
             en: { welcome: 'Welcome', namePlaceholder: 'Your name', continue: 'Continue', newChat: '+ new', back: '← back', clearChat: 'Clear chat', exportChats: 'Export chats', importChats: 'Import chats', search: 'Search chat...', lightTheme: 'Light theme', darkTheme: 'Dark theme', deploy: 'Deploy project', personaDefault: 'Neutral', personaHarsh: 'Harsh', personaCustom: 'Custom prompt', langLabel: 'Language', send: 'Send', inputPlaceholder: 'Type your message...' }
         };
         let currentLang = globalSettings.lang || 'ru';
@@ -8446,18 +8446,18 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
                 if (translations[currentLang]?.[k]) el.textContent = translations[currentLang][k];
             });
             const map = currentLang === 'en' ? {
-                flashInput: 'Enter a message...',
+                flashInput: 'Type a message…',
                 expertInput: 'Describe the task...',
                 emailInput: 'Email',
                 passwordInput: 'Password',
                 authBtn: 'Sign in',
                 nameInput: 'Your name'
             } : {
-                flashInput: 'Type a message...',
+                flashInput: 'Type a message…',
                 expertInput: 'Опишите задачу...',
                 emailInput: 'Email',
                 passwordInput: 'Password',
-                authBtn: 'Войти',
+                authBtn: 'Sign in',
                 nameInput: 'Your name'
             };
             Object.keys(map).forEach(id => {
@@ -8467,9 +8467,9 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
                 else el.textContent = map[id];
             });
             const forgot = document.getElementById('forgotPasswordLink');
-            if (forgot) forgot.textContent = currentLang === 'en' ? 'Forgot password?' : 'Забыли пароль?';
+            if (forgot) forgot.textContent = currentLang === 'en' ? 'Forgot password?' : 'Forgot password?';
             const toggle = document.getElementById('toggleAuth');
-            if (toggle) toggle.textContent = currentLang === 'en' ? 'No account? Sign up' : 'Нет аккаунта? Зарегистрироваться';
+            if (toggle) toggle.textContent = currentLang === 'en' ? 'No account? Sign up' : 'No account yet? Зарегистрироваться';
             document.querySelectorAll('#flashNewChat, #expertNewChat').forEach(b => { if (b) b.textContent = t('newChat'); });
             document.querySelectorAll('[data-back="selection"]').forEach(b => { if (b) b.textContent = t('back'); });
             const prev = document.getElementById('expertPreviewBtn');
@@ -8477,7 +8477,7 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
             document.querySelectorAll('.langSelect, #flashLangSelect, #expertLangSelect').forEach(s => {
                 if (s) s.value = currentLang;
             });
-            showToast(currentLang === 'en' ? 'Language: English' : 'Язык: Русский');
+            showToast(currentLang === 'en' ? 'Language: English' : 'Язык: English');
         }
 
         // ==================== ЭКРАНЫ ====================
@@ -8816,7 +8816,7 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
                     list.appendChild(div);
                 });
             } catch (e) {
-                list.innerHTML = 'Ошибка загрузки сообщений. Нужен индекс Firestore или права.';
+                list.innerHTML = 'Ошибка загрузки messages. Нужен индекс Firestore или права.';
             }
         }
         document.getElementById('closeAdminBtn').addEventListener('click', () => document.getElementById('adminModal').classList.remove('active'));
@@ -9027,7 +9027,7 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
 
         // ==================== АВТОРИЗАЦИЯ ====================
         let isLogin = true;
-        document.getElementById('toggleAuth').onclick = () => { isLogin = !isLogin; document.getElementById('authBtn').textContent = isLogin ? 'Войти' : 'Зарегистрироваться'; document.getElementById('toggleAuth').textContent = isLogin ? 'Нет аккаунта? Зарегистрироваться' : 'Уже есть аккаунт? Войти'; };
+        document.getElementById('toggleAuth').onclick = () => { isLogin = !isLogin; document.getElementById('authBtn').textContent = isLogin ? 'Sign in' : 'Зарегистрироваться'; document.getElementById('toggleAuth').textContent = isLogin ? 'No account yet? Зарегистрироваться' : 'Already have an account? Sign in'; };
         document.getElementById('authBtn').onclick = () => { requirePrivacy(async () => { const email = document.getElementById('emailInput').value.trim(), pass = document.getElementById('passwordInput').value; if (!email || !pass) return showToast('Заполните все поля'); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showToast('Введите корректный Email'); try { if (isLogin) await auth.signInWithEmailAndPassword(email, pass); else await auth.createUserWithEmailAndPassword(email, pass); } catch (e) { showToast('Ошибка: ' + e.message); } }); };
         document.getElementById('googleLoginBtn').onclick = () => { requirePrivacy(() => auth.signInWithPopup(googleProvider).catch(e => showToast('Ошибка Google: ' + e.message))); };
         document.getElementById('githubLoginBtn').onclick = () => { requirePrivacy(() => auth.signInWithPopup(githubProvider).catch(e => showToast('Ошибка GitHub: ' + e.message))); };
@@ -9779,7 +9779,7 @@ function buildImageUrl(userPrompt, opts) {
                 const file = e.target.files && e.target.files[0];
                 if (!file) return;
                 const maxBytes = 12 * 1024 * 1024;
-                if (file.size > maxBytes) { showToast('Файл слишком большой (макс. 12 МБ)'); return; }
+                if (file.size > maxBytes) { showToast('File too large (макс. 12 МБ)'); return; }
                 const parent = this.fileInput && this.fileInput.parentNode;
                 if (parent) {
                     const oldPreview = parent.querySelector('.image-preview-box');
@@ -9804,12 +9804,12 @@ function buildImageUrl(userPrompt, opts) {
                         this.currentFileText = parts.join('\n\n').slice(0, 60000);
                         this.currentImageB64 = null;
                         this.currentFileType = 'zip';
-                        showToast('ZIP загружен: ' + names.length + ' файлов');
-                    } catch (err) { showToast('Ошибка ZIP'); }
+                        showToast('ZIP loaded: ' + names.length + ' файлов');
+                    } catch (err) { showToast('ZIP error'); }
                     return;
                 }
                 const reader = new FileReader();
-                reader.onerror = () => showToast('Не удалось прочитать файл');
+                reader.onerror = () => showToast('Could not read file');
                 reader.onload = (event) => {
                     const result = event.target.result;
                     if (file.type.startsWith('image/')) {
@@ -9858,7 +9858,7 @@ function buildImageUrl(userPrompt, opts) {
                         return;
                     }
                     if (trialLeft <= 0) {
-                        showToast('Лимит 3 сообщений. Зарегистрируйтесь для полного доступа.');
+                        showToast('Limit 3 messages. Зарегистрируйтесь для полного доступа.');
                         showScreen(screens.hero);
                         leaveTrialMode();
                         return;
@@ -10109,7 +10109,7 @@ function buildImageUrl(userPrompt, opts) {
                 let flashTimerDone = false;
                 let flashResolve = null;
                 if (isFlash) {
-                    // Таймер 2 секунды
+                    // Таймер 2 secы
                     const flashTimer = new Promise(res => { flashResolve = res; setTimeout(() => { flashTimerDone = true; res(); }, 0); });
                 }
                 try {
@@ -10333,7 +10333,7 @@ function buildImageUrl(userPrompt, opts) {
                 const cm = window.chatMode || 'fast';
                 // free: fast + live; plus-only: think, code, voice
                 if (cm !== 'fast' && cm !== 'live' && typeof isPlus === 'function' && !isPlus()) {
-                    const msg = 'Режим «' + ({think:'Думает',code:'Код',voice:'Голос'}[cm]||cm) + '» доступен в ChatClaud Plus.';
+                    const msg = 'Режим «' + ({think:'Thinking',code:'Код',voice:'Voice'}[cm]||cm) + '» доступен в ChatClaud Plus.';
                     onChunk(msg, true);
                     return msg;
                 }
@@ -10344,7 +10344,7 @@ function buildImageUrl(userPrompt, opts) {
                 if (typeof CHATCLAUD_BRAIN === 'string') sys = (CHATCLAUD_BRAIN.slice(0, 4000) + '\n' + sys).slice(0, 5000);
 
                 const hist = (this.history || []).filter(function(m) {
-                    return m && m.content && m.role !== 'system' && !/недоступен|Ошибка|Не удалось получить ответ|Сейчас все каналы|Request too large|Лимит|\[image\]|Создание изображения/i.test(m.content) && String(m.content).length < 4000;
+                    return m && m.content && m.role !== 'system' && !/недоступен|Ошибка|Не удалось получить ответ|Сейчас все каналы|Request too large|Limit|\[image\]|Создание изображения/i.test(m.content) && String(m.content).length < 4000;
                 }).slice(-10);
                 const messages = [{ role: 'system', content: sys }];
                 hist.forEach(function(m) {
@@ -10374,7 +10374,7 @@ function buildImageUrl(userPrompt, opts) {
                     const cleanServerText = (typeof ccSanitizeBrands === 'function')
                         ? ccSanitizeBrands(serverText)
                         : serverText;
-                    if (!cleanServerText || !String(cleanServerText).trim()) throw new Error('Сервер вернул пустой ответ.');
+                    if (!cleanServerText || !String(cleanServerText).trim()) throw new Error('Server returned an empty response.');
                     const finalServerText = (typeof ccStripOcrExcuse === 'function')
                         ? ccStripOcrExcuse(String(cleanServerText).trim())
                         : String(cleanServerText).trim();
@@ -10526,7 +10526,7 @@ function buildImageUrl(userPrompt, opts) {
                     let img = null;
                     for (let v = 0; v < urls.length; v++) {
                         if (attemptId !== this.imageGenAttempt) return false;
-                        label.textContent = v === 0 ? 'Создаём изображение…' : 'Ещё секунду…';
+                        label.textContent = v === 0 ? 'Создаём изображение…' : 'Ещё secу…';
                         img = await tryLoad(urls[v], v === 0 ? 90000 : 45000);
                         if (img) break;
                     }
@@ -10699,7 +10699,7 @@ function buildImageUrl(userPrompt, opts) {
                     left.style.alignItems = 'center';
                     left.style.gap = '0.5rem';
                     left.style.flex = '1';
-                    left.innerHTML = '<span class="code-lang">' + lang + '</span><span class="code-meta">' + lines + ' строк · нажми чтобы раскрыть</span>';
+                    left.innerHTML = '<span class="code-lang">' + lang + '</span><span class="code-meta">' + lines + ' lines · tap to expand</span>';
                     bar.appendChild(left);
                     const canRun = /^(html|htm|css|javascript|js|xml|svg)$/i.test(lang) ||
                         /<!DOCTYPE\s+html|<html[\s>]/i.test(codeText);
@@ -10725,7 +10725,7 @@ function buildImageUrl(userPrompt, opts) {
                         const meta = bar.querySelector('.code-meta');
                         if (!meta) return;
                         if (pre.classList.contains('expanded')) meta.textContent = lines + ' строк · свернуть';
-                        else meta.textContent = lines + ' строк · нажми чтобы раскрыть';
+                        else meta.textContent = lines + ' lines · tap to expand';
                     });
                 });
                 if (window.hljs) {
@@ -10845,7 +10845,7 @@ function buildImageUrl(userPrompt, opts) {
                         if (f.name.endsWith('.zip')) {
                             showToast('ZIP: используем имя проекта, контент из чата если есть');
                         } else {
-                            try { codeToPublish = await f.text(); } catch (e) { showToast('Не удалось прочитать файл'); return; }
+                            try { codeToPublish = await f.text(); } catch (e) { showToast('Could not read file'); return; }
                         }
                     }
                     if (!codeToPublish || codeToPublish.length < 20) {
@@ -11243,8 +11243,8 @@ function buildImageUrl(userPrompt, opts) {
                     localStorage.setItem(KEY, JSON.stringify(o));
                     if (o.count > 15) {
                         var wait = Math.ceil((o.start + 3 * 3600 * 1000 - now) / 60000);
-                        self.setStatus('Лимит Live: 15 / 3 часа. Подожди ~' + wait + ' мин.');
-                        try { if (typeof showLimitBanner === 'function') showLimitBanner('Лимит Live-режима: 15 сообщений / 3 часа.'); } catch(e) {}
+                        self.setStatus('Limit Live: 15 / 3 часа. Please wait ~' + wait + ' мин.');
+                        try { if (typeof showLimitBanner === 'function') showLimitBanner('Limit Live-режима: 15 messages / 3 часа.'); } catch(e) {}
                         return;
                     }
                 } catch(e) {}
@@ -11265,7 +11265,7 @@ function buildImageUrl(userPrompt, opts) {
                     var frameData = frame;
                     function afterVision(visionText) {
                       var content = userText;
-                      if (visionText) content = '[Камера: ' + visionText.slice(0, 500) + ']\n\nПользователь сказал: ' + userText;
+                      if (visionText) content = '[Камера: ' + visionText.slice(0, 500) + ']\n\nUser сказал: ' + userText;
                       liveMsgs.push({ role: 'user', content: content });
                       return ccApiChat(liveMsgs, 'Ты ChatClaud в живом видеозвонке. Ты ВИДИШЬ описание кадра с камеры. Если пользователь показывает предмет и спрашивает как сделать/починить/настроить — дай пошаговые советы по тому что видно. Отвечай коротко и живо. Не говори что ты без глаз. Не называй чужие модели.');
                     }
@@ -11455,7 +11455,7 @@ function buildImageUrl(userPrompt, opts) {
                     this.startLevelMeter(orb);
                 } else {
                     orb.classList.remove('speaking', 'listen');
-                    if (hint) { hint.textContent = 'Голосовой чат'; hint.classList.add('show'); hint.style.setProperty('display', 'block', 'important'); }
+                    if (hint) { hint.textContent = 'Voiceовой чат'; hint.classList.add('show'); hint.style.setProperty('display', 'block', 'important'); }
                     this.stopLevelMeter();
                     this.stopSpeakPulse();
                 }
@@ -11671,7 +11671,7 @@ function buildImageUrl(userPrompt, opts) {
                 // Safari/iOS fallback: MediaRecorder -> Render -> HF Whisper.
                 try {
                     this.stopListen();
-                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) { showToast('Голосовой ввод недоступен'); return; }
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) { showToast('Voiceовой ввод недоступен'); return; }
                     this.session = session;
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                     this._voiceStream = stream;
@@ -11714,14 +11714,14 @@ function buildImageUrl(userPrompt, opts) {
                     this.stopSpeak();
                     this.releaseMic();
                     this.setOrb(null);
-                    showToast('Голосовой чат выкл');
+                    showToast('Voiceовой чат выкл');
                     return;
                 }
                 this.session = session;
                 try { speechSynthesis.getVoices(); } catch (e) {}
                 this.unlock();
                 this.setOrb('listen'); // сфера сразу видна
-                showToast('Голосовой чат вкл — говори');
+                showToast('Voiceовой чат вкл — говори');
                 setTimeout(() => {
                     if (this.active) this.startListen(session);
                 }, 500);
@@ -11748,7 +11748,7 @@ function buildImageUrl(userPrompt, opts) {
             if (!btn || !inputEl) return;
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
-                btn.addEventListener('click', () => showToast('Голосовой ввод не поддерживается (Chrome/Safari)'));
+                btn.addEventListener('click', () => showToast('Voiceовой ввод не поддерживается (Chrome/Safari)'));
                 return;
             }
             let recognition = null;
@@ -11951,14 +11951,14 @@ function buildImageUrl(userPrompt, opts) {
                 }
             }
 
-            let nice = 'ChatClaud сейчас не отвечает. Попробуй через 20 секунд.';
+            let nice = 'ChatClaud сейчас не отвечает. Попробуй через 20 sec.';
             try {
                 const j = JSON.parse(lastErr);
                 const msg = j.message || (j.error && j.error.message) || '';
                 if (/model_not_found|does not exist|decommissioned/i.test(msg + lastErr)) nice = 'Модель недоступна, пробуем другую…';
                 else if (/invalid.*api.?key|invalid.?key|auth|401|403/i.test(msg + lastErr)) nice = 'Ключ Groq отклонён. Проверь ключ.';
-                else if (/rate|429|limit/i.test(msg + lastErr)) nice = 'Лимит Groq. Подожди минуту.';
-                else if (/unavailable|503|overloaded/i.test(msg + lastErr)) nice = 'Groq перегружен. Повтори через полминуты.';
+                else if (/rate|429|limit/i.test(msg + lastErr)) nice = 'Limit Groq. Please wait minу.';
+                else if (/unavailable|503|overloaded/i.test(msg + lastErr)) nice = 'Groq перегружен. Повтори через полminы.';
                 else if (/does not exist|model/i.test(msg)) nice = 'Модель недоступна на этом ключе.';
                 else if (msg) nice = String(msg).slice(0, 160);
             } catch (e) {
@@ -12155,7 +12155,7 @@ function buildImageUrl(userPrompt, opts) {
                 code: '<path d="M8 7l-4 5 4 5M16 7l4 5-4 5"/>',
                 voice: '<path d="M12 3a3 3 0 00-3 3v6a3 3 0 006 0V6a3 3 0 00-3-3z"/><path d="M19 10v1a7 7 0 01-14 0v-1M12 19v3"/>'
             };
-            const names = { fast: 'Fast', think: 'Думает', code: 'Код', voice: 'Голос' };
+            const names = { fast: 'Fast', think: 'Thinking', code: 'Код', voice: 'Voice' };
             function apply(mode) {
                 const ico = btn.querySelector('.mode-ico');
                 if (ico) {
@@ -12383,7 +12383,7 @@ function buildImageUrl(userPrompt, opts) {
                 e.stopPropagation();
                 unlockTTS();
                 if (!SR) {
-                    showToast('Голос: нужен Safari/Chrome с микрофоном');
+                    showToast('Voice: нужен Safari/Chrome с микрофоном');
                     return;
                 }
                 if (recording && rec) {
@@ -12510,7 +12510,7 @@ function buildImageUrl(userPrompt, opts) {
                             flashSession.sessions = [];
                             flashSession.createNewSession();
                         }
-                        showToast('История очищена');
+                        showToast('History очищена');
                     } catch (e) { showToast('Ошибка очистки'); }
                     return;
                 }
@@ -12582,7 +12582,7 @@ function buildImageUrl(userPrompt, opts) {
                             u.volume = 0; speechSynthesis.speak(u);
                         }
                     } catch (err) {}
-                    if (!SR) { showToast('Голос не поддерживается в этом браузере'); return; }
+                    if (!SR) { showToast('Voice не поддерживается в этом браузере'); return; }
                     if (recording && rec) {
                         try { rec.stop(); } catch (err) {}
                         recording = false;
@@ -12636,7 +12636,7 @@ function buildImageUrl(userPrompt, opts) {
             const label = document.getElementById('flashModeLabel');
             if (!btn || !pop) { console.warn('mode UI missing'); return; }
             const names = { fast: 'ʙыᴄᴛʀый', think: 'ᴅᴜᴍᴀᴇᴛ', code: 'ᴋᴏᴅ', voice: 'гᴏʟᴏᴄ' };
-            const plain = { fast: 'Fast', think: 'Думает', code: 'Код', voice: 'Голос', live: 'Live' };
+            const plain = { fast: 'Fast', think: 'Thinking', code: 'Код', voice: 'Voice', live: 'Live' };
             const icons = {
                 fast: '<path d="M13 3L4 14h7l-1 7 9-11h-7l1-7z"/>',
                 think: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
@@ -12734,7 +12734,7 @@ function buildImageUrl(userPrompt, opts) {
             const label = document.getElementById('flashModeLabel');
             if (!btn || !pop) return;
             const names = { fast: 'ʙыᴄᴛʀый', think: 'ᴅᴜᴍᴀᴇᴛ', code: 'ᴋᴏᴅ', voice: 'гᴏʟᴏᴄ', live: 'Live' };
-            const plain = { fast: 'Fast', think: 'Думает', code: 'Код', voice: 'Голос', live: 'Live' };
+            const plain = { fast: 'Fast', think: 'Thinking', code: 'Код', voice: 'Voice', live: 'Live' };
             function apply(mode) {
                 mode = mode || 'fast';
                 if (!names[mode]) mode = 'fast';
@@ -12800,11 +12800,11 @@ function buildImageUrl(userPrompt, opts) {
                             mic.classList.remove('recording', 'on');
                         }
                     } else {
-                        showToast('Голос недоступен');
+                        showToast('Voice недоступен');
                     }
                 } catch (err) {
                     console.warn(err);
-                    showToast('Голос: ' + (err.message || 'ошибка'));
+                    showToast('Voice: ' + (err.message || 'ошибка'));
                 }
             });
         })();
@@ -12869,9 +12869,9 @@ function buildImageUrl(userPrompt, opts) {
         
         const CC_MODE_PROMPTS = {
           fast: 'Режим Fast: отвечай чётко и по делу. Можно развёрнуто до ~10000 слов, если задача требует. Не лей воду.',
-          think: 'Режим Думает: сначала кратко план (1–3 пункта), потом ответ. Глубокий разбор, факты, до ~10500 слов при необходимости.',
+          think: 'Режим Thinking: сначала кратко план (1–3 пункта), потом ответ. Глубокий разбор, факты, до ~10500 слов при необходимости.',
           code: 'Режим Код: пиши полный рабочий код, комментарии по делу. Можно длинный HTML/JS/CSS до ~17000 токенов. Не обрезай файлы без нужды.',
-          voice: 'Режим Голос: короткие устные фразы, естественно.',
+          voice: 'Режим Voice: короткие устные фразы, естественно.',
           live: 'Режим Live: коротко и по камере/ситуации.'
         };
         function ccModeSystem(base) {
@@ -12900,7 +12900,7 @@ function buildImageUrl(userPrompt, opts) {
                     : (Array.isArray(messagesOrPrompt) ? messagesOrPrompt : []);
                 return await ccApiChat(msgs, CC_IDENTITY);
             } catch (e) { lastErr = e; }
-            throw lastErr || new Error('Сейчас все каналы заняты. Напиши ещё раз через минуту.');
+            throw lastErr || new Error('Сейчас все каналы заняты. Напиши ещё раз через minу.');
         }
 
         
@@ -12945,8 +12945,8 @@ function buildImageUrl(userPrompt, opts) {
                 if (!rate || !rate.tier) return;
                 var msg = '';
                 if (rate.tier === 'warn20') msg = 'Вы использовали 20 запросов Free. Хотите продолжить переписку?';
-                else if (rate.tier === 'warn35') msg = '35 сообщений. Лимит Free — 50. После 50 — пауза ~3 часа (сброс также в 00:00 UTC).';
-                else if (rate.tier === 'warn50') msg = '50 сообщений Plus. Хотите продолжить? На 100 — пауза ~3 часа.';
+                else if (rate.tier === 'warn35') msg = '35 messages. Limit Free — 50. После 50 — пауза ~3 часа (сброс также в 00:00 UTC).';
+                else if (rate.tier === 'warn50') msg = '50 messages Plus. Хотите продолжить? На 100 — пауза ~3 часа.';
                 else if (rate.tier === 'warn70') msg = '70 запросов Plus. Если остановитесь, лимит восстановится быстрее; на 100 — пауза 3 часа.';
                 if (!msg) return;
                 if (window.__ccLastTierShown === rate.tier + '-' + rate.count) return;
@@ -14056,6 +14056,291 @@ function ccBootShelves() {
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(ccBootShelves, 200); });
 else setTimeout(ccBootShelves, 300);
 setTimeout(ccBootShelves, 1500);
+</script>
+
+
+<style id="cc-max-ui">
+/* ========== THEMES — stronger, distinct ========== */
+#flashChat .chat-layout { transition: background 0.45s ease, background-image 0.45s ease; }
+
+/* Dark classic */
+body:not(.cc-bg-light):not(.cc-bg-wave):not(.cc-bg-blue) #flashChat .chat-layout {
+  background: #050505 !important;
+}
+
+/* Light — soft gray-white */
+body.cc-bg-light #flashChat,
+body.cc-bg-light #flashChat .chat-layout {
+  background: #ececf0 !important;
+}
+body.cc-bg-light #flashChat .top-bar {
+  background: rgba(255,255,255,0.82) !important;
+  border-bottom: 1px solid rgba(0,0,0,0.06) !important;
+  backdrop-filter: blur(20px) !important;
+}
+body.cc-bg-light #flashChat .input-shell,
+body.cc-bg-light .input-row {
+  background: rgba(255,255,255,0.9) !important;
+  border-color: rgba(0,0,0,0.08) !important;
+}
+body.cc-bg-light .cc-think-label,
+body.cc-bg-light .cc-status-text { color: #6c6c70 !important; -webkit-text-fill-color:#6c6c70 !important; }
+body.cc-bg-light .message.bot, body.cc-bg-light .msg.bot {
+  color: #1c1c1e !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+body.cc-bg-light .message.user, body.cc-bg-light .msg.user {
+  background: rgba(0,0,0,0.08) !important;
+  color: #111 !important;
+  border: none !important;
+}
+
+/* Waves B&W — deeper glow */
+body.cc-bg-wave #flashChat .chat-layout {
+  background-color: #000 !important;
+  background-image:
+    radial-gradient(ellipse 100% 60% at 50% 115%, rgba(230,230,240,0.22) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 30% at 80% 90%, rgba(255,255,255,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 35% 25% at 15% 85%, rgba(200,200,220,0.08) 0%, transparent 50%) !important;
+}
+body.cc-bg-wave #ccChatWaveBg { opacity: 1 !important; height: 55% !important; }
+body.cc-bg-wave #ccChatWaveBg path {
+  stroke: rgba(235,235,245,0.45) !important;
+  filter: drop-shadow(0 0 6px rgba(255,255,255,0.15));
+}
+
+/* Blue night */
+body.cc-bg-blue #flashChat .chat-layout {
+  background-color: #010308 !important;
+  background-image:
+    radial-gradient(ellipse 100% 60% at 50% 115%, rgba(40,110,220,0.35) 0%, transparent 55%),
+    radial-gradient(ellipse 45% 35% at 20% 80%, rgba(30,80,180,0.2) 0%, transparent 50%),
+    radial-gradient(ellipse 30% 25% at 85% 70%, rgba(60,120,255,0.12) 0%, transparent 50%) !important;
+}
+body.cc-bg-blue #ccChatWaveBg path {
+  stroke: rgba(120,170,255,0.5) !important;
+  filter: drop-shadow(0 0 8px rgba(80,140,255,0.25));
+}
+body.cc-bg-blue .top-bar {
+  border-bottom-color: rgba(80,140,255,0.12) !important;
+}
+
+/* ========== NO CONTOUR on bot + thinking ========== */
+.message.bot, .msg.bot, .bot-msg, .message.bot *,
+.cc-status-pill, .cc-typing-row, #ccThinkFixed, #typingIndicator {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+.message.bot, .msg.bot, .bot-msg {
+  background: transparent !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* ========== ORB + SHIMMER thinking ========== */
+.cc-mini-orb, .cc-mini-orb[data-kind="think"] {
+  width: 22px !important; height: 22px !important;
+  border: none !important;
+  border-radius: 50% !important;
+  background:
+    radial-gradient(circle at 32% 28%, #ffffff 0%, #f4f4f6 28%, #dcdcE0 62%, #b8b8c0 100%) !important;
+  box-shadow:
+    0 3px 10px rgba(0,0,0,0.4),
+    inset 0 -2px 4px rgba(0,0,0,0.15),
+    inset 0 2px 4px rgba(255,255,255,0.85) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  animation: ccOrbShimmerWrap 4s ease-in-out infinite !important;
+}
+@keyframes ccOrbShimmerWrap {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.08); }
+}
+.cc-mini-orb::after {
+  content: '' !important;
+  position: absolute !important;
+  inset: -40% !important;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgba(255,255,255,0.15) 42%,
+    rgba(255,255,255,0.7) 50%,
+    rgba(255,255,255,0.15) 58%,
+    transparent 65%
+  ) !important;
+  animation: ccShimmerSweep 2.4s ease-in-out infinite !important;
+  pointer-events: none !important;
+}
+@keyframes ccShimmerSweep {
+  0% { transform: translateX(-70%) skewX(-12deg); opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translateX(70%) skewX(-12deg); opacity: 0; }
+}
+.cc-mini-orb-face .e, .cc-mini-orb-face .e1, .cc-mini-orb-face .e2 {
+  width: 4.2px !important; height: 4.8px !important;
+  background: #141416 !important;
+}
+
+/* Shimmer on Thinking label */
+.cc-think-label, .cc-status-text {
+  color: #8e8e93 !important;
+  -webkit-text-fill-color: transparent !important;
+  background: linear-gradient(
+    90deg,
+    #6e6e73 0%,
+    #6e6e73 35%,
+    #e8e8ed 50%,
+    #6e6e73 65%,
+    #6e6e73 100%
+  ) !important;
+  background-size: 200% 100% !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  animation: ccTextShimmer 2.2s ease-in-out infinite !important;
+  font-weight: 500 !important;
+  font-size: 0.92rem !important;
+  border: none !important;
+}
+@keyframes ccTextShimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+body.cc-bg-light .cc-think-label {
+  background: linear-gradient(90deg, #8e8e93 0%, #8e8e93 35%, #1c1c1e 50%, #8e8e93 65%, #8e8e93 100%) !important;
+  background-size: 200% 100% !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+}
+
+/* think bar shimmer */
+.cc-think-bar {
+  height: 1.5px !important;
+  width: 100px !important;
+  background: rgba(142,142,147,0.18) !important;
+  border: none !important;
+  border-radius: 2px !important;
+  overflow: hidden !important;
+  margin-top: 6px !important;
+}
+.cc-think-bar i {
+  display: block !important;
+  height: 100% !important;
+  width: 45% !important;
+  background: linear-gradient(90deg, transparent, rgba(200,200,210,0.7), transparent) !important;
+  animation: ccBarShimmer 1.8s ease-in-out infinite !important;
+}
+@keyframes ccBarShimmer {
+  0% { transform: translateX(-130%); }
+  100% { transform: translateX(280%); }
+}
+
+/* Live orb bigger + shimmer */
+#voiceOrb.voice-orb, div#voiceOrb {
+  width: 128px !important; height: 128px !important;
+  border: none !important;
+  background:
+    radial-gradient(circle at 30% 26%, #fff 0%, #f6f6f8 24%, #e0e0e6 52%, #b4b4bc 100%) !important;
+  box-shadow:
+    0 16px 48px rgba(0,0,0,0.5),
+    inset 0 -8px 18px rgba(0,0,0,0.12),
+    inset 0 6px 14px rgba(255,255,255,0.7) !important;
+  overflow: hidden !important;
+}
+#voiceOrb.voice-orb::after {
+  content: '' !important;
+  position: absolute !important; inset: -50% !important;
+  background: linear-gradient(110deg, transparent 40%, rgba(255,255,255,0.55) 50%, transparent 60%) !important;
+  animation: ccShimmerSweep 3s ease-in-out infinite !important;
+}
+
+/* Input polish */
+.input-shell, .input-row {
+  backdrop-filter: blur(24px) saturate(1.2) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(1.2) !important;
+  transition: border-color 0.25s, box-shadow 0.25s !important;
+}
+.input-shell:focus-within, .input-row:focus-within {
+  border-color: rgba(255,255,255,0.22) !important;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.35) !important;
+}
+body.cc-bg-light .input-shell:focus-within {
+  border-color: rgba(0,0,0,0.15) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08) !important;
+}
+
+/* Message soft enter */
+.message, .msg {
+  animation: ccMsgIn 0.4s cubic-bezier(0.16,1,0.3,1) both !important;
+}
+@keyframes ccMsgIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Theme picker previews richer */
+.cc-prev-dark { background: linear-gradient(180deg,#111,#000) !important; }
+.cc-prev-light { background: linear-gradient(180deg,#fff,#e4e4ea) !important; border:1px solid #ccc; }
+.cc-prev-wave {
+  background:
+    radial-gradient(ellipse 100% 90% at 50% 100%, rgba(220,220,235,0.45) 0%, transparent 55%),
+    #000 !important;
+}
+.cc-prev-blue {
+  background:
+    radial-gradient(ellipse 100% 90% at 50% 100%, rgba(50,120,255,0.55) 0%, transparent 55%),
+    #010308 !important;
+}
+.cc-bg-opt.active {
+  border-color: rgba(255,255,255,0.45) !important;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 4px 16px rgba(0,0,0,0.3) !important;
+}
+
+/* Sources cleaner */
+.cc-sources-toggle {
+  backdrop-filter: blur(10px);
+  transition: background 0.2s, transform 0.15s;
+}
+.cc-sources-toggle:active { transform: scale(0.96); }
+</style>
+<script id="cc-max-voice">
+/* Rougher male voice */
+(function(){
+  function pickVoice(){
+    var voices = speechSynthesis.getVoices() || [];
+    var prefer = [/daniel/i,/alex/i,/david/i,/male/i,/arthur/i,/thomas/i,/google us english/i,/microsoft david/i,/en-us/i,/en-gb/i];
+    for (var p=0;p<prefer.length;p++){
+      for (var i=0;i<voices.length;i++){
+        if (prefer[p].test(voices[i].name) || prefer[p].test(voices[i].lang)) return voices[i];
+      }
+    }
+    return voices.find(function(v){ return /en/i.test(v.lang); }) || voices[0];
+  }
+  window.ccPickMaleVoice = pickVoice;
+  var _speak = window.speechSynthesis && window.speechSynthesis.speak;
+  if (window.speechSynthesis) {
+    var orig = SpeechSynthesisUtterance;
+    // patch common speak helpers
+    window.ccSpeakRough = function(text){
+      try {
+        speechSynthesis.cancel();
+        var u = new SpeechSynthesisUtterance(String(text||'').slice(0, 1200));
+        var v = pickVoice();
+        if (v) u.voice = v;
+        u.pitch = 0.78;   // lower = rougher
+        u.rate = 0.92;
+        u.volume = 1;
+        speechSynthesis.speak(u);
+      } catch(e) {}
+    };
+  }
+  if (speechSynthesis.onvoiceschanged !== undefined) {
+    speechSynthesis.onvoiceschanged = function(){ pickVoice(); };
+  }
+})();
 </script>
 
 </body>
