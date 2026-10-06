@@ -10638,7 +10638,7 @@ function buildImageUrl(userPrompt, opts) {
                 fixed.style.display = 'flex';
                 // rotate short labels whole (no typewriter)
                 var labels = modeKind === 'site' ? ['Looking…', 'Opening site…', 'Reading…']
-                    : modeKind === 'search' ? ['Searching…', 'Checking sources…', 'Reading…']
+                    : modeKind === 'search' ? ['Searching…', 'Searching…', 'Reading…']
                     : modeKind === 'video' ? ['Watching…', 'Reading…']
                     : ['Thinking…', 'Reasoning…'];
                 var li = 0;
@@ -13739,6 +13739,323 @@ body.cc-bg-wave #ccChatWaveBg, #flashChat.cc-bg-wave #ccChatWaveBg { display:blo
   else setTimeout(bind,300);
   setTimeout(bind,1000);
 })();
+</script>
+
+
+<!-- ========== CC ARCHITECTURE MODULES (do not delete) ========== -->
+<style id="cc-arch-css">
+/* ---- THINKING: white orb, no outline, solid gray label ---- */
+.cc-status-pill {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  padding: 0.2rem 0 !important;
+}
+.cc-status-line {
+  border: none !important;
+  background: transparent !important;
+}
+.cc-mini-orb, .cc-mini-orb[data-kind="think"] {
+  width: 20px !important; height: 20px !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow:
+    0 2px 6px rgba(0,0,0,0.35),
+    inset 0 -1px 3px rgba(0,0,0,0.12),
+    inset 0 1px 2px rgba(255,255,255,0.75) !important;
+  background: radial-gradient(circle at 35% 30%, #fff 0%, #f2f2f4 40%, #d8d8dc 100%) !important;
+}
+.cc-mini-orb::before { opacity: 0.7 !important; }
+.cc-think-label, .cc-status-text, .cc-typing-row .cc-think-label {
+  color: #8e8e93 !important;
+  font-weight: 500 !important;
+  font-size: 0.9rem !important;
+  letter-spacing: 0.01em !important;
+  border: none !important;
+  background: none !important;
+  -webkit-text-fill-color: #8e8e93 !important;
+}
+.cc-search-ico, .cc-search-ico svg {
+  color: #8e8e93 !important;
+  border: none !important;
+}
+.cc-think-bar {
+  background: rgba(142,142,147,0.2) !important;
+  border: none !important;
+  height: 1.5px !important;
+}
+.cc-think-bar i {
+  background: linear-gradient(90deg, transparent, #8e8e93, transparent) !important;
+}
+#ccThinkFixed {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* ---- THEMES: paint chat-layout so waves show under messages ---- */
+#flashChat, #flashChat .chat-layout {
+  background-color: #000 !important;
+  background-image: none;
+}
+body.cc-bg-light #flashChat,
+body.cc-bg-light #flashChat .chat-layout,
+#flashChat.cc-bg-light .chat-layout {
+  background-color: #f2f2f7 !important;
+}
+body.cc-bg-wave #flashChat,
+body.cc-bg-wave #flashChat .chat-layout,
+#flashChat.cc-bg-wave .chat-layout {
+  background-color: #000 !important;
+  background-image:
+    radial-gradient(ellipse 90% 55% at 50% 110%, rgba(210,210,225,0.18) 0%, transparent 58%),
+    radial-gradient(ellipse 50% 35% at 10% 90%, rgba(255,255,255,0.05) 0%, transparent 50%) !important;
+}
+body.cc-bg-blue #flashChat,
+body.cc-bg-blue #flashChat .chat-layout,
+#flashChat.cc-bg-blue .chat-layout {
+  background-color: #02040a !important;
+  background-image:
+    radial-gradient(ellipse 90% 55% at 50% 110%, rgba(50,100,200,0.28) 0%, transparent 58%),
+    radial-gradient(ellipse 45% 30% at 15% 85%, rgba(40,80,180,0.18) 0%, transparent 50%) !important;
+}
+#flashChat .messages, #flashMessages {
+  background: transparent !important;
+  position: relative !important;
+  z-index: 2 !important;
+}
+#ccChatWaveBg {
+  position: absolute !important;
+  left: 0; right: 0; bottom: 0;
+  height: 50% !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  display: none;
+  opacity: 0.85 !important;
+}
+body.cc-bg-wave #ccChatWaveBg,
+body.cc-bg-blue #ccChatWaveBg,
+#flashChat.cc-bg-wave #ccChatWaveBg,
+#flashChat.cc-bg-blue #ccChatWaveBg {
+  display: block !important;
+}
+body.cc-bg-blue #ccChatWaveBg path { stroke: rgba(110,160,255,0.4) !important; }
+
+/* Settings theme grid always visible */
+#settingsScreen .cc-bg-picker {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.5rem !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+  z-index: 5 !important;
+}
+#settingsScreen .cc-bg-opt {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* ---- SOURCES BOOK ---- */
+.cc-sources-wrap, .cc-sources-block {
+  display: block !important;
+  margin-top: 0.55rem !important;
+  position: relative !important;
+  z-index: 3 !important;
+}
+.cc-sources-toggle {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.35rem !important;
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-radius: 999px !important;
+  padding: 0.28rem 0.7rem !important;
+  color: #c7c7cc !important;
+  font-size: 0.75rem !important;
+  cursor: pointer !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+.cc-sources-toggle svg {
+  width: 14px !important; height: 14px !important;
+  stroke: #c7c7cc !important; fill: none !important;
+}
+.cc-sources-list {
+  margin-top: 0.4rem !important;
+  padding: 0.5rem 0.65rem !important;
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 12px !important;
+  font-size: 0.78rem !important;
+}
+.cc-sources-list a { color: #7eb6ff !important; word-break: break-all; }
+body.cc-bg-light .cc-sources-toggle {
+  background: rgba(0,0,0,0.05) !important;
+  border-color: rgba(0,0,0,0.1) !important;
+  color: #3a3a3c !important;
+}
+</style>
+<script id="cc-arch-js">
+/* Shelves: theme | think | sources | vision — edit one without touching others */
+window.CC = window.CC || {};
+
+/* THEME shelf */
+window.CC.Theme = {
+  apply: function(mode) {
+    var modes = ['classic','light','wave','blue'];
+    if (modes.indexOf(mode) < 0) mode = 'classic';
+    try { localStorage.setItem('cc_chat_bg', mode); } catch(e) {}
+    document.body.classList.remove('cc-bg-wave','cc-bg-light','cc-bg-blue');
+    var chat = document.getElementById('flashChat');
+    if (chat) chat.classList.remove('cc-bg-wave','cc-bg-light','cc-bg-blue');
+    var layout = chat && chat.querySelector('.chat-layout');
+    if (mode === 'wave') {
+      document.body.classList.add('cc-bg-wave');
+      if (chat) chat.classList.add('cc-bg-wave');
+      window.CC.Theme._wave();
+      try { document.documentElement.setAttribute('data-theme','dark'); } catch(e) {}
+    } else if (mode === 'blue') {
+      document.body.classList.add('cc-bg-blue');
+      if (chat) chat.classList.add('cc-bg-blue');
+      window.CC.Theme._wave();
+      try { document.documentElement.setAttribute('data-theme','dark'); } catch(e) {}
+    } else if (mode === 'light') {
+      document.body.classList.add('cc-bg-light');
+      if (chat) chat.classList.add('cc-bg-light');
+      try { document.documentElement.setAttribute('data-theme','light'); } catch(e) {}
+    } else {
+      try { document.documentElement.setAttribute('data-theme','dark'); } catch(e) {}
+    }
+    document.querySelectorAll('.cc-bg-opt').forEach(function(b) {
+      b.classList.toggle('active', b.getAttribute('data-bg') === mode);
+    });
+  },
+  _wave: function() {
+    var chat = document.getElementById('flashChat');
+    if (!chat) return;
+    var layout = chat.querySelector('.chat-layout') || chat;
+    layout.style.position = 'relative';
+    if (document.getElementById('ccChatWaveBg')) return;
+    var wrap = document.createElement('div');
+    wrap.id = 'ccChatWaveBg';
+    wrap.innerHTML = '<svg viewBox="0 0 800 400" preserveAspectRatio="none" aria-hidden="true">'
+      + '<path fill="none" stroke="rgba(220,220,230,0.4)" stroke-width="1.2" d="M0,280 C80,240 160,300 240,260 C320,220 400,300 480,250 C560,200 640,280 720,240 C760,220 800,250 800,250 L800,400 L0,400 Z"/>'
+      + '<path fill="none" stroke="rgba(200,200,215,0.3)" stroke-width="1.1" d="M0,300 C100,270 180,320 280,290 C380,260 460,320 560,280 C660,240 740,300 800,270 L800,400 L0,400 Z"/>'
+      + '<path fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1" d="M0,320 C120,300 200,340 300,310 C420,275 520,330 640,300 C720,280 800,310 800,310 L800,400 L0,400 Z"/>'
+      + '<path fill="none" stroke="rgba(180,180,200,0.25)" stroke-width="1" d="M0,250 C90,210 170,270 250,230 C350,180 450,260 550,210 C650,160 750,230 800,200"/>'
+      + '</svg>';
+    layout.insertBefore(wrap, layout.firstChild);
+  },
+  bind: function() {
+    var self = this;
+    var mode = 'classic';
+    try { mode = localStorage.getItem('cc_chat_bg') || 'classic'; } catch(e) {}
+    self.apply(mode);
+    document.querySelectorAll('.cc-bg-opt').forEach(function(b) {
+      b.onclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        self.apply(b.getAttribute('data-bg'));
+      };
+    });
+  }
+};
+window.ccApplyChatBg = function(m) { window.CC.Theme.apply(m); };
+
+/* SOURCES shelf — always append book under last bot msg when sources exist */
+window.CC.Sources = {
+  bookSvg: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><path d="M8 7h8M8 11h6"/></svg>',
+  render: function(container, sources) {
+    if (!container || !sources || !sources.length) return;
+    if (container.querySelector('.cc-sources-wrap')) return;
+    var wrap = document.createElement('div');
+    wrap.className = 'cc-sources-wrap';
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'cc-sources-toggle';
+    btn.innerHTML = this.bookSvg + ' Sources';
+    var list = document.createElement('div');
+    list.className = 'cc-sources-list';
+    list.hidden = true;
+    sources.slice(0, 10).forEach(function(s, i) {
+      var a = document.createElement('a');
+      a.href = s.url || '#';
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = (i + 1) + '. ' + (s.title || s.url || 'Source');
+      a.style.display = 'block';
+      a.style.margin = '0.25rem 0';
+      list.appendChild(a);
+    });
+    btn.onclick = function() { list.hidden = !list.hidden; };
+    wrap.appendChild(btn);
+    wrap.appendChild(list);
+    container.appendChild(wrap);
+  },
+  attachLast: function() {
+    var src = window.__ccLastSources;
+    if (!src || !src.length) return;
+    var box = document.getElementById('flashMessages');
+    if (!box) return;
+    var bots = box.querySelectorAll('.message.bot, .msg.bot, .bot-msg');
+    var last = bots[bots.length - 1];
+    if (last) this.render(last, src);
+  }
+};
+
+/* VISION shelf — robust photo path */
+window.CC.Vision = {
+  describe: async function(dataUrl) {
+    if (!dataUrl || dataUrl.length < 30) throw new Error('no image');
+    var url = (window.ccApiUrl && window.ccApiUrl('/api/vision')) || 'https://chatclaud.onrender.com/api/vision';
+    var res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        image: dataUrl,
+        prompt: 'Describe this image in Russian in detail. Be accurate. Do not mention OCR or APIs.'
+      })
+    });
+    var raw = await res.text();
+    var data = {};
+    try { data = JSON.parse(raw); } catch(e) { throw new Error('Vision: not JSON'); }
+    if (!res.ok) throw new Error(data.error || ('Vision HTTP ' + res.status));
+    return data.text || data.description || '';
+  }
+};
+
+/* Override describeImageForChat if weak */
+(function(){
+  var prev = window.describeImageForChat;
+  window.describeImageForChat = async function(b64) {
+    try {
+      return await window.CC.Vision.describe(b64);
+    } catch (e1) {
+      if (typeof prev === 'function') {
+        try { return await prev(b64); } catch(e2) {}
+      }
+      throw e1;
+    }
+  };
+})();
+
+/* boot shelves */
+function ccBootShelves() {
+  try { window.CC.Theme.bind(); } catch(e) { console.warn('theme', e); }
+  /* after each chat response try sources */
+  var obs = new MutationObserver(function() {
+    try { window.CC.Sources.attachLast(); } catch(e) {}
+  });
+  var box = document.getElementById('flashMessages');
+  if (box) obs.observe(box, { childList: true, subtree: true });
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ setTimeout(ccBootShelves, 200); });
+else setTimeout(ccBootShelves, 300);
+setTimeout(ccBootShelves, 1500);
 </script>
 
 </body>

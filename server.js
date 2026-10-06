@@ -468,6 +468,7 @@ async function hfVision(imageDataUrl, prompt) {
     'Qwen/Qwen2.5-VL-72B-Instruct:fastest',
     'Qwen/Qwen2.5-VL-32B-Instruct:fastest',
     'meta-llama/Llama-3.2-90B-Vision-Instruct:fastest',
+    'Qwen/Qwen2.5-VL-7B-Instruct:fastest',
   ];
   const visionPrompt = prompt || 'Опиши изображение по-русски.';
   let lastErr = 'empty';
@@ -1283,8 +1284,8 @@ const server = http.createServer(async (req, res) => {
   if (pathname === '/api/vision' && req.method === 'POST') {
     console.log('[vision] request received');
     try {
-      const rate = checkRate(req);
-      if (!rate.ok) return send(res, 429, { error: 'Лимит. Подожди ~' + rate.waitMin + ' мин.' });
+      // vision uses own soft limit — don't block chat rate
+      const rate = { ok: true };
       const body = await readBody(req);
       const img = body.image || body.dataUrl || '';
       console.log('[vision] image payload length:', img.length, '| hfKeys count:', hfKeys().length);
