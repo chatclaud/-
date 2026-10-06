@@ -1,17 +1,14 @@
-ChatClaud package — Oct 2026
+ChatClaud — WORKING build (GitHub Pages + Render)
 
-DEPLOY
-1) GitHub Pages: upload index.html, manifest.json, sw.js, icons
-2) Render: server.js + package.json, set Environment from ENV-KEYS.txt
+Frontend: GitHub Pages (index.html + icons + manifest + sw.js)
+Backend:  https://chatclaud.onrender.com  (server.js on Render)
 
-SEARCH (priority)
-1. Nova (NOVA_URL + NOVA_AIP_TOKEN or NOVA_API_TOKEN)
-2. Tavily (fallback)
-3. Serper (optional)
+ENV on Render: GROQ_KEY, GROQ_MODEL=openai/gpt-oss-120b,
+MISTRAL_API_KEY, MISTRAL_MODEL=mistral-medium-latest,
+HF_KEY, NOVA_URL, NOVA_AIP_TOKEN
 
-IMAGINE
-- Photos: HuggingFace FLUX (HF_KEY / HF_KEY2), optional Runway
-- Videos: Runway if RUNWAYML_API_SECRET set; prompt enhanced via HF
-- Free limits: 5 photos / 2 videos per day per IP
-
-NEVER put API keys in index.html or GitHub.
+Images: Pollination FLUX 1280x1920 + enhance
+Commands: type /  →  /img /veo /search /nova /plus /settings /help
+Video: POST /api/video-summary { url }
+Imagine button: hidden (Pollination only)
+Date context: 6 октября 2026

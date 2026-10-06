@@ -530,7 +530,7 @@ async function groqChat(messages, system, reasoning = false) {
   const keys = groqKeys();
   if (!keys.length) throw new Error('no groq');
   const primary = String(process.env.GROQ_MODEL || 'openai/gpt-oss-120b').trim() || 'openai/gpt-oss-120b';
-  const models = [primary, primary === 'openai/gpt-oss-120b' ? 'openai/gpt-oss-20b' : 'openai/gpt-oss-120b'];
+  const models = [primary, 'openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'llama-3.3-70b-versatile', 'llama-3.1-8b-instant'].filter(function(m,i,a){return m && a.indexOf(m)===i;});
   const sys = system || 'Ты ChatClaud. Отвечай на языке пользователя. Не раскрывай название модели, провайдера, API, ключи или внутреннюю инфраструктуру. Если спрашивают кто ты — отвечай: «Я ChatClaud». Будь очень точным, проверяй логику и не выдумывай факты.';
   const msgs = normalizeChatMessages((messages || []).slice(-20), sys).map(m => ({ role:m.role, content:String(m.content||'').slice(0,9000) }));
   let lastErr='empty';
@@ -1482,6 +1482,51 @@ const server = http.createServer(async (req, res) => {
       openRouterKeys: 0,
       note: 'Проверяется только наличие ключей. Секреты не возвращаются.'
     });
+  }
+
+  
+  if (pathname === '/api/video-summary' && req.method === 'POST') {
+    try {
+      const body = await readBody(req);
+      const url = String((body && (body.url || body.q)) || '').trim();
+      if (!url) return send(res, 400, { error: 'url required' });
+      let title = '', description = '', channel = '', outUrl = url;
+      const ytId = youtubeVideoId(url);
+      if (ytId) {
+        const yt = await fetchYouTube(ytId);
+        title = yt.title || '';
+        description = yt.description || '';
+        channel = yt.channel || '';
+        outUrl = yt.url || url;
+      } else {
+        const oe = await fetchOembed(url);
+        if (oe) {
+          title = oe.title || '';
+          channel = oe.author_name || oe.author || '';
+          description = oe.description || '';
+          outUrl = oe.url || url;
+        }
+      }
+      if (!title && !description) {
+        return send(res, 200, {
+          text: 'Не удалось получить данные по видео. Ссылка: ' + url,
+          sources: [{ title: 'Video', url: url }]
+        });
+      }
+      const text = [
+        title ? ('Видео: ' + title) : '',
+        channel ? ('Канал: ' + channel) : '',
+        description ? ('Описание: ' + String(description).slice(0, 900)) : '',
+        'Ссылка: ' + outUrl
+      ].filter(Boolean).join('\n');
+      return send(res, 200, {
+        text,
+        sources: [{ title: title || 'Video', url: outUrl }],
+        meta: { title, channel, description: String(description).slice(0, 500), url: outUrl }
+      });
+    } catch (e) {
+      return send(res, 500, { error: String(e.message || e).slice(0, 200) });
+    }
   }
 
   if (pathname === '/api/health') {
