@@ -18,9 +18,8 @@
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="ChatClaud — ИИ-чат и ClaudForge Pro">
     <meta name="twitter:description" content="Быстрый ИИ-помощник: код, сайты, игры.">
-    <link rel="icon" href="IMG_5637.png" type="image/png">
-    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png">
+    <link rel="icon" href="icon-512.png" type="image/png">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="apple-mobile-web-app-title" content="ChatClaud">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#000000">
@@ -3610,10 +3609,10 @@ body {
 
 /* gen card large ChatGPT-style */
 .gen-card, .generation-card.gen-card {
-  width: min(100%, 380px) !important;
+  width: min(100%, 340px) !important;
   max-width: 100% !important;
-  aspect-ratio: 1 !important;
-  min-height: 280px !important;
+  aspect-ratio: 3 / 4 !important;
+  min-height: 320px !important;
   border-radius: 1.35rem !important;
   margin: 0.5rem 0 0.75rem !important;
   background: #1a1a1c !important;
@@ -4765,55 +4764,137 @@ pre.expanded, pre[data-expanded="1"] {
   flex-shrink: 0;
 }
 
-/* Source cards (Perplexity-style) */
+/* Sources — compact book button under an AI answer */
 .cc-sources {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  margin: 0.55rem 0 0.35rem;
-  animation: ccFadeUp 0.45s ease both;
+  display: block;
+  margin: 10px 0 2px;
+  animation: ccFadeUp .28s ease both;
 }
+.cc-sources-toggle {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 30px;
+  padding: 5px 9px 5px 8px;
+  border: 1px solid rgba(255,255,255,.075);
+  border-radius: 9px;
+  background: rgba(255,255,255,.035);
+  color: rgba(255,255,255,.62);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 520;
+  line-height: 1;
+  letter-spacing: -.01em;
+  cursor: pointer;
+  transition: background .18s ease, border-color .18s ease, color .18s ease, transform .12s ease;
+}
+.cc-sources-toggle:hover {
+  background: rgba(255,255,255,.055);
+  border-color: rgba(255,255,255,.13);
+  color: rgba(255,255,255,.76);
+}
+.cc-sources-toggle:active { transform: scale(.985); }
+.cc-sources-toggle:focus-visible {
+  outline: 2px solid rgba(125,211,252,.35);
+  outline-offset: 2px;
+}
+.cc-sources-book {
+  width: 16px; height: 16px;
+  flex: 0 0 16px;
+  opacity: .82;
+}
+.cc-sources-book path, .cc-sources-book line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cc-sources-chevron {
+  width: 11px; height: 11px;
+  margin-left: 1px;
+  transition: transform .18s ease;
+}
+.cc-sources-chevron path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cc-sources-toggle[aria-expanded="true"] .cc-sources-chevron { transform: rotate(180deg); }
+.cc-sources-count {
+  color: rgba(255,255,255,.32);
+  font-size: 10.5px;
+  font-weight: 450;
+}
+.cc-source-list {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  margin: 7px 0 0;
+  padding: 0;
+  max-width: min(620px, 100%);
+}
+.cc-sources.is-open .cc-source-list { display: flex; }
 .cc-source {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.55rem;
-  padding: 0.55rem 0.7rem;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 0.75rem;
+  display: grid;
+  grid-template-columns: 24px minmax(0,1fr);
+  align-items: start;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 7px 8px;
+  border: 1px solid rgba(255,255,255,.065);
+  border-radius: 9px;
+  background: rgba(255,255,255,.022);
   text-decoration: none;
   color: inherit;
-  transition: background 0.2s, border-color 0.2s;
+  transition: background .16s ease, border-color .16s ease;
 }
 .cc-source:hover {
-  background: rgba(255,255,255,0.07);
-  border-color: rgba(255,255,255,0.14);
+  background: rgba(255,255,255,.045);
+  border-color: rgba(255,255,255,.11);
 }
 .cc-source-icon {
-  width: 28px; height: 28px;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.06);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
+  width: 24px; height: 24px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,.045);
+  color: rgba(255,255,255,.62);
 }
-.cc-source-icon svg { width: 14px; height: 14px; stroke: rgba(255,255,255,0.7); fill: none; stroke-width: 2; }
-.cc-source-body { min-width: 0; flex: 1; }
+.cc-source-icon svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 1.7; }
+.cc-source-body { min-width: 0; }
 .cc-source-title {
-  font-size: 0.8rem; font-weight: 560;
-  color: rgba(255,255,255,0.9);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-size: 11.5px;
+  font-weight: 560;
+  color: rgba(255,255,255,.78);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .cc-source-url {
-  font-size: 0.68rem; color: rgba(255,255,255,0.4);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  margin-top: 0.12rem;
+  margin-top: 2px;
+  font-size: 9.5px;
+  color: rgba(255,255,255,.31);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .cc-source-snippet {
-  font-size: 0.72rem; color: rgba(255,255,255,0.5);
-  line-height: 1.35; margin-top: 0.2rem;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  margin-top: 3px;
+  font-size: 10.5px;
+  color: rgba(255,255,255,.43);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
-
 /* Message enter animation */
 .message.bot, .message.user, .msg.bot, .msg.user {
   animation: ccMsgIn 0.38s cubic-bezier(0.16,1,0.3,1) both;
@@ -5721,32 +5802,9 @@ button.scroll-bottom-btn.show,
 
 
 
-/* Sources visible */
-.cc-sources, .cc-source-list {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 8px !important;
-  margin-top: 12px !important;
-  padding-top: 4px !important;
-}
-.cc-source, .cc-source-chip {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  padding: 7px 12px !important;
-  border-radius: 999px !important;
-  background: rgba(255,255,255,0.07) !important;
-  border: 1px solid rgba(255,255,255,0.12) !important;
-  color: #ddd !important;
-  font-size: 12px !important;
-  text-decoration: none !important;
-  max-width: 90% !important;
-  line-height: 1.2 !important;
-}
-.cc-source:active, .cc-source-chip:active {
-  background: rgba(255,255,255,0.14) !important;
-}
-
+/* Keep source controls subtle and collapsed by default. */
+.cc-sources, .cc-source-list { flex-wrap: nowrap; }
+.cc-source { max-width: 100%; }
 
 /* Links cyan not classic blue */
 .message a, .bot a, #flashMessages a, .messages a {
@@ -6079,79 +6137,476 @@ html.plus-active .cc-think {
 }
 
 
-/* ===== Image cards fix + sources book ===== */
-.gen-card, .generation-card, .cc-imagine-card {
-  background: rgba(22,22,28,0.95) !important;
-  border: 1px solid rgba(255,255,255,0.1) !important;
-  border-radius: 1.25rem !important;
-  overflow: hidden !important;
-  max-width: min(340px, 90vw) !important;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.45) !important;
+/* === ChatClaud FIX: gray status thinking (no cube) === */
+.cc-status-line { display:inline-flex; align-items:center; gap:8px; padding:4px 0; }
+.cc-status-text, .cc-think-label.cc-status-text, #ccThinkFixed .cc-think-label {
+  font-size: 0.88rem !important;
+  font-weight: 400 !important;
+  color: #8e8e93 !important;
+  letter-spacing: 0.01em !important;
+  background: none !important;
+  -webkit-text-fill-color: #8e8e93 !important;
+  animation: ccFadeSoft 1.8s ease-in-out infinite !important;
 }
-.gen-card img, .generation-card img, .message img.gen-result, .bot img {
-  width: 100% !important;
-  height: auto !important;
-  max-height: 480px !important;
-  object-fit: cover !important;
-  display: block !important;
-  background: #111 !important;
-  min-height: 160px !important;
+@keyframes ccFadeSoft {
+  0%,100% { opacity: 0.45; }
+  50% { opacity: 1; }
 }
-.gen-card video, .generation-card video {
-  width: 100% !important;
-  max-height: 420px !important;
-  background: #0a0a0a !important;
-  display: block !important;
+#ccThinkFixed {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
 }
-.cc-sources {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 0.4rem !important;
-  margin-top: 0.65rem !important;
-  align-items: center !important;
+#ccThinkFixed .d, #ccThinkFixed .cc-think-dots,
+.thinking-brain, .cc-face,
+#typingIndicator .cc-think-dots,
+.flash-think-dots, .cc-think-dots {
+  display: none !important;
 }
-.cc-sources-toggle, .cc-source-book-btn {
+.cc-sources-toggle {
+  background: transparent !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  color: #8e8e93 !important;
+  border-radius: 999px !important;
+  padding: 6px 10px !important;
+  gap: 6px !important;
+}
+.cc-sources-toggle:hover { color: #fff !important; border-color: rgba(255,255,255,0.28) !important; }
+.cc-sources-book { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+.cc-sources-count { font-size: 0.75rem; opacity: 0.7; }
+/* === end FIX === */
+
+/* === v2 UI: light theme force + empty + fuel === */
+[data-theme="light"] body,
+[data-theme="light"] #app,
+[data-theme="light"] .chat-layout,
+[data-theme="light"] .screen,
+[data-theme="light"] .messages,
+[data-theme="light"] #flashMessages {
+  background: #f2f2f7 !important;
+  color: #1c1c1e !important;
+}
+[data-theme="light"] .top-bar,
+[data-theme="light"] .input-row,
+[data-theme="light"] .chat-input-bar,
+[data-theme="light"] .sidebar {
+  background: rgba(255,255,255,0.82) !important;
+  border-color: rgba(0,0,0,0.08) !important;
+  color: #1c1c1e !important;
+  backdrop-filter: blur(20px) !important;
+}
+[data-theme="light"] .message.bot,
+[data-theme="light"] .bot,
+[data-theme="light"] .msg.bot {
+  background: #fff !important;
+  color: #1c1c1e !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+}
+[data-theme="light"] .message.user,
+[data-theme="light"] .user,
+[data-theme="light"] .msg.user {
+  background: #e8e8ed !important;
+  color: #111 !important;
+}
+[data-theme="light"] .input-row textarea,
+[data-theme="light"] #flashInput {
+  background: rgba(0,0,0,0.04) !important;
+  color: #111 !important;
+  border-color: rgba(0,0,0,0.1) !important;
+}
+[data-theme="light"] .cc-status-text,
+[data-theme="light"] .cc-think-label {
+  color: #6c6c70 !important;
+  -webkit-text-fill-color: #6c6c70 !important;
+}
+[data-theme="light"] .cc-sources-toggle {
+  color: #6c6c70 !important;
+  border-color: rgba(0,0,0,0.12) !important;
+}
+.cc-empty {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 42vh; padding: 2rem 1.2rem; text-align: center; pointer-events: none;
+  animation: messageSpring 0.55s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.cc-empty-logo {
+  width: 72px; height: 72px; border-radius: 18px; object-fit: cover;
+  margin-bottom: 1.1rem; border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+}
+[data-theme="light"] .cc-empty-logo { border-color: rgba(0,0,0,0.08); box-shadow: 0 8px 28px rgba(0,0,0,0.08); }
+.cc-empty-title {
+  font-size: 1.35rem; font-weight: 600; color: #fff; letter-spacing: -0.02em; margin-bottom: 0.35rem;
+}
+[data-theme="light"] .cc-empty-title { color: #1c1c1e; }
+.cc-empty-ask {
+  font-size: 0.95rem; color: #8e8e93; font-weight: 400;
+}
+.cc-fuel {
+  position: fixed; top: calc(10px + env(safe-area-inset-top,0px)); right: 12px; z-index: 40;
+  width: 88px; height: 4px; border-radius: 4px; background: rgba(255,255,255,0.1);
+  overflow: hidden; pointer-events: none;
+}
+.cc-fuel > i {
+  display: block; height: 100%; width: 100%;
+  background: linear-gradient(90deg, #8e8e93, #fff);
+  transform-origin: left center; transform: scaleX(1);
+  transition: transform 0.4s ease;
+}
+[data-theme="light"] .cc-fuel { background: rgba(0,0,0,0.08); }
+[data-theme="light"] .cc-fuel > i { background: linear-gradient(90deg, #888, #111); }
+.cc-think-line {
+  height: 2px; width: 120px; margin: 0.55rem auto 0; border-radius: 2px;
+  background: rgba(255,255,255,0.08); overflow: hidden;
+}
+.cc-think-line > i {
+  display: block; height: 100%; width: 40%;
+  background: linear-gradient(90deg, transparent, #8e8e93, transparent);
+  animation: ccLineSlide 1.4s ease-in-out infinite;
+}
+@keyframes ccLineSlide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(280%); }
+}
+#ccRateModal.modal-overlay { z-index: 500; }
+/* === end v2 UI === */
+
+#flashNewChat {
+  width: 36px; height: 36px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
+  color: #ddd !important; font-size: 0 !important; padding: 0 !important;
+}
+#flashNewChat svg { display: block; }
+.cc-mini-orb {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff, #c8c8cc 55%, #9a9aa0 100%);
+  box-shadow: 0 0 12px rgba(255,255,255,0.25);
+  position: relative; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  animation: ccOrbPulse 2.2s ease-in-out infinite;
+}
+@keyframes ccOrbPulse {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+.cc-mini-orb-face { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 4px; }
+.cc-mini-orb-face .e {
+  width: 3px; height: 3px; border-radius: 50%; background: #1a1a1a; display: block;
+  animation: ccEye 3s ease-in-out infinite;
+}
+.cc-mini-orb-face .e2 { animation-delay: 0.15s; }
+@keyframes ccEye {
+  0%,40%,100% { transform: translate(0,0); }
+  50% { transform: translate(1px,-1px); }
+  60% { transform: translate(-1px,0); }
+}
+.cc-mini-orb-globe {
+  display: none; width: 14px; height: 14px; border-radius: 50%;
+  border: 1.5px solid rgba(20,20,20,0.55);
+  background:
+    linear-gradient(90deg, transparent 45%, rgba(20,20,20,0.35) 45%, rgba(20,20,20,0.35) 55%, transparent 55%),
+    linear-gradient(0deg, transparent 45%, rgba(20,20,20,0.35) 45%, rgba(20,20,20,0.35) 55%, transparent 55%);
+  box-sizing: border-box;
+}
+.cc-mini-orb[data-kind="search"] .cc-mini-orb-face,
+.cc-mini-orb[data-kind="site"] .cc-mini-orb-face { display: none; }
+.cc-mini-orb[data-kind="search"] .cc-mini-orb-globe,
+.cc-mini-orb[data-kind="site"] .cc-mini-orb-globe { display: block; animation: ccGlobeSpin 2.5s linear infinite; }
+@keyframes ccGlobeSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.cc-status-line { display: inline-flex; align-items: center; gap: 10px; }
+.message.bot, .bot, .msg.bot {
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  background: rgba(255,255,255,0.03) !important;
+  box-shadow: none !important;
+}
+.cc-think-line { display: none !important; }
+
+/* === ChatClaud think UI v3 — ChatGPT-like, no spin, gray only === */
+#ccThinkFixed,
+#typingIndicator.cc-typing-row,
+.cc-typing-row {
+  color: #8e8e93 !important;
+}
+.cc-think-label,
+.cc-status-text,
+#typingIndicator .cc-think-label,
+#ccThinkFixed .cc-think-label {
+  color: #8e8e93 !important;
+  -webkit-text-fill-color: #8e8e93 !important;
+  background: none !important;
+  font-size: 0.92rem !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.01em;
+  animation: none !important;
+}
+.cc-status-line {
   display: inline-flex !important;
   align-items: center !important;
-  gap: 0.35rem !important;
-  padding: 0.35rem 0.7rem !important;
-  border-radius: 999px !important;
-  border: 1px solid rgba(255,255,255,0.12) !important;
-  background: rgba(255,255,255,0.06) !important;
-  color: rgba(255,255,255,0.85) !important;
-  font-size: 0.75rem !important;
-  cursor: pointer !important;
-  backdrop-filter: blur(10px) !important;
+  gap: 10px !important;
 }
-.cc-source-list { display: none; flex-direction: column; gap: 0.35rem; width: 100%; margin-top: 0.4rem; }
-.cc-sources.is-open .cc-source-list { display: flex !important; }
-.cc-source-list a {
-  color: #9ecbff !important;
-  font-size: 0.78rem !important;
-  text-decoration: none !important;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-  padding: 0.25rem 0;
+/* white orb */
+.cc-mini-orb {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #ffffff 0%, #e8e8ea 42%, #b0b0b5 100%);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.35), inset 0 -1px 2px rgba(0,0,0,0.12);
+  position: relative; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  animation: ccOrbBreathe 2.8s ease-in-out infinite;
 }
+@keyframes ccOrbBreathe {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.05); filter: brightness(1.08); }
+}
+.cc-mini-orb-face {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  animation: ccLookAround 4.5s ease-in-out infinite;
+}
+.cc-mini-orb-face .e {
+  width: 3.5px; height: 3.5px; border-radius: 50%; background: #1c1c1e;
+  display: block;
+  animation: ccBlink 5s ease-in-out infinite;
+}
+.cc-mini-orb-face .e2 { animation-delay: 0.08s; }
+@keyframes ccLookAround {
+  0%, 20% { transform: translate(0, 0); }
+  30% { transform: translate(2px, -1px); }
+  45% { transform: translate(-2px, 0); }
+  60% { transform: translate(1px, 1px); }
+  75%, 100% { transform: translate(0, 0); }
+}
+@keyframes ccBlink {
+  0%, 42%, 48%, 100% { transform: scaleY(1); }
+  45% { transform: scaleY(0.15); }
+}
+/* static globe — NO rotate */
+.cc-mini-orb-globe {
+  display: none;
+  width: 15px; height: 15px; border-radius: 50%;
+  border: 1.6px solid rgba(28,28,30,0.55);
+  background:
+    linear-gradient(90deg, transparent 46%, rgba(28,28,30,0.4) 46%, rgba(28,28,30,0.4) 54%, transparent 54%),
+    linear-gradient(0deg, transparent 46%, rgba(28,28,30,0.4) 46%, rgba(28,28,30,0.4) 54%, transparent 54%),
+    radial-gradient(circle at 50% 50%, transparent 55%, rgba(28,28,30,0.2) 56%);
+  box-sizing: border-box;
+  animation: none !important;
+  transform: none !important;
+}
+.cc-mini-orb[data-kind="search"] .cc-mini-orb-face,
+.cc-mini-orb[data-kind="site"] .cc-mini-orb-face,
+.cc-mini-orb[data-kind="video"] .cc-mini-orb-face { display: none; }
+.cc-mini-orb[data-kind="search"] .cc-mini-orb-globe,
+.cc-mini-orb[data-kind="site"] .cc-mini-orb-globe,
+.cc-mini-orb[data-kind="video"] .cc-mini-orb-globe {
+  display: block;
+  animation: ccGlobePulse 2s ease-in-out infinite !important; /* soft pulse only, no spin */
+}
+@keyframes ccGlobePulse {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+/* kill any blue search styles */
+.cc-typing-row, .cc-status-line, .search-status, .nova-status {
+  color: #8e8e93 !important;
+}
+.cc-think-line { display: none !important; }
+#ccThinkFixed {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+/* bot soft contour */
+.message.bot, .bot, .msg.bot {
+  border: 1px solid rgba(255,255,255,0.07) !important;
+  background: rgba(255,255,255,0.025) !important;
+}
+/* === end think UI v3 === */
+
+/* === status + depth v4 (screenshot-like) === */
+.cc-typing-row {
+  display: flex; justify-content: flex-start;
+  padding: 0.35rem 0.75rem 0.6rem;
+  animation: messageSpring 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.cc-status-pill {
+  display: inline-flex; flex-direction: column; gap: 6px;
+  padding: 0.45rem 0.85rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(28,28,30,0.92);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.55), 0 0 24px rgba(255,255,255,0.04);
+  max-width: 92%;
+}
+.cc-status-line {
+  display: inline-flex !important; align-items: center !important; gap: 8px !important;
+}
+.cc-think-label, .cc-status-text {
+  color: #e8e8ed !important;
+  -webkit-text-fill-color: #e8e8ed !important;
+  font-size: 0.9rem !important;
+  font-weight: 450 !important;
+  letter-spacing: -0.01em;
+  background: none !important;
+  animation: none !important;
+}
+.cc-search-ico {
+  width: 22px; height: 22px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #fff; color: #111;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.2), 0 0 16px rgba(255,255,255,0.25);
+  flex-shrink: 0;
+}
+.cc-search-ico .cc-globe-svg { display: block; }
+.cc-mini-orb {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #fff, #d0d0d4 50%, #9a9aa0);
+  box-shadow: 0 0 14px rgba(255,255,255,0.22);
+  position: relative; flex-shrink: 0;
+  animation: ccOrbBreathe 2.6s ease-in-out infinite;
+}
+.cc-mini-orb-face {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 4px;
+  animation: ccLookAround 4.2s ease-in-out infinite;
+}
+.cc-mini-orb-face .e {
+  width: 3px; height: 3px; border-radius: 50%; background: #1c1c1e;
+  animation: ccBlink 5s ease-in-out infinite;
+}
+/* black progress line under status */
+.cc-think-bar {
+  height: 2px; width: 100%; border-radius: 2px;
+  background: rgba(255,255,255,0.08); overflow: hidden;
+}
+.cc-think-bar > i {
+  display: block; height: 100%; width: 38%;
+  background: linear-gradient(90deg, transparent, #1a1a1a 20%, #3a3a3c 50%, #1a1a1a 80%, transparent);
+  box-shadow: 0 0 8px rgba(0,0,0,0.8);
+  animation: ccBarRun 1.35s ease-in-out infinite;
+}
+@keyframes ccBarRun {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(280%); }
+}
+@keyframes ccOrbBreathe {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+@keyframes ccLookAround {
+  0%,20% { transform: translate(0,0); }
+  35% { transform: translate(2px,-1px); }
+  55% { transform: translate(-2px,0); }
+  75%,100% { transform: translate(0,0); }
+}
+@keyframes ccBlink {
+  0%,42%,50%,100% { transform: scaleY(1); }
+  46% { transform: scaleY(0.12); }
+}
+/* message depth like screenshot */
+#flashMessages .message,
+#flashMessages .msg,
+.message.user, .message.bot, .msg.user, .msg.bot {
+  box-shadow: 0 10px 28px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.25) !important;
+}
+.message.bot, .bot, .msg.bot {
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  background: rgba(22,22,24,0.92) !important;
+}
+.message.user, .user, .msg.user {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
+}
+.chat-layout, #flashChat, .messages {
+  background: #000 !important;
+}
+/* soft vignette depth */
+#flashMessages {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(40,40,45,0.35), transparent 55%),
+    #000 !important;
+}
+.cc-think-line, .cc-mini-orb-globe { display: none !important; }
+#ccThinkFixed {
+  background: transparent !important; border: none !important; box-shadow: none !important;
+}
+/* === end v4 === */
+
 /* slash command palette */
 .cc-slash-menu {
-  position: absolute; left: 0.75rem; right: 0.75rem; bottom: 100%;
-  margin-bottom: 0.4rem;
-  background: rgba(18,18,22,0.98);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 1rem;
-  box-shadow: 0 16px 40px rgba(0,0,0,0.5);
-  z-index: 80; display: none; overflow: hidden;
-  max-height: 220px; overflow-y: auto;
+  position: absolute; left: 0; right: 0; bottom: calc(100% + 8px);
+  background: rgba(22,22,26,0.96); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px; padding: 0.35rem; max-height: 240px; overflow-y: auto;
+  display: none; z-index: 80; backdrop-filter: blur(16px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
 }
 .cc-slash-menu.open { display: block; }
 .cc-slash-item {
-  display: flex; align-items: center; gap: 0.6rem;
-  padding: 0.65rem 0.9rem; cursor: pointer;
-  color: #ddd; font-size: 0.88rem;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  display: flex; gap: 0.65rem; align-items: center; padding: 0.55rem 0.7rem;
+  border-radius: 10px; cursor: pointer; color: #ccc; font-size: 0.85rem;
 }
 .cc-slash-item:hover, .cc-slash-item.active { background: rgba(255,255,255,0.08); color: #fff; }
-.cc-slash-item code { color: #a78bfa; font-size: 0.8rem; min-width: 4.5rem; }
+.cc-slash-item code { color: #ddd; font-size: 0.8rem; min-width: 4.5rem; font-weight: 600; }
+
+
+.bot-msg, .agent-message, .msg.bot, .message.bot {
+  box-shadow: 0 6px 24px rgba(0,0,0,0.28) !important;
+}
+.user-msg, .msg.user, .message.user {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.32) !important;
+}
+
+
+/* Sources book — clean integrated style */
+.cc-sources {
+  margin-top: 0.55rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+.cc-sources-toggle {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.7rem !important;
+  border-radius: 999px !important;
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  color: rgba(255,255,255,0.75) !important;
+  font-size: 0.78rem !important;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+.cc-sources-toggle:hover {
+  background: rgba(255,255,255,0.1) !important;
+  color: #fff !important;
+  border-color: rgba(255,255,255,0.22) !important;
+}
+.cc-source-list {
+  display: none;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+  max-width: 420px;
+  padding: 0.4rem 0;
+}
+.cc-sources.is-open .cc-source-list { display: flex !important; }
+.cc-source {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+  padding: 0.55rem 0.7rem;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  text-decoration: none !important;
+  color: #ddd !important;
+  transition: 0.15s;
+}
+.cc-source:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.16);
+}
 
 </style>
     </div>
@@ -6273,7 +6728,7 @@ html.plus-active .cc-think {
     
     <div id="heroScreen" class="screen hidden">
         <div class="hero-wrap">
-            <div class="hero-logo"><img src="IMG_5637.png" alt="ChatClaud" onerror="this.style.display='none'"></div>
+            <div class="hero-logo"><img src="/icon-512.png" alt="ChatClaud" onerror="this.style.display='none'"></div>
             <div class="hero-title brand-shine">ChatClaud</div>
             <div class="hero-sub">Твой ИИ для работы, учёбы и творчества</div>
             <div class="hero-about">
@@ -6320,7 +6775,7 @@ html.plus-active .cc-think {
 
     <div id="welcomeScreen" class="screen hidden">
         <div class="welcome-inner">
-            <div class="welcome-logo"><img src="IMG_5637.png" alt="" onerror="this.style.display='none'"></div>
+            <div class="welcome-logo"><img src="/icon-512.png" alt="" onerror="this.style.display='none'"></div>
             <div class="welcome-text">Welcome by ChatClaud</div>
             <div class="welcome-sub">Готовим пространство…</div>
         </div>
@@ -6441,7 +6896,7 @@ html.plus-active .cc-think {
                 <div class="title" id="flashTitle" style="display:none">ChatClaud</div>
                 <div class="top-bar-actions">
                     <button type="button" class="voice-btn" id="flashVoiceBtn" title="Голос" style="display:none!important" aria-hidden="true">Голос</button>
-                    <button type="button" id="flashNewChat" title="Новый чат">+</button>
+                    <button type="button" id="flashNewChat" class="cc-newchat-logo" title="Новый чат" aria-label="New chat"><img src="icon-192.png" alt="" width="22" height="22"></button>
                     <button type="button" id="flashSettingsBtn" style="display:none">Настройки</button>
                 </div>
             </div>
@@ -6588,7 +7043,7 @@ html.plus-active .cc-think {
 
                 <button class="btn-black" id="themeToggleBtn2" style="margin-bottom:0.8rem;">Светлая тема</button>
                 <label style="font-size:0.8rem;color:#888;">Провайдер</label>
-                <select id="expertProviderSelect" class="field"><option value="claude" selected>ClaudForge Pro</option><option value="groq">ClaudForge X1</option><option value="gemini">Nova Flash</option><option value="openrouter">ClaudForge Lite</option><option value="openai">GPT Bridge</option></select>
+                <select id="expertProviderSelect" class="field"><option value="chatclaud" selected>ChatClaud Smart</option><option value="groq">ChatClaud Reasoning</option><option value="mistral">ChatClaud Balanced</option><option value="hf">ChatClaud Vision</option></select>
                 <select id="expertModelSelect" class="field"></select>
                 <select id="expertPromptVersion" class="field"><option value="v1">Строгий</option><option value="v2">Креативный</option></select>
                 <label style="font-size:0.8rem;color:#888;">Язык интерфейса</label>
@@ -6740,25 +7195,58 @@ html.plus-active .cc-think {
             if (!rate.ok) throw new Error(rate.msg);
 
             const mode = (typeof window !== 'undefined' && window.chatMode) ? String(window.chatMode) : 'fast';
-            const res = await fetch('/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    messages: messages || [],
-                    system: system || '',
-                    mode: mode,
-                    reason: (mode === 'think' || mode === 'reason' || mode === 'reasoning')
-                })
-            });
-            const data = await res.json().catch(function(){ return {}; });
+            const controller = new AbortController();
+            const timer = setTimeout(function(){ controller.abort(); }, 55000);
+            let res;
+            try {
+                res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        messages: messages || [],
+                        system: (typeof ccModeSystem === 'function' ? ccModeSystem(system || '') : (system || '')),
+                        mode: mode,
+                        reason: (mode === 'think' || mode === 'reason' || mode === 'reasoning'),
+                        plus: (typeof isPlus === 'function' ? isPlus() : false),
+                        isPlus: (typeof isPlus === 'function' ? isPlus() : false)
+                    }),
+                    signal: controller.signal
+                });
+            } catch (e) {
+                if (e && e.name === 'AbortError') throw new Error('Сервер не ответил за 55 секунд.');
+                throw e;
+            } finally {
+                clearTimeout(timer);
+            }
+            const raw = await res.text().catch(function(){ return ''; });
+            let data = {};
+            try { data = raw ? JSON.parse(raw) : {}; } catch (e) {
+                throw new Error('Сервер вернул не JSON. Проверь, что опубликован server.js, а не страница обслуживания.');
+            }
             if (!res.ok) {
                 var err = (data && data.error) ? String(data.error) : ('HTTP ' + res.status);
                 if (/credit|afford|max_tokens|402/i.test(err)) {
                     throw new Error('Сервис моделей временно недоступен: проверь API-ключи и лимиты в Render.');
                 }
+                if (data && Array.isArray(data.details) && data.details.length) {
+                    throw new Error(err + ' ' + data.details.join(' | '));
+                }
                 throw new Error(err);
             }
-            return data.text || '';
+            if (!data || typeof data.text !== 'string' || !data.text.trim()) {
+                throw new Error('Сервер вернул пустой ответ.');
+            }
+            if (Array.isArray(data.sources) && data.sources.length) {
+                window.__ccLastSources = data.sources.slice(0, 12).map(function(x){
+                    return { title: x.title || x.url || 'Source', url: x.url || '', snippet: x.snippet || x.text || '', src: x.src || 'NOVA' };
+                });
+            }
+            if (data.rate) {
+                window.__ccLastRate = data.rate;
+                try { if (typeof ccUpdateFuelBar === 'function') ccUpdateFuelBar(data.rate); } catch (e) {}
+                try { if (typeof ccMaybeRateModal === 'function') ccMaybeRateModal(data.rate); } catch (e) {}
+            }
+            return data.text.trim();
         }
         async function ccApiSearch(q) {
             const res = await fetch('/api/search', {
@@ -6779,7 +7267,6 @@ html.plus-active .cc-think {
         const GEMINI_KEY_VISION = '';
         const GEMINI_KEY_COMPOSE = '';
         const GEMINI_KEY = GEMINI_KEY_COMPOSE;
-        const CLAUDE_API_KEY = '';
         const GEMINI_PRO_API_KEY = GEMINI_KEY;
 
         // ===== VISION / COMPOSE =====
@@ -6867,7 +7354,7 @@ html.plus-active .cc-think {
         }
 
 
-        window.__ccProvider = 'openai';
+        window.__ccProvider = 'chatclaud';
         window.__ccOpenAICooldownUntil = 0;
         
         // ===== CHATCLAUD DAILY LIMITS (reset 00:00 local) =====
@@ -6970,45 +7457,28 @@ html.plus-active .cc-think {
 
         function ccPublicError(err) {
             const s = String(err && err.message || err || '');
+            if (/NO_PROVIDER|рабочий канал|no (groq|mistral|openai|hf)|не задан|не подключён|не настроен/i.test(s)) {
+                return 'Сервер не видит рабочий AI-канал. Проверь Environment на Render и перезапусти именно Web Service.';
+            }
+            if (/401|403|auth|unauthor|invalid.*key|ключ/i.test(s)) {
+                return 'Render отклонил ключ провайдера. Проверь имя переменной, сам ключ и лимиты аккаунта.';
+            }
             if (/rate|limit|429|TPM|TPD|quota|credit/i.test(s)) {
                 try { if (typeof showLimitBanner === 'function') try { showToast('Повтори через пару секунд'); } catch(e) {} } catch(e) {}
-                return 'ChatClaud перегружен. Попробуй через несколько минут.';
+                return 'Провайдер отклонил запрос по лимиту или квоте. Ключ может быть сохранён, но лимит исчерпан.';
             }
             if (/network|fetch|Failed|timeout|abort/i.test(s)) {
-                return 'Сейчас все каналы заняты. Напиши ещё раз через минуту.';
+                return 'Приложение не достучалось до Render /api/chat. Открой приложение с адреса Render, а не как статическую копию.';
             }
-            try { if (typeof showLimitBanner === 'function') try { showToast('Сервер думает… повтори через 2–3 сек'); } catch(e) {} } catch(e) {}
-            return 'Не удалось получить ответ. Нажми ещё раз или смени режим на «Быстрый».';
+            if (s) return 'Ошибка сервера: ' + s.slice(0, 220);
+            return 'Сервер не вернул ответ. Проверь соединение и настройки модели.';
         }
-
-        const OPENAI_MAIN_KEY = '';
         const NETLIFY_TOKEN = '';
         const GROQ_KEYS = [];
         let currentGroqKeyIndex = 0;
         
         const GROQ_MODELS = ['groq/compound-mini', 'groq/compound', 'groq/compound-mini', 'qwen/qwen3.6-27b', 'groq/compound'];
         window.GROQ_MODELS = GROQ_MODELS;
-
-        function buildPollinationUrl(prompt, opts) {
-            opts = opts || {};
-            var w = opts.w || 1024;
-            var h = opts.h || 1536;
-            var seed = opts.seed || (Math.floor(Math.random() * 999999) + 1);
-            var model = opts.model || 'flux';
-            var q = String(prompt || '').trim();
-            if (!q) q = 'cinematic scene';
-            // quality boost for Pollination
-            if (!/photorealistic|8k|ultra detailed/i.test(q)) {
-                q += ', photorealistic, ultra detailed, masterpiece, sharp focus, natural lighting, 8k uhd';
-            }
-            var url = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(q)
-                + '?width=' + w + '&height=' + h
-                + '&seed=' + seed
-                + '&nologo=true&enhance=true&model=' + encodeURIComponent(model);
-            return url;
-        }
-        window.buildPollinationUrl = buildPollinationUrl;
-
         window.GROQ_MODELS = GROQ_MODELS;
 
         function getNextGroqKey() {
@@ -7016,18 +7486,6 @@ html.plus-active .cc-think {
             currentGroqKeyIndex = (currentGroqKeyIndex + 1) % GROQ_KEYS.length;
             return key;
         }
-
-        const OPENAI_KEYS = [];
-        let currentOpenAIKeyIndex = 0;
-        function getNextOpenAIKey() {
-            const key = OPENAI_KEYS[currentOpenAIKeyIndex];
-            currentOpenAIKeyIndex = (currentOpenAIKeyIndex + 1) % OPENAI_KEYS.length;
-            return key;
-        }
-
-        const OPENROUTER_KEY = ''
-        const OPENROUTER_TEAM_KEY = ''
-        const OPENROUTER_VOICE_KEY = '';
         const ADMIN_SECRET = ''; // секрет хранится только на сервере в Render Environment
         // также срабатывает, если вставить ASCII-баннер (WELCOME BACK SUPERUSER)
         async function ccIsAdminUnlock(text) {
@@ -7422,58 +7880,61 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
             } catch (e) {}
             return parts;
         }
+        async function ccApiFetchUrl(url) {
+            const u = String(url || '').trim();
+            if (!/^https?:\/\//i.test(u)) return null;
+            try {
+                const res = await fetch('/api/fetch-url', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: u }) });
+                const data = await res.json().catch(() => ({}));
+                return res.ok ? data : null;
+            } catch (e) { return null; }
+        }
         async function multiWebSearch(query) {
             const q = (query || '').trim();
             if (!q) return '';
             window.__ccLastSources = [];
             const parts = [];
-            // 1) Tavily (limit 16/day)
+            // Primary: ChatClaud server -> Nova.
             try {
-                const t = await searchTavily(q);
-                if (Array.isArray(t)) parts.push.apply(parts, t);
-            } catch (e) { console.warn('tavily', e); }
-            // 2) Serper/Google (limit 18/day) — super.dev key
-            if (parts.length < 4) {
-                try {
-                    const s = await searchSerper(q);
-                    if (Array.isArray(s)) parts.push.apply(parts, s);
-                } catch (e) { console.warn('serper', e); }
-            }
-            // 3) DuckDuckGo free
-            if (parts.length < 3) {
-                try {
-                    const ddg = await searchDuckDuckGo(q);
-                    if (Array.isArray(ddg)) parts.push.apply(parts, ddg);
-                } catch (e) {}
-            }
-            // YouTube helper links
-            if (/ютуб|youtube|видео|video/i.test(q)) {
-                var yq = encodeURIComponent(q.replace(/найди|мне|больше|видео|на|ют[уу]бе?|youtube/ig, ' ').trim() || q);
-                parts.push({
-                    title: 'YouTube: ' + q.slice(0, 40),
-                    url: 'https://www.youtube.com/results?search_query=' + yq,
-                    snippet: 'Выдача YouTube',
-                    text: 'Выдача YouTube',
-                    src: 'YouTube'
+                const direct = await ccApiSearch(q);
+                if (direct && Array.isArray(direct.sources)) direct.sources.slice(0, 8).forEach(function(x) {
+                    if (x && (x.url || x.title || x.text)) parts.push({ title: x.title || x.name || '', url: x.url || x.link || '', snippet: x.text || x.snippet || x.description || '', text: x.text || x.snippet || x.description || '', src: x.src || 'NOVA' });
                 });
+                if (direct && direct.text && !parts.length) parts.push({ title: 'NOVA', text: direct.text, snippet: direct.text, url: '', src: 'NOVA' });
+            } catch (e) { console.warn('server search', e); }
+            const urlMatch = q.match(/https?:\/\/[^\s<>'"]+/i);
+            if (urlMatch) {
+                const page = await ccApiFetchUrl(urlMatch[0]);
+                if (page && page.ok) parts.unshift({
+                    title: page.title || page.url || 'Открытая страница',
+                    url: page.url || urlMatch[0],
+                    snippet: page.type === 'video' ? (page.description || page.subtitles || '') : (page.text || page.description || ''),
+                    text: page.type === 'video' ? ('Видео: ' + (page.title || '') + '\n' + (page.description || '') + '\n' + (page.subtitles || '')) : String(page.text || page.description || ''),
+                    src: 'NOVA'
+                });
+            }
+            // Fallbacks.
+            if (parts.length < 4) { try { const t = await searchTavily(q); if (Array.isArray(t)) parts.push.apply(parts, t); } catch (e) {} }
+            if (parts.length < 4) { try { const ss = await searchSerper(q); if (Array.isArray(ss)) parts.push.apply(parts, ss); } catch (e) {} }
+            if (parts.length < 3) { try { const ddg = await searchDuckDuckGo(q); if (Array.isArray(ddg)) parts.push.apply(parts, ddg); } catch (e) {} }
+            if (/ютуб|youtube|видео|video/i.test(q)) {
+                const yq = encodeURIComponent(q.replace(/найди|мне|больше|видео|на|ют[уу]бе?|youtube/ig, ' ').trim() || q);
+                parts.push({ title: 'YouTube: ' + q.slice(0, 40), url: 'https://www.youtube.com/results?search_query=' + yq, snippet: 'Выдача YouTube', text: 'Выдача YouTube', src: 'YouTube' });
             }
             parts.forEach(function(item) {
                 if (!item) return;
-                var title = item.title || item.src || (item.text ? String(item.text).slice(0, 48) : '') || item.url || '';
-                var url = item.url || '';
-                if ((url || title) && window.__ccLastSources.length < 8) {
-                    window.__ccLastSources.push({ url: url, title: title });
-                }
+                const title = item.title || item.src || (item.text ? String(item.text).slice(0, 48) : '') || item.url || '';
+                if ((item.url || title) && window.__ccLastSources.length < 8) window.__ccLastSources.push({ url: item.url || '', title: title, snippet: item.snippet || item.text || '', src: item.src || '' });
             });
             if (!parts.length) return '';
             return parts.map(function(p, idx) {
-                var title = p.title || p.src || '';
-                var sn = p.snippet || p.text || '';
-                var line = (idx + 1) + '. ' + title;
+                const title = p.title || p.src || '';
+                const sn = p.snippet || p.text || '';
+                let line = (idx + 1) + '. ' + title;
                 if (p.url) line += ' — ' + p.url;
-                if (sn) line += '\n' + String(sn).slice(0, 240);
+                if (sn) line += '\n' + String(sn).slice(0, 700);
                 return line;
-            }).join('\n\n').slice(0, 4500);
+            }).join('\n\n').slice(0, 6500);
         }
 
         async function duckSearch(query) { return multiWebSearch(query); }
@@ -8173,11 +8634,215 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
                 let src = codeText || '';
                 const l = (lang || '').toLowerCase();
                 if (l === 'css') {
-                    src = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>' + codeText + '</style></head><body></body></html>';
+                    src = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>' + codeText + '</style></head><body>
+<script>
+(function(){
+  var CMDS = [
+    { cmd: '/img', desc: 'Generate image (Pollination)' },
+    { cmd: '/veo', desc: 'Short video frames' },
+    { cmd: '/search', desc: 'Force web search (Nova)' },
+    { cmd: '/nova', desc: 'Search via Nova browser' },
+    { cmd: '/plus', desc: 'Plus subscription' },
+    { cmd: '/settings', desc: 'Open settings' },
+    { cmd: '/help', desc: 'Show commands' }
+  ];
+  function ensureMenu() {
+    var m = document.getElementById('ccSlashMenu');
+    if (m) return m;
+    var row = document.querySelector('.input-row') || document.querySelector('#flashInput')?.parentElement;
+    if (!row) return null;
+    m = document.createElement('div');
+    m.id = 'ccSlashMenu';
+    m.className = 'cc-slash-menu';
+    row.style.position = row.style.position || 'relative';
+    row.appendChild(m);
+    return m;
+  }
+  function render(filter) {
+    var m = ensureMenu();
+    if (!m) return;
+    var f = (filter || '').toLowerCase();
+    var list = CMDS.filter(function(c){ return !f || c.cmd.indexOf(f) === 0 || c.desc.toLowerCase().indexOf(f) >= 0; });
+    if (!list.length) { m.classList.remove('open'); return; }
+    m.innerHTML = list.map(function(c){
+      return '<div class="cc-slash-item" data-cmd="'+c.cmd+'"><code>'+c.cmd+'</code><span>'+c.desc+'</span></div>';
+    }).join('');
+    m.classList.add('open');
+    m.querySelectorAll('.cc-slash-item').forEach(function(el){
+      el.onclick = function(){
+        var inp = document.getElementById('flashInput') || document.querySelector('.input-row textarea');
+        if (inp) {
+          inp.value = el.getAttribute('data-cmd') + ' ';
+          inp.focus();
+          try { inp.dispatchEvent(new Event('input')); } catch(e){}
+        }
+        m.classList.remove('open');
+      };
+    });
+  }
+  function bind() {
+    var inp = document.getElementById('flashInput') || document.querySelector('.input-row textarea');
+    if (!inp || inp.__ccSlash) return;
+    inp.__ccSlash = true;
+    inp.addEventListener('input', function(){
+      var v = inp.value || '';
+      if (v.charAt(0) === '/') render(v.split(/\s/)[0]);
+      else {
+        var m = document.getElementById('ccSlashMenu');
+        if (m) m.classList.remove('open');
+      }
+    });
+    document.addEventListener('click', function(e){
+      var m = document.getElementById('ccSlashMenu');
+      if (m && !m.contains(e.target) && e.target !== inp) m.classList.remove('open');
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else setTimeout(bind, 400);
+})();
+</script>
+
+</body></html>';
                 } else if (l === 'javascript' || l === 'js') {
-                    src = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="font-family:system-ui;padding:1rem;background:#111;color:#eee"><h3>JS</h3><pre id="out"></pre><script>try{\n' + codeText + '\n}catch(e){document.getElementById("out").textContent=String(e);}\n<\/script></body></html>';
+                    src = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="font-family:system-ui;padding:1rem;background:#111;color:#eee"><h3>JS</h3><pre id="out"></pre><script>try{\n' + codeText + '\n}catch(e){document.getElementById("out").textContent=String(e);}\n<\/script>
+<script>
+(function(){
+  var CMDS = [
+    { cmd: '/img', desc: 'Generate image (Pollination)' },
+    { cmd: '/veo', desc: 'Short video frames' },
+    { cmd: '/search', desc: 'Force web search (Nova)' },
+    { cmd: '/nova', desc: 'Search via Nova browser' },
+    { cmd: '/plus', desc: 'Plus subscription' },
+    { cmd: '/settings', desc: 'Open settings' },
+    { cmd: '/help', desc: 'Show commands' }
+  ];
+  function ensureMenu() {
+    var m = document.getElementById('ccSlashMenu');
+    if (m) return m;
+    var row = document.querySelector('.input-row') || document.querySelector('#flashInput')?.parentElement;
+    if (!row) return null;
+    m = document.createElement('div');
+    m.id = 'ccSlashMenu';
+    m.className = 'cc-slash-menu';
+    row.style.position = row.style.position || 'relative';
+    row.appendChild(m);
+    return m;
+  }
+  function render(filter) {
+    var m = ensureMenu();
+    if (!m) return;
+    var f = (filter || '').toLowerCase();
+    var list = CMDS.filter(function(c){ return !f || c.cmd.indexOf(f) === 0 || c.desc.toLowerCase().indexOf(f) >= 0; });
+    if (!list.length) { m.classList.remove('open'); return; }
+    m.innerHTML = list.map(function(c){
+      return '<div class="cc-slash-item" data-cmd="'+c.cmd+'"><code>'+c.cmd+'</code><span>'+c.desc+'</span></div>';
+    }).join('');
+    m.classList.add('open');
+    m.querySelectorAll('.cc-slash-item').forEach(function(el){
+      el.onclick = function(){
+        var inp = document.getElementById('flashInput') || document.querySelector('.input-row textarea');
+        if (inp) {
+          inp.value = el.getAttribute('data-cmd') + ' ';
+          inp.focus();
+          try { inp.dispatchEvent(new Event('input')); } catch(e){}
+        }
+        m.classList.remove('open');
+      };
+    });
+  }
+  function bind() {
+    var inp = document.getElementById('flashInput') || document.querySelector('.input-row textarea');
+    if (!inp || inp.__ccSlash) return;
+    inp.__ccSlash = true;
+    inp.addEventListener('input', function(){
+      var v = inp.value || '';
+      if (v.charAt(0) === '/') render(v.split(/\s/)[0]);
+      else {
+        var m = document.getElementById('ccSlashMenu');
+        if (m) m.classList.remove('open');
+      }
+    });
+    document.addEventListener('click', function(e){
+      var m = document.getElementById('ccSlashMenu');
+      if (m && !m.contains(e.target) && e.target !== inp) m.classList.remove('open');
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else setTimeout(bind, 400);
+})();
+</script>
+
+</body></html>';
                 } else if (!/<!DOCTYPE/i.test(src) && !/<html[\s>]/i.test(src)) {
-                    src = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:-apple-system,system-ui,sans-serif;margin:0;padding:1rem;background:#fff;color:#111}</style></head><body>' + codeText + '</body></html>';
+                    src = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:-apple-system,system-ui,sans-serif;margin:0;padding:1rem;background:#fff;color:#111}</style></head><body>' + codeText + '
+<script>
+(function(){
+  var CMDS = [
+    { cmd: '/img', desc: 'Generate image (Pollination)' },
+    { cmd: '/veo', desc: 'Short video frames' },
+    { cmd: '/search', desc: 'Force web search (Nova)' },
+    { cmd: '/nova', desc: 'Search via Nova browser' },
+    { cmd: '/plus', desc: 'Plus subscription' },
+    { cmd: '/settings', desc: 'Open settings' },
+    { cmd: '/help', desc: 'Show commands' }
+  ];
+  function ensureMenu() {
+    var m = document.getElementById('ccSlashMenu');
+    if (m) return m;
+    var row = document.querySelector('.input-row') || document.querySelector('#flashInput')?.parentElement;
+    if (!row) return null;
+    m = document.createElement('div');
+    m.id = 'ccSlashMenu';
+    m.className = 'cc-slash-menu';
+    row.style.position = row.style.position || 'relative';
+    row.appendChild(m);
+    return m;
+  }
+  function render(filter) {
+    var m = ensureMenu();
+    if (!m) return;
+    var f = (filter || '').toLowerCase();
+    var list = CMDS.filter(function(c){ return !f || c.cmd.indexOf(f) === 0 || c.desc.toLowerCase().indexOf(f) >= 0; });
+    if (!list.length) { m.classList.remove('open'); return; }
+    m.innerHTML = list.map(function(c){
+      return '<div class="cc-slash-item" data-cmd="'+c.cmd+'"><code>'+c.cmd+'</code><span>'+c.desc+'</span></div>';
+    }).join('');
+    m.classList.add('open');
+    m.querySelectorAll('.cc-slash-item').forEach(function(el){
+      el.onclick = function(){
+        var inp = document.getElementById('flashInput') || document.querySelector('.input-row textarea');
+        if (inp) {
+          inp.value = el.getAttribute('data-cmd') + ' ';
+          inp.focus();
+          try { inp.dispatchEvent(new Event('input')); } catch(e){}
+        }
+        m.classList.remove('open');
+      };
+    });
+  }
+  function bind() {
+    var inp = document.getElementById('flashInput') || document.querySelector('.input-row textarea');
+    if (!inp || inp.__ccSlash) return;
+    inp.__ccSlash = true;
+    inp.addEventListener('input', function(){
+      var v = inp.value || '';
+      if (v.charAt(0) === '/') render(v.split(/\s/)[0]);
+      else {
+        var m = document.getElementById('ccSlashMenu');
+        if (m) m.classList.remove('open');
+      }
+    });
+    document.addEventListener('click', function(e){
+      var m = document.getElementById('ccSlashMenu');
+      if (m && !m.contains(e.target) && e.target !== inp) m.classList.remove('open');
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else setTimeout(bind, 400);
+})();
+</script>
+
+</body></html>';
                 }
                 window._previewSrc = src;
                 if (window._previewBlobUrl) {
@@ -8463,30 +9128,77 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
         }
 
         function ccRenderSources(botEl, items) {
-            if (!botEl || !items || !items.length) return;
+            if (!botEl || !Array.isArray(items) || !items.length) return;
             try {
+                var clean = items.filter(function(it){ return it && (it.url || it.title || it.snippet || it.text); }).slice(0, 8);
+                if (!clean.length) return;
                 var prev = botEl.querySelector('.cc-sources');
                 if (prev) prev.remove();
+
                 var box = document.createElement('div');
                 box.className = 'cc-sources';
-                var btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'cc-source-book-btn';
-                btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><path d="M12 6v12"/></svg><span>' + items.length + '</span>';
+
+                var toggle = document.createElement('button');
+                toggle.type = 'button';
+                toggle.className = 'cc-sources-toggle';
+                toggle.setAttribute('aria-expanded', 'false');
+                toggle.setAttribute('aria-label', 'Открыть источники');
+                toggle.innerHTML = '<svg class="cc-sources-book" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 5.2c2.6-.7 5.2-.2 7.5 1.4v12.2c-2.3-1.6-4.9-2.1-7.5-1.4z"/><path d="M19.5 5.2c-2.6-.7-5.2-.2-7.5 1.4v12.2c2.3-1.6 4.9-2.1 7.5-1.4z"/><path d="M12 6.6v12.2"/></svg>' +
+                    '<span class="cc-sources-count">' + clean.length + '</span>';
+
                 var list = document.createElement('div');
                 list.className = 'cc-source-list';
-                items.slice(0, 8).forEach(function(it) {
-                    if (!it || !it.url) return;
-                    var a = document.createElement('a');
-                    a.href = it.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
-                    a.textContent = String(it.title || it.url).slice(0, 64);
+                list.setAttribute('aria-hidden', 'true');
+
+                clean.forEach(function(it) {
+                    var url = String(it.url || '').trim();
+                    var title = String(it.title || it.src || url || 'Источник').trim();
+                    var snippet = String(it.snippet || it.text || '').trim();
+                    var domain = '';
+                    try { domain = url ? new URL(url).hostname.replace(/^www\./, '') : ''; } catch(e) {}
+
+                    var a = document.createElement(url ? 'a' : 'div');
+                    a.className = 'cc-source';
+                    if (url) { a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer'; }
+
+                    var ico = document.createElement('span');
+                    ico.className = 'cc-source-icon';
+                    ico.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1.1l2.1-2.1a5 5 0 0 0-7.1-7.1l-1.2 1.2"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2.1 2.1a5 5 0 0 0 7.1 7.1l1.2-1.2"/></svg>';
+                    a.appendChild(ico);
+
+                    var body = document.createElement('span');
+                    body.className = 'cc-source-body';
+                    var t = document.createElement('div');
+                    t.className = 'cc-source-title';
+                    t.textContent = title.slice(0, 120);
+                    body.appendChild(t);
+                    if (domain) {
+                        var u = document.createElement('div');
+                        u.className = 'cc-source-url';
+                        u.textContent = domain;
+                        body.appendChild(u);
+                    }
+                    if (snippet) {
+                        var sn = document.createElement('div');
+                        sn.className = 'cc-source-snippet';
+                        sn.textContent = snippet.slice(0, 280);
+                        body.appendChild(sn);
+                    }
+                    a.appendChild(body);
                     list.appendChild(a);
                 });
-                btn.addEventListener('click', function(){ box.classList.toggle('is-open'); });
-                box.appendChild(btn);
+
+                toggle.addEventListener('click', function(){
+                    var open = box.classList.toggle('is-open');
+                    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    toggle.setAttribute('aria-label', open ? 'Закрыть источники' : 'Открыть источники');
+                    list.setAttribute('aria-hidden', open ? 'false' : 'true');
+                });
+
+                box.appendChild(toggle);
                 box.appendChild(list);
-                if (list.childNodes.length) botEl.appendChild(box);
-            } catch (e) {}
+                botEl.appendChild(box);
+            } catch (e) { console.warn('sources render', e); }
         }
 
         window.ccAttachFollowups = ccAttachFollowups;
@@ -8758,27 +9470,27 @@ function buildImageUrl(userPrompt, opts) {
                 : ', NO woman, NO girl, NO female face, NO beauty portrait, NO anime girl, NO random person closeup';
 
             const quality = person
-                ? ', photorealistic, accurate face, 8k, real photo'
-                : ', photorealistic wide shot, highly detailed, 8k, cinematic';
+                ? ', photorealistic, accurate celebrity likeness, natural skin texture, sharp eyes, 8k uhd, masterpiece, professional photography, detailed face'
+                : ', photorealistic, ultra detailed, masterpiece, sharp focus, natural lighting, cinematic composition, 8k uhd, high dynamic range';
 
-            const fullPrompt = (core + quality + antiGirl).slice(0, 380);
+            const fullPrompt = (core + quality + antiGirl).slice(0, 900);
             const seed = (Date.now() % 1e9) ^ Math.floor(Math.random() * 1e9);
             const base = 'https://image.pollinations.ai/prompt/';
-            const w = 768, h = 1024;
+            // Portrait 4K-class (Pollinations supports up to ~2048)
+            const w = 1280, h = 1920;
             const enc = encodeURIComponent(fullPrompt);
-            // ultra-short fallback for stubborn subjects
-            const shortCore = encodeURIComponent((person || scene || raw).slice(0, 80) + (person ? '' : ' scene, no people faces'));
+            const shortCore = encodeURIComponent((person || scene || raw).slice(0, 120) + (person ? ', photorealistic portrait 8k' : ' scene, no random faces, photorealistic 8k'));
 
             return {
-                url: base + enc + '?width=' + w + '&height=' + h + '&model=flux&seed=' + seed + '&nologo=true',
+                url: base + enc + '?width=' + w + '&height=' + h + '&model=flux&seed=' + seed + '&nologo=true&enhance=true',
                 enhanced: fullPrompt,
                 width: w,
                 height: h,
                 aspect: 'portrait',
                 fallbacks: [
-                    base + enc + '?width=512&height=768&model=flux&seed=' + (seed+1) + '&nologo=true',
-                    base + shortCore + '?width=512&height=768&model=flux&seed=' + (seed+2) + '&nologo=true',
-                    base + encodeURIComponent((scene || raw).slice(0, 60)) + '?width=512&height=512&model=flux&seed=' + (seed+3) + '&nologo=true'
+                    base + enc + '?width=1024&height=1536&model=flux&seed=' + (seed+1) + '&nologo=true&enhance=true',
+                    base + shortCore + '?width=1024&height=1536&model=flux&seed=' + (seed+2) + '&nologo=true&enhance=true',
+                    base + encodeURIComponent((scene || raw).slice(0, 100) + ', photorealistic, 8k') + '?width=768&height=1024&model=flux&seed=' + (seed+3) + '&nologo=true&enhance=true'
                 ]
             };
         }
@@ -8903,7 +9615,7 @@ function buildImageUrl(userPrompt, opts) {
             }
             renderMessages() {
                 if (!this.history || this.history.length === 0) {
-                    this.container.innerHTML = '<div class="chat-empty"><h4>ChatClaud</h4><p>Type a message — I will help. Code, ideas, questions.</p></div>';
+                    this.container.innerHTML = '<div class="chat-empty"><h4>ChatClaud</h4><p>Напиши сообщение — отвечу по делу. Код, идеи, вопросы.</p></div>';
                     return;
                 }
  this.container.innerHTML = ''; this.history.forEach(m => {
@@ -9013,31 +9725,9 @@ function buildImageUrl(userPrompt, opts) {
                     if (typeof showToast === 'function') { /* noop */ }
                 } catch(e) {} try { document.body.classList.add('is-generating'); } catch(e) {}; try { const improved = await this.fetchTextCompletion(`Улучши этот текст для нейросети, сделав его более конкретным и понятным. Верни только исправленный текст без пояснений: "${text}"`, 'groq', 'groq/compound-mini'); this.input.value = improved || text; } catch (e) { this.input.value = text; } finally { this.isGenerating = false; try { document.body.classList.remove('is-generating'); } catch(e) {}; } }
             async fetchTextCompletion(prompt, providerOverride, modelOverride) {
-                const provider = providerOverride || 'groq';
-                // ChatClaud internal providers (never show vendor names in UI)
-                if (provider === 'claude' || provider === 'claudforge') {
-                    const hist = (this.history || []).slice(-40).map(m => ({
-                        role: (m.role === 'bot' || m.role === 'assistant') ? 'assistant' : 'user',
-                        content: String(m.content || '')
-                    }));
-                    const reply = await callClaudeAPI(hist);
-                    return { content: reply, provider: 'claude' };
-                }
-                if (provider === 'gemini' || provider === 'nova') {
-                    const prompt = (this.history || []).slice(-30).map(m => ((m.role==='bot'||m.role==='assistant')?'assistant':'user') + ': ' + (m.content||'')).join('\n');
-                    const reply = await callGeminiAPI(prompt);
-                    return { content: reply, provider: 'gemini' };
-                }
-                const model = modelOverride || (provider === 'mistral' ? 'mistral-small-latest' : 'groq/compound-mini');
-                const key = provider === 'mistral' ? (isPlus() ? MISTRAL_PLUS_KEY : MISTRAL_KEY) : provider === 'groq' ? getNextGroqKey() : provider === 'openai' ? getNextOpenAIKey() : OPENROUTER_KEY;
-                const url = provider === 'mistral' ? 'https://api.mistral.ai/v1/chat/completions' : provider === 'groq' ? 'https://api.groq.com/openai/v1/chat/completions' : provider === 'openai' ? 'https://api.openai.com/v1/chat/completions' : 'https://openrouter.ai/api/v1/chat/completions';
-                const res = await fetch(url, { method: 'POST', signal: this.abortController?.signal, headers: Object.assign({ 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' }, (url.indexOf('openrouter') >= 0 ? { 'HTTP-Referer': 'https://chatclaud.netlify.app', 'X-Title': 'ChatClaud' } : {})), body: JSON.stringify({ model, messages: [{ role: 'system', content: 'Ты — инструмент улучшения текста. Верни ТОЛЬКО исправленный текст.' }, { role: 'user', content: prompt }], temperature: 0.1, max_tokens: 300 }) });
-                if (!res.ok) {
-                    let errMsg = 'Ошибка API';
-                    try { const errData = await res.json(); errMsg = errData.error?.message || errData.message || `HTTP ${res.status}`; } catch(_) {}
-                    throw new Error(errMsg);
-                }
-                const data = await res.json(); return data.choices[0].message.content;
+                const mode = providerOverride === 'deepseek' ? 'think' : 'fast';
+                const text = await ccApiChat([{ role: 'user', content: String(prompt || '') }], 'Ты ChatClaud. Улучши текст. Верни только исправленный текст без пояснений.');
+                return text || '';
             }
             async handleFile(e) {
                 const file = e.target.files && e.target.files[0];
@@ -9194,7 +9884,7 @@ function buildImageUrl(userPrompt, opts) {
                     const frames = [];
                     for (let i=0;i<16;i++) {
                         const seed = Math.floor(Math.random()*99999)+i;
-                        frames.push('https://image.pollinations.ai/prompt/' + encodeURIComponent(gprompt + ', cinematic still frame ' + (i+1) + ' of 16, photorealistic, ultra detailed, 8k, natural lighting') + '?width=1024&height=1024&nologo=true&enhance=true&seed=' + seed + '&nologo=true&enhance=true&model=flux');
+                        frames.push('https://image.pollinations.ai/prompt/' + encodeURIComponent(gprompt + ', cinematic still frame ' + (i+1) + ' of 16, photorealistic, ultra detailed, 8k, natural lighting') + '?width=1024&height=1024&seed=' + seed + '&nologo=true&model=flux');
                     }
                     botEl.innerHTML = frames.map(u => '<img src="'+u+'" alt="" style="width:72px;height:72px;object-fit:cover;border-radius:8px;margin:2px">').join('') + '<div style="opacity:.7;font-size:12px;margin-top:6px">16 кадров · GIF-лента</div>';
                     this.history.push({ role:'assistant', content: 'GIF frames: ' + gprompt });
@@ -9261,35 +9951,7 @@ function buildImageUrl(userPrompt, opts) {
                                 } catch (me) {
                                     promptText = prompt + ', photorealistic, exact subject as requested';
                                 }
-                                // OpenRouter polish with hard subject lock
-                                try {
-                                    if (typeof OPENROUTER_KEY !== 'undefined' && OPENROUTER_KEY) {
-                                        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                                            method: 'POST',
-                                            headers: {
-                                                'Authorization': 'Bearer ' + OPENROUTER_KEY,
-                                                'Content-Type': 'application/json',
-                                                'HTTP-Referer': 'https://chatclaud.netlify.app',
-                                                'X-Title': 'ChatClaud'
-                                            },
-                                            body: JSON.stringify({
-                                                model: 'meta-llama/llama-3.1-8b-instruct',
-                                                max_tokens: 120,
-                                                temperature: 0.4,
-                                                messages: [
-                                                    { role: 'system', content: 'Write ONE English image prompt. First words = user subject. If user said war/battlefield — war scene NOT a girl. If potato — potato. NEVER replace subject with a beautiful woman unless user asked for a woman. Max 40 words. Output only the prompt.' },
-                                                    { role: 'user', content: 'Subject: ' + prompt }
-                                                ]
-                                            })
-                                        });
-                                        if (res.ok) {
-                                            const d = await res.json();
-                                            let t = (d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content) || '';
-                                            t = t.trim().replace(/^["']|["']$/g, '');
-                                            if (t.length > 15 && !/(beautiful girl|anime girl|sexy)/i.test(t)) promptText = t;
-                                        }
-                                    }
-                                } catch (oe) {}
+                                // Дополнительная полировка отключена: промпт проходит через серверный ChatClaud.
                             }
                         } catch (e) {}
                         const built = buildImageUrl((function(){ var p = window.__ccFacePrompt || prompt; window.__ccFacePrompt = null; return p; })(), { promptText: promptText, pollEnhance: true });
@@ -9416,7 +10078,7 @@ function buildImageUrl(userPrompt, opts) {
                         } else if (/ютуб|youtube|видео|найди|сайт/i.test(String(text||''))) {
                             var yq = encodeURIComponent(String(text||'').slice(0, 80));
                             fullPrompt = String(fullPrompt) + '\n\n[Данные поиска]\n1. YouTube — https://www.youtube.com/results?search_query=' + yq + '\n2. Google — https://www.google.com/search?q=' + yq;
-                            window.__ccLastSources = [{ title: 'YouTube', url: 'https://www.youtube.com/results?search_query=' + yq }, { title: 'Google', url: 'https://www.google.com/search?q=' + yq }];
+                            window.__ccLastSources = [{ title: 'YouTube', url: 'https://www.youtube.com/results?search_query=' + yq, snippet: 'Результаты поиска YouTube' }, { title: 'Google', url: 'https://www.google.com/search?q=' + yq, snippet: 'Результаты поиска Google' }];
                             }
                         } catch(e) {}
                     }
@@ -9484,6 +10146,12 @@ function buildImageUrl(userPrompt, opts) {
                             botEl.innerHTML = DOMPurify.sanitize(marked.parse(accumulatedText), { ADD_TAGS: ['video'], ADD_ATTR: ['controls', 'src'] });
                             this.addMessageActions(botEl); try { if (typeof ccEnhanceNovaLinks === 'function') ccEnhanceNovaLinks(botEl); } catch(e) {}
                         }
+                        try {
+                            if (window.__ccLastSources && window.__ccLastSources.length && typeof ccRenderSources === 'function') {
+                                ccRenderSources(botEl, window.__ccLastSources);
+                                window.__ccLastSources = [];
+                            }
+                        } catch(e) {}
                         this.history.push({ role: 'assistant', content: accumulatedText });
                         try { if (typeof ccBumpMsg === 'function') ccBumpMsg(); } catch(e) {}
                         try { document.dispatchEvent(new CustomEvent('cc-bot-speak', { detail: accumulatedText })); } catch(e) {}
@@ -9630,7 +10298,7 @@ function buildImageUrl(userPrompt, opts) {
                 if (typeof CHATCLAUD_BRAIN === 'string') sys = (CHATCLAUD_BRAIN.slice(0, 4000) + '\n' + sys).slice(0, 5000);
 
                 const hist = (this.history || []).filter(function(m) {
-                    return m && m.content && m.role !== 'system' && !/недоступен|Ошибка|Request too large|Лимит|\[image\]|Создание изображения/i.test(m.content) && String(m.content).length < 4000;
+                    return m && m.content && m.role !== 'system' && !/недоступен|Ошибка|Не удалось получить ответ|Сейчас все каналы|Request too large|Лимит|\[image\]|Создание изображения/i.test(m.content) && String(m.content).length < 4000;
                 }).slice(-10);
                 const messages = [{ role: 'system', content: sys }];
                 hist.forEach(function(m) {
@@ -9652,226 +10320,36 @@ function buildImageUrl(userPrompt, opts) {
                 if (this.currentFileText) userContent += '\n\n[ФАЙЛ]\n' + String(this.currentFileText).slice(0, 100000);
                 messages.push({ role: 'user', content: userContent.slice(0, 120000) });
 
+                // Серверный bridge — единственный путь, когда ключи не хранятся в браузере.
+                // Не запускаем после него пустые browser-fallbacks: они дублировали запрос
+                // и превращали настоящую ошибку сервера в одинаковую фразу.
+                if (typeof __ccUseServer !== 'undefined' && __ccUseServer && typeof ccApiChat === 'function') {
+                    const serverText = await ccApiChat(messages.slice(-24), sys);
+                    const cleanServerText = (typeof ccSanitizeBrands === 'function')
+                        ? ccSanitizeBrands(serverText)
+                        : serverText;
+                    if (!cleanServerText || !String(cleanServerText).trim()) throw new Error('Сервер вернул пустой ответ.');
+                    const finalServerText = (typeof ccStripOcrExcuse === 'function')
+                        ? ccStripOcrExcuse(String(cleanServerText).trim())
+                        : String(cleanServerText).trim();
+                    onChunk(finalServerText, true);
+                    return finalServerText;
+                }
+
                 function isLimitErr(s) {
                     return /rate|429|TPM|TPD|tokens per|too large|insufficient_quota|credit|billing|quota|overloaded|503/i.test(String(s||''));
                 }
 
-                async function callOpenAI() {
-                    const res = await fetch('https://api.openai.com/v1/chat/completions', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + OPENAI_MAIN_KEY },
-                        body: JSON.stringify({
-                            model: 'gpt-4o-mini',
-                            messages: messages,
-                            temperature: cm === 'think' ? 0.45 : 0.7,
-                            max_tokens: cm === 'code' ? 8000 : (cm === 'think' ? 6000 : 4000)
-                        }),
-                        signal: ac.signal
-                    });
-                    if (!res.ok) {
-                        const t = await res.text();
-                        const err = new Error(t);
-                        err.limit = isLimitErr(t);
-                        throw err;
-                    }
-                    const data = await res.json();
-                    return ((data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '').trim();
-                }
-
-                async function callMini() {
-                    const models = ['groq/compound-mini', 'groq/compound'];
-                    const short = messages.map(function(m, idx) {
-                        return { role: m.role, content: String(m.content).slice(0, idx === 0 ? 2500 : 1200) };
-                    });
-                    let lastErr = '';
-                    const keys = (typeof GROQ_KEYS !== 'undefined' && GROQ_KEYS.length) ? GROQ_KEYS : [getNextGroqKey()];
-                    for (let ki = 0; ki < keys.length; ki++) {
-                        for (let mi = 0; mi < models.length; mi++) {
-                            try {
-                                const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + keys[ki] },
-                                    body: JSON.stringify({ model: models[mi], messages: short, temperature: 0.7, max_tokens: 4096, stream: false }),
-                                    signal: ac.signal
-                                });
-                                if (!res.ok) { lastErr = await res.text(); continue; }
-                                const data = await res.json();
-                                const msg = (data.choices && data.choices[0] && data.choices[0].message) || {};
-                                let t = (msg.content || msg.reasoning || '').trim();
-                                if (typeof stripThinkTags === 'function') t = stripThinkTags(t);
-                                if (t) return t;
-                            } catch (e) {
-                                if (e && e.name === 'AbortError') throw e;
-                                lastErr = e.message || String(e);
-                            }
-                        }
-                    }
-                    const err = new Error(lastErr || 'mini fail');
-                    err.limit = isLimitErr(lastErr);
-                    throw err;
-                }
-
                 let text = '';
-                // OpenRouter primary (stable key)
-                
-        async function callOpenRouter() {
-                    const keyA = (typeof OPENROUTER_KEY !== 'undefined' && OPENROUTER_KEY) ? OPENROUTER_KEY : '';
-                    const keyB = (typeof OPENROUTER_TEAM_KEY !== 'undefined' && OPENROUTER_TEAM_KEY) ? OPENROUTER_TEAM_KEY : keyA;
-                    // Всегда сервер Render /api/chat (ключи только на сервере)
-                    if (typeof ccApiChat === 'function') {
-                        const serverText = await ccApiChat(messages.slice(-24), 'Ты ChatClaud. 13 сентября 2026. Помни диалог. Есть поиск. Не называй чужие модели.');
-                        if (serverText) return (typeof ccSanitizeBrands === 'function') ? ccSanitizeBrands(serverText) : serverText;
-                        throw new Error('server empty');
-                    }
-                    if (!keyA) throw new Error('no or');
-                    const t0 = Date.now();
-                    async function orOnce(key, model, msgs, maxTok, temp) {
-                        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': 'Bearer ' + key,
-                                'HTTP-Referer': location.origin || 'https://chatclaud.netlify.app',
-                                'X-Title': 'ChatClaud Triple'
-                            },
-                            body: JSON.stringify({
-                                model: model,
-                                messages: msgs,
-                                max_tokens: maxTok || 2500,
-                                temperature: temp != null ? temp : 0.5
-                            })
-                        });
-                        const data = await res.json().catch(function(){ return {}; });
-                        if (!res.ok) throw new Error((data.error && data.error.message) || ('OR ' + res.status));
-                        const t = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-                        if (!t) throw new Error('empty');
-                        return String(t);
-                    }
-                    const deepExtra = {
-                        role: 'system',
-                        content: 'Ты ChatClaud. Сегодня 13 сентября 2026. У тебя ЕСТЬ интернет: блок [Данные поиска] — реальные результаты. Используй ссылки. ЗАПРЕЩЕНО: «нет доступа к интернету/YouTube». Думай тщательно. Не называй сторонние модели.'
-                    };
-                    const baseMsgs = [deepExtra].concat(messages.slice());
-                    let a = null, b = null, c = null;
-                    // TRIPLE parallel: Claude + GPT-4o + DeepSeek R1
-                    await Promise.all([
-                        orOnce(keyB || keyA, 'openai/gpt-4o-mini', baseMsgs, 2800, 0.4).then(function(t){ a = t; }).catch(function(){
-                            return orOnce(keyA, 'google/gemini-2.0-flash-001', baseMsgs, 1800, 0.5).then(function(t){ a = t; }).catch(function(){});
-                        }),
-                        orOnce(keyA, 'openai/gpt-4o', baseMsgs, 2800, 0.45).then(function(t){ b = t; }).catch(function(){
-                            return orOnce(keyA, 'openai/gpt-4o-mini', baseMsgs, 1800, 0.5).then(function(t){ b = t; }).catch(function(){});
-                        }),
-                        orOnce(keyA, 'deepseek/deepseek-chat', baseMsgs, 2800, 0.4).then(function(t){ c = t; }).catch(function(){
-                            return orOnce(keyA, 'deepseek/deepseek-chat', baseMsgs, 1800, 0.5).then(function(t){ c = t; }).catch(function(){});
-                        })
-                    ]);
-                    const drafts = [a, b, c].filter(Boolean);
-                    let finalText = null;
-                    if (drafts.length >= 2) {
-                        try {
-                            const userQ = ((messages.filter(function(m){ return m.role === 'user'; }).pop()) || {}).content || '';
-                            finalText = await orOnce(keyB || keyA, 'openai/gpt-4o-mini', [
-                                { role: 'system', content: 'Собери ОДИН лучший ответ ChatClaud из черновиков. Факты и ссылки из [Данные поиска] сохрани. Без воды. Не упоминай черновики.' },
-                                { role: 'user', content: 'Вопрос:\n' + String(userQ).slice(0, 1800) + '\n\n' + drafts.map(function(d, i){ return 'Черновик ' + (i+1) + ':\n' + d.slice(0, 4000); }).join('\n\n') + '\n\nФинальный ответ:' }
-                            ], 2800, 0.3);
-                        } catch (e) {
-                            finalText = drafts.sort(function(x, y){ return y.length - x.length; })[0];
-                        }
-                    } else {
-                        finalText = drafts[0] || null;
-                    }
-                    const left = 8000 - (Date.now() - t0);
-                    if (left > 0) await new Promise(function(r){ setTimeout(r, left); });
-                    if (finalText) return (typeof ccSanitizeBrands === 'function') ? ccSanitizeBrands(finalText) : finalText;
-                    throw new Error('or fail');
-                }
+                // Единый серверный канал: ключи и провайдеры никогда не используются в браузере.
                 try {
-                    
-                    text = await callOpenRouter();
-                    if (text) { onChunk(text, true); return text; }
-                } catch (eOr) {
-                    if (eOr && eOr.name === 'AbortError') throw eOr;
+                    text = await ccApiChat(messages.slice(-24), 'Ты ChatClaud. Отвечай умно, точно и по делу. Не раскрывай модель, провайдера или внутреннюю инфраструктуру.');
+                    if (!text) throw new Error('empty');
+                    window.__ccProvider = 'chatclaud';
+                    onChunk(text, true);
+                } catch (serverErr) {
+                    throw serverErr;
                 }
-                const now = Date.now();
-                const cool = window.__ccOpenAICooldownUntil || 0;
-                const tryOA = now >= cool;
-                // Порядок: OpenRouter (Claude) → OpenAI → Groq Mini — тихо, без чужих брендов
-                text = null;
-                let lastChainErr = null;
-                async function tryProviders() {
-                    // 1) OpenRouter dual Claude+GPT
-                    if (typeof callOpenRouter === 'function' && OPENROUTER_KEY) {
-                        try {
-                            const t = await callOpenRouter();
-                            if (t && String(t).trim()) { window.__ccProvider = 'or'; return t; }
-                        } catch (e) {
-                            if (e && e.name === 'AbortError') throw e;
-                            lastChainErr = e;
-                            try { showToast('ChatClaud переключается…'); } catch (x) {}
-                        }
-                    }
-                    // 2) Direct Claude API
-                    if (typeof callClaudeAPI === 'function' && typeof CLAUDE_API_KEY !== 'undefined' && CLAUDE_API_KEY) {
-                        try {
-                            const t = await callClaudeAPI(messages);
-                            if (t && String(t).trim()) { window.__ccProvider = 'claude'; return t; }
-                        } catch (eC) {
-                            if (eC && eC.name === 'AbortError') throw eC;
-                            lastChainErr = eC;
-                        }
-                    }
-                    // 3) OpenAI direct
-                    if (tryOA && typeof callOpenAI === 'function') {
-                        try {
-                            const t = await callOpenAI();
-                            if (t && String(t).trim()) { window.__ccProvider = 'openai'; return t; }
-                        } catch (e1) {
-                            if (e1 && e1.name === 'AbortError') throw e1;
-                            lastChainErr = e1;
-                            if (e1.limit) window.__ccOpenAICooldownUntil = Date.now() + 70 * 1000;
-                            try { showToast('ChatClaud переключается…'); } catch (x) {}
-                        }
-                    }
-                    // 3) Groq Mini
-                    if (typeof callMini === 'function') {
-                        try {
-                            const t = await callMini();
-                            if (t && String(t).trim()) { window.__ccProvider = 'mini'; return t; }
-                        } catch (e2) {
-                            if (e2 && e2.name === 'AbortError') throw e2;
-                            lastChainErr = e2;
-                        }
-                    }
-                    // 4) OpenAI still (after cooldown skip)
-                    if (!tryOA && typeof callOpenAI === 'function') {
-                        try {
-                            const t = await callOpenAI();
-                            if (t && String(t).trim()) {
-                                window.__ccProvider = 'openai';
-                                window.__ccOpenAICooldownUntil = 0;
-                                return t;
-                            }
-                        } catch (e3) {
-                            lastChainErr = e3;
-                        }
-                    }
-                    throw lastChainErr || new Error('limit');
-                }
-                try {
-                    text = await tryProviders();
-                } catch (provErr) {
-                    // last chance: server-side provider chain (no browser API keys)
-                    try {
-                        if (typeof ccApiChat === 'function') {
-                            text = await ccApiChat(messages.slice(-24), 'Ты ChatClaud. Отвечай кратко на языке пользователя.');
-                            if (!text) throw provErr;
-                            window.__ccProvider = 'server-fallback';
-                        } else throw provErr;
-                    } catch (e2) {
-                        throw provErr;
-                    }
-                }
-
                 if (typeof stripThinkTags === 'function') text = stripThinkTags(text || '');
                 if (typeof ccSanitizeBrands === 'function') text = ccSanitizeBrands(text);
                 if (typeof ccStripOcrExcuse === 'function') text = ccStripOcrExcuse(text);
@@ -10063,44 +10541,66 @@ function buildImageUrl(userPrompt, opts) {
             showTypingIndicator() {
                 this.hideTypingIndicator(true);
                 try { this.setStopVisible(true); } catch(e) {}
-                this._thinkShownAt = Date.now(); this._thinkMinMs = 6000;
+                this._thinkShownAt = Date.now(); this._thinkMinMs = 9000;
+                var lastUser = '';
+                try {
+                    var hist = this.history || [];
+                    for (var hi = hist.length - 1; hi >= 0; hi--) {
+                        if (hist[hi] && (hist[hi].role === 'user')) { lastUser = String(hist[hi].content || ''); break; }
+                    }
+                } catch (e) {}
+                var modeKind = 'think';
+                var label = 'Thinking…';
+                if (/https?:\/\//i.test(lastUser) || /открой|открыть|зайди|зайди на|open (the )?site|go to/i.test(lastUser)) {
+                    modeKind = 'site'; label = 'Looking…';
+                } else if (/\/search\b|\/nova\b|найди|поищи|поиск|search|google/i.test(lastUser)) {
+                    modeKind = 'search'; label = 'Searching…';
+                } else if (/tiktok|видео|youtube|ютуб|watch/i.test(lastUser)) {
+                    modeKind = 'video'; label = 'Watching…';
+                }
+                var globeSvg = '<svg class="cc-globe-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">'
+                    + '<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/>'
+                    + '<path d="M3 12h18M12 3c2.5 2.5 3.8 5.5 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.5-3.8-9S9.5 5.5 12 3z" stroke="currentColor" stroke-width="1.4"/>'
+                    + '</svg>';
+                var orbHtml = (modeKind === 'search' || modeKind === 'site' || modeKind === 'video')
+                    ? ('<span class="cc-search-ico" aria-hidden="true">' + globeSvg + '</span>')
+                    : ('<span class="cc-mini-orb" data-kind="think" aria-hidden="true"><span class="cc-mini-orb-face"><i class="e e1"></i><i class="e e2"></i></span></span>');
                 var el = document.createElement('div');
                 el.id = 'typingIndicator';
                 el.className = 'cc-typing-row';
-                el.innerHTML = '<div class="cc-thinking"><span class="cc-think-label"></span><span class="cc-think-dots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>';
+                el.innerHTML = '<div class="cc-status-pill"><div class="cc-status-line">' + orbHtml
+                    + '<span class="cc-think-label cc-status-text">' + label + '</span></div>'
+                    + '<div class="cc-think-bar" aria-hidden="true"><i></i></div></div>';
                 var box = this.container || document.getElementById('flashMessages');
                 if (box) { box.appendChild(el); try { box.scrollTop = box.scrollHeight; } catch(e) {} }
                 var fixed = document.getElementById('ccThinkFixed');
                 if (!fixed) {
                     fixed = document.createElement('div');
                     fixed.id = 'ccThinkFixed';
-                    fixed.innerHTML = '<span class="cc-think-label"></span> <span class="d"><i></i><i></i><i></i></span>';
                     document.body.appendChild(fixed);
                 }
+                fixed.innerHTML = '<div class="cc-status-pill"><div class="cc-status-line">' + orbHtml + '<span class="cc-think-label cc-status-text">' + label + '</span></div><div class="cc-think-bar" aria-hidden="true"><i></i></div></div>';
                 fixed.style.display = 'flex';
-                try {
-                    if (typeof ccTypeThink === 'function') {
-                        ccTypeThink(el.querySelector('.cc-think-label'), 'Thinking…');
-                        ccTypeThink(fixed.querySelector('.cc-think-label'), 'Thinking…');
-                    }
-                } catch(e) {}
-                var labels = ['Thinking…', 'Searching…', 'Reasoning…', 'Answering…'];
+                // rotate short labels whole (no typewriter)
+                var labels = modeKind === 'site' ? ['Looking…', 'Opening site…', 'Reading…']
+                    : modeKind === 'search' ? ['Searching…', 'Checking sources…', 'Reading…']
+                    : modeKind === 'video' ? ['Watching…', 'Reading…']
+                    : ['Thinking…', 'Reasoning…'];
                 var li = 0;
                 if (this._thinkTimer) clearInterval(this._thinkTimer);
                 this._thinkTimer = setInterval(function(){
                     li = (li + 1) % labels.length;
                     try {
-                        var a = document.querySelector('#typingIndicator .cc-think-label');
-                        var b = document.querySelector('#ccThinkFixed .cc-think-label');
-                        if (typeof ccTypeThink === 'function') {
-                            if (a) ccTypeThink(a, labels[li]);
-                            if (b) ccTypeThink(b, labels[li]);
-                        } else {
-                            if (a) a.textContent = labels[li];
-                            if (b) b.textContent = labels[li];
-                        }
+                        document.querySelectorAll('#typingIndicator .cc-think-label, #ccThinkFixed .cc-think-label').forEach(function(n){
+                            n.textContent = labels[li];
+                            n.style.color = '#8e8e93';
+                        });
+                        // subtle eye look shift on think mode
+                        document.querySelectorAll('.cc-mini-orb[data-kind="think"] .cc-mini-orb-face').forEach(function(f){
+                            f.style.transform = 'translate(' + ((li%2)?2:-2) + 'px,0)';
+                        });
                     } catch(e) {}
-                }, 2400);
+                }, 3200);
                 try { this.scrollToBottom(); } catch(e) {}
             }
 
@@ -10317,12 +10817,80 @@ function buildImageUrl(userPrompt, opts) {
                     domainEl.textContent = url;
                     let src = codeToPublish;
                     if (!/<html/i.test(src)) {
-                        src = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + slug + '</title></head><body>' + src + '</body></html>';
+                        src = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + slug + '</title></head><body>' + src + '
+<script>
+(function(){
+  var CMDS = [
+    { cmd: '/img', desc: 'Generate image (Pollination)' },
+    { cmd: '/veo', desc: 'Short video frames' },
+    { cmd: '/search', desc: 'Force web search (Nova)' },
+    { cmd: '/nova', desc: 'Search via Nova browser' },
+    { cmd: '/plus', desc: 'Plus subscription' },
+    { cmd: '/settings', desc: 'Open settings' },
+    { cmd: '/help', desc: 'Show commands' }
+  ];
+  function ensureMenu() {
+    var m = document.getElementById('ccSlashMenu');
+    if (m) return m;
+    var row = document.querySelector('.input-row') || document.querySelector('#flashInput')?.parentElement;
+    if (!row) return null;
+    m = document.createElement('div');
+    m.id = 'ccSlashMenu';
+    m.className = 'cc-slash-menu';
+    row.style.position = row.style.position || 'relative';
+    row.appendChild(m);
+    return m;
+  }
+  function render(filter) {
+    var m = ensureMenu();
+    if (!m) return;
+    var f = (filter || '').toLowerCase();
+    var list = CMDS.filter(function(c){ return !f || c.cmd.indexOf(f) === 0 || c.desc.toLowerCase().indexOf(f) >= 0; });
+    if (!list.length) { m.classList.remove('open'); return; }
+    m.innerHTML = list.map(function(c){
+      return '<div class="cc-slash-item" data-cmd="'+c.cmd+'"><code>'+c.cmd+'</code><span>'+c.desc+'</span></div>';
+    }).join('');
+    m.classList.add('open');
+    m.querySelectorAll('.cc-slash-item').forEach(function(el){
+      el.onclick = function(){
+        var inp = document.getElementById('flashInput') || document.querySelector('.input-row textarea');
+        if (inp) {
+          inp.value = el.getAttribute('data-cmd') + ' ';
+          inp.focus();
+          try { inp.dispatchEvent(new Event('input')); } catch(e){}
+        }
+        m.classList.remove('open');
+      };
+    });
+  }
+  function bind() {
+    var inp = document.getElementById('flashInput') || document.querySelector('.input-row textarea');
+    if (!inp || inp.__ccSlash) return;
+    inp.__ccSlash = true;
+    inp.addEventListener('input', function(){
+      var v = inp.value || '';
+      if (v.charAt(0) === '/') render(v.split(/\s/)[0]);
+      else {
+        var m = document.getElementById('ccSlashMenu');
+        if (m) m.classList.remove('open');
+      }
+    });
+    document.addEventListener('click', function(e){
+      var m = document.getElementById('ccSlashMenu');
+      if (m && !m.contains(e.target) && e.target !== inp) m.classList.remove('open');
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+  else setTimeout(bind, 400);
+})();
+</script>
+
+</body></html>';
                     }
                     let liveUrl = url;
                     let autoOk = false;
                     // 1) Direct Netlify API (token in app)
-                    if ((selectedPlat === 'netlify' || selectedPlat === 'chatclaud') && typeof deployToNetlify === 'function' && typeof NETLIFY_TOKEN === 'string' && NETLIFY_TOKEN.length > 10) {
+                    if ((selectedPlat === 'netlify' || selectedPlat === 'chatclaud') && typeof deployToNetlify === 'function') {
                         statusEl.textContent = 'Публикация на Netlify…';
                         try {
                             const real = await deployToNetlify(src, 'cc-' + (nick || 'u') + '-' + slug);
@@ -10472,52 +11040,9 @@ function buildImageUrl(userPrompt, opts) {
         window.OPENROUTER_TEAM_KEY = typeof OPENROUTER_TEAM_KEY !== 'undefined' ? OPENROUTER_TEAM_KEY : '';
         async function ccDualThink(messages, opts) {
             opts = opts || {};
-            const keyA = typeof OPENROUTER_KEY !== 'undefined' ? OPENROUTER_KEY : '';
-            const keyB = typeof OPENROUTER_TEAM_KEY !== 'undefined' ? OPENROUTER_TEAM_KEY : keyA;
-            if (!keyA) throw new Error('no or');
-            async function orOnce(key, model, msgs, maxTok) {
-                const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + key,
-                        'HTTP-Referer': location.origin || 'https://chatclaud.netlify.app',
-                        'X-Title': 'ChatClaud Dual'
-                    },
-                    body: JSON.stringify({ model: model, messages: msgs, max_tokens: maxTok || 2048, temperature: 0.65 })
-                });
-                const data = await res.json().catch(function(){ return {}; });
-                if (!res.ok) throw new Error((data.error && data.error.message) || ('OR ' + res.status));
-                return (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
-            }
-            const msgs = (messages || []).map(function(m) {
-                return { role: (m.role === 'assistant' || m.role === 'bot') ? 'assistant' : (m.role === 'system' ? 'system' : 'user'), content: String(m.content || '') };
-            });
-            if (opts.system && (!msgs.length || msgs[0].role !== 'system')) {
-                msgs.unshift({ role: 'system', content: opts.system });
-            }
-            let a = null, b = null;
-            await Promise.all([
-                orOnce(keyB, 'openai/gpt-4o-mini', msgs, 2200).then(function(t){ a = t; }).catch(function(){}),
-                orOnce(keyA, 'openai/gpt-4o', msgs, 2200).then(function(t){ b = t; }).catch(function(){
-                    return orOnce(keyA, 'openai/gpt-4o-mini', msgs, 1800).then(function(t){ b = t; }).catch(function(){});
-                })
-            ]);
-            if (a && b) {
-                const userQ = (msgs.filter(function(m){ return m.role === 'user'; }).pop() || {}).content || '';
-                try {
-                    const merged = await orOnce(keyB, 'openai/gpt-4o-mini', [
-                        { role: 'system', content: 'Ты ChatClaud. Слей два черновика в один лучший ответ. Без упоминания черновиков и моделей.' },
-                        { role: 'user', content: 'Вопрос:\n' + userQ + '\n\nA:\n' + a.slice(0,5000) + '\n\nB:\n' + b.slice(0,5000) + '\n\nФинальный ответ:' }
-                    ], 2500);
-                    if (merged) return (typeof ccSanitizeBrands === 'function') ? ccSanitizeBrands(merged) : merged;
-                } catch (e) {}
-                const pick = a.length >= b.length ? a : b;
-                return (typeof ccSanitizeBrands === 'function') ? ccSanitizeBrands(pick) : pick;
-            }
-            if (a) return (typeof ccSanitizeBrands === 'function') ? ccSanitizeBrands(a) : a;
-            if (b) return (typeof ccSanitizeBrands === 'function') ? ccSanitizeBrands(b) : b;
-            throw new Error('Сейчас все каналы заняты. Попробуй через минуту.');
+            if (typeof ccApiChat !== 'function') throw new Error('ChatClaud сервер временно недоступен');
+            const text = await ccApiChat(messages || [], opts.system || 'Ты ChatClaud. Решай сложную задачу внимательно, проверяй логику и отвечай по делу.');
+            return { a: text, b: '', final: text };
         }
         window.ccDualThink = ccDualThink;
 
@@ -10796,88 +11321,8 @@ function buildImageUrl(userPrompt, opts) {
                         });
                     return;
                 }
-                if (!key1) {
-                    self.setStatus('Нет ключа — проверь OPENROUTER_KEY на Render');
-                    self.busy = false;
-                    return;
-                }
-                var content = [{ type: 'text', text: String(text || '').slice(0, 1200) }];
-                if (frame) content.push({ type: 'image_url', image_url: { url: frame } });
-                var sys = 'Ты ChatClaud в живом видеозвонке. Сегодня 13 сентября 2026 года (актуальный день). Ты ВИДИШЬ кадр с камеры. Помни предыдущие реплики диалога. Отвечай коротко, живо, по-человечески. Не называй OpenRouter, GPT, Claude, Gemini, Grok. Ты только ChatClaud.';
-                function callOR(key, model) {
-                    return fetch('https://openrouter.ai/api/v1/chat/completions', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ' + key,
-                            'HTTP-Referer': location.origin || 'https://chatclaud.netlify.app',
-                            'X-Title': 'ChatClaud Live'
-                        },
-                        body: JSON.stringify({
-                            model: model,
-                            messages: (function(){
-                                var arr = [{ role: 'system', content: sys }];
-                                try {
-                                    var h = (self.history || []).slice(-10);
-                                    h.forEach(function(m){
-                                        arr.push({ role: m.role === 'assistant' ? 'assistant' : 'user', content: String(m.content || '').slice(0, 600) });
-                                    });
-                                } catch(e) {}
-                                arr.push({ role: 'user', content: content });
-                                return arr;
-                            })(),
-                            max_tokens: 400,
-                            temperature: 0.7
-                        })
-                    }).then(function(r){ return r.json().then(function(d){ return { ok: r.ok, d: d, status: r.status }; }); });
-                }
-                // row1: two OR models in parallel, take first good
-                var models = [
-                    { key: key1, model: 'google/gemini-flash-1.5' },
-                    { key: key2, model: 'openai/gpt-4o-mini' },
-                    { key: key2, model: 'openai/gpt-4o-mini' }
-                ];
-                var done = false;
-                var fails = 0;
-                models.forEach(function(m) {
-                    callOR(m.key, m.model).then(function(x) {
-                        if (done) return;
-                        var reply = x.ok && x.d.choices && x.d.choices[0] && x.d.choices[0].message && x.d.choices[0].message.content;
-                        if (reply) {
-                            done = true;
-                            try {
-                                if (!self.history) self.history = [];
-                                self.history.push({ role: 'user', content: String(text || '').slice(0, 500) });
-                                self.history.push({ role: 'assistant', content: String(reply).slice(0, 800) });
-                                if (self.history.length > 16) self.history = self.history.slice(-16);
-                            } catch(e) {}
-                            self.setStatus(reply.slice(0, 240));
-                            try {
-                                if (window.ccSpeakLive) window.ccSpeakLive(reply);
-                                else if (window.speechSynthesis) {
-                                    speechSynthesis.cancel();
-                                    var u = new SpeechSynthesisUtterance(String(reply).slice(0, 500));
-                                    u.lang = 'ru-RU';
-                                    u.rate = 0.92;
-                                    speechSynthesis.speak(u);
-                                }
-                            } catch(e) {}
-                            self.busy = false;
-                        } else {
-                            fails++;
-                            if (fails >= models.length) {
-                                self.setStatus('Каналы заняты, попробуй ещё');
-                                self.busy = false;
-                            }
-                        }
-                    }).catch(function() {
-                        fails++;
-                        if (fails >= models.length) {
-                            self.setStatus('Нет связи, попробуй ещё');
-                            self.busy = false;
-                        }
-                    });
-                });
+                self.busy = false;
+                return;
             },
             startListen: function() {
                 var self = this;
@@ -11178,15 +11623,13 @@ function buildImageUrl(userPrompt, opts) {
 
                 try {
                     // some iOS versions need a tick after cancel
-                    setTimeout(() => {
-                        try {
-                            speechSynthesis.resume();
-                            speechSynthesis.speak(u);
-                        } catch (e) {
-                            console.warn(e);
-                            done();
-                        }
-                    }, 60);
+                    try {
+                        speechSynthesis.resume();
+                        speechSynthesis.speak(u);
+                    } catch (e) {
+                        console.warn(e);
+                        done();
+                    }
                 } catch (e) {
                     console.warn(e);
                     done();
@@ -11196,57 +11639,84 @@ function buildImageUrl(userPrompt, opts) {
                 try { if (this.recognition) this.recognition.abort(); } catch (e) {}
                 try { if (this.recognition) this.recognition.stop(); } catch (e) {}
                 this.recognition = null;
+                try { if (this._recordStopTimer) clearTimeout(this._recordStopTimer); } catch (e) {}
+                this._recordStopTimer = null;
+                try { if (this._mediaRecorder && this._mediaRecorder.state !== 'inactive') this._mediaRecorder.stop(); } catch (e) {}
+                this._mediaRecorder = null;
+                try { if (this._voiceStream) this._voiceStream.getTracks().forEach(t => t.stop()); } catch (e) {}
+                this._voiceStream = null;
             },
-            startListen(session) {
+            async startListen(session) {
+                if (!this.active) return;
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                if (!SpeechRecognition) {
-                    showToast('Диктовка недоступна в этом браузере');
+                if (SpeechRecognition) {
+                    this.stopListen();
+                    this.session = session;
+                    const r = new SpeechRecognition();
+                    r.lang = (globalSettings.lang === 'en') ? 'en-US' : 'ru-RU';
+                    r.interimResults = true; r.continuous = false; r.maxAlternatives = 1;
+                    let finalText = '';
+                    r.onstart = () => this.setOrb('listen');
+                    r.onerror = (e) => {
+                        if (e.error === 'not-allowed') showToast('Разреши микрофон в настройках браузера');
+                        else if (e.error === 'no-speech') setTimeout(() => { if (this.active && !this.speaking) this.startListen(session); }, 450);
+                        else if (e.error !== 'aborted') showToast('Микрофон: ' + (e.error || 'ошибка'));
+                    };
+                    r.onresult = (event) => {
+                        let interim = '';
+                        for (let i = event.resultIndex; i < event.results.length; i++) {
+                            const piece = event.results[i][0].transcript;
+                            if (event.results[i].isFinal) finalText += piece; else interim += piece;
+                        }
+                        if (session && session.input) { session.input.value = (finalText || interim).trim(); session.input.dispatchEvent(new Event('input')); }
+                    };
+                    r.onend = () => {
+                        this.recognition = null;
+                        const text = (finalText || (session && session.input && session.input.value) || '').trim();
+                        if (this.active && text && this.autoSend && session && !session.isGenerating) { session.input.value = text; try { session.send(); } catch (e) {} }
+                        else if (this.active && !this.speaking && !text) setTimeout(() => { if (this.active && !this.speaking) this.startListen(session); }, 450);
+                    };
+                    this.recognition = r;
+                    try { r.start(); } catch (e) { this.recognition = null; setTimeout(() => { if (this.active) this.startListen(session); }, 700); }
                     return;
                 }
-                this.stopListen();
-                this.session = session;
-                const r = new SpeechRecognition();
-                r.lang = (globalSettings.lang === 'en') ? 'en-US' : 'ru-RU';
-                r.interimResults = true;
-                r.continuous = false;
-                r.maxAlternatives = 1;
-                let finalText = '';
-                r.onstart = () => this.setOrb('listen');
-                r.onerror = (e) => {
-                    if (e.error === 'not-allowed') showToast('Разрешите микрофон в Настройках');
-                    else if (e.error === 'no-speech') {
-                        // retry listen if still in voice mode
-                        if (this.active) setTimeout(() => { if (this.active && !this.speaking) this.startListen(session); }, 400);
-                    } else if (e.error !== 'aborted') showToast('Микрофон: ' + e.error);
-                };
-                r.onresult = (event) => {
-                    let interim = '';
-                    for (let i = event.resultIndex; i < event.results.length; i++) {
-                        const piece = event.results[i][0].transcript;
-                        if (event.results[i].isFinal) finalText += piece;
-                        else interim += piece;
-                    }
-                    if (session && session.input) {
-                        session.input.value = (finalText || interim).trim();
-                        session.input.dispatchEvent(new Event('input'));
-                    }
-                };
-                r.onend = () => {
-                    const text = (finalText || (session && session.input && session.input.value) || '').trim();
-                    if (this.active && text && this.autoSend && session && !session.isGenerating) {
-                        session.input.value = text;
-                        try { session.send(); } catch (e) { console.warn(e); }
-                    } else if (this.active && !this.speaking) {
-                        this.setOrb('idle');
-                        // soft re-listen if empty
-                        if (!text) setTimeout(() => { if (this.active && !this.speaking) this.startListen(session); }, 500);
-                    }
-                };
-                this.recognition = r;
-                try { r.start(); } catch (e) {
-                    showToast('Не удалось включить микрофон');
-                    setTimeout(() => { if (this.active) this.startListen(session); }, 800);
-                }
+
+                // Safari/iOS fallback: MediaRecorder -> Render -> HF Whisper.
+                try {
+                    this.stopListen();
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) { showToast('Голосовой ввод недоступен'); return; }
+                    this.session = session;
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    this._voiceStream = stream;
+                    const types = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm', 'audio/ogg;codecs=opus'];
+                    const mime = types.find(t => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t));
+                    const rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+                    this._mediaRecorder = rec;
+                    const chunks = [];
+                    this.setOrb('listen'); showToast('Слушаю…');
+                    rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+                    rec.onstop = () => {
+                        try { stream.getTracks().forEach(t => t.stop()); } catch (e) {}
+                        this._voiceStream = null; this._mediaRecorder = null;
+                        if (!this.active) return;
+                        const blob = new Blob(chunks, { type: rec.mimeType || 'audio/webm' });
+                        if (blob.size < 1000) { this.startListen(session); return; }
+                        const reader = new FileReader();
+                        reader.onloadend = async () => {
+                            try {
+                                showToast('Распознаю…');
+                                const res = await fetch('/api/transcribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ audio: reader.result, language: globalSettings.lang === 'en' ? 'en' : 'ru' }) });
+                                const data = await res.json().catch(() => ({}));
+                                if (!res.ok || !data.text) throw new Error(data.error || 'Речь не распознана');
+                                if (session && session.input) { session.input.value = String(data.text).trim(); session.input.dispatchEvent(new Event('input')); }
+                                if (this.active && this.autoSend && session && !session.isGenerating) session.send(); else if (this.active) this.startListen(session);
+                            } catch (e) { showToast(String(e.message || 'Ошибка распознавания').slice(0, 110)); if (this.active) setTimeout(() => this.startListen(session), 500); }
+                        };
+                        reader.readAsDataURL(blob);
+                    };
+                    rec.start();
+                    this._recordStopTimer = setTimeout(() => { try { if (rec.state !== 'inactive') rec.stop(); } catch (e) {} }, 8000);
+                } catch (e) { showToast('Разреши доступ к микрофону'); }
             },
             toggle(session, btn) {
                 this.active = !this.active;
@@ -11398,91 +11868,12 @@ function buildImageUrl(userPrompt, opts) {
 
         
         async function deployToNetlify(htmlContent, siteName) {
-            const token = (typeof NETLIFY_TOKEN !== 'undefined' && NETLIFY_TOKEN) ? NETLIFY_TOKEN : '';
-            if (!token) throw new Error('Нет Netlify token');
-            let html = String(htmlContent || '');
-            if (!/<html/i.test(html)) {
-                html = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChatClaud</title></head><body>' + html + '</body></html>';
-            }
-            const name = (siteName || ('chatclaud-' + Date.now().toString(36))).toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 40) || ('cc' + Date.now().toString(36));
-
-            // Create site (or get random name if taken)
-            async function createSite(n) {
-                const r = await fetch('https://api.netlify.com/api/v1/sites', {
-                    method: 'POST',
-                    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: n, force_ssl: true })
-                });
-                const j = await r.json().catch(function(){ return {}; });
-                return { ok: r.ok, status: r.status, site: j, err: j.message || j.error || JSON.stringify(j).slice(0, 120) };
-            }
-            let created = await createSite(name);
-            if (!created.ok) {
-                created = await createSite(name.slice(0, 32) + '-' + Date.now().toString(36).slice(-4));
-            }
-            if (!created.ok) {
-                // last try: empty name
-                created = await createSite(undefined);
-                if (!created.ok) throw new Error('Создание сайта: ' + (created.err || created.status));
-            }
-            const site = created.site;
-            const siteId = site.id;
-            if (!siteId) throw new Error('Нет site id');
-
-            // Minimal ZIP (store only) for index.html — Netlify accepts application/zip
-            function crc32(str) {
-                let c = ~0;
-                for (let i = 0; i < str.length; i++) {
-                    c ^= str.charCodeAt(i);
-                    for (let k = 0; k < 8; k++) c = (c >>> 1) ^ (0xedb88320 & -(c & 1));
-                }
-                return ~c >>> 0;
-            }
-            function u16(n) { const b = new Uint8Array(2); new DataView(b.buffer).setUint16(0, n, true); return b; }
-            function u32(n) { const b = new Uint8Array(4); new DataView(b.buffer).setUint32(0, n, true); return b; }
-            function strBytes(s) {
-                if (typeof TextEncoder !== 'undefined') return new TextEncoder().encode(s);
-                const a = new Uint8Array(s.length);
-                for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i) & 255;
-                return a;
-            }
-            function concat(arrs) {
-                let n = 0; arrs.forEach(function(a){ n += a.length; });
-                const out = new Uint8Array(n); let o = 0;
-                arrs.forEach(function(a){ out.set(a, o); o += a.length; });
-                return out;
-            }
-            const fileName = 'index.html';
-            const data = strBytes(html);
-            const nameB = strBytes(fileName);
-            const crc = crc32(html);
-            const local = concat([
-                u32(0x04034b50), u16(20), u16(0), u16(0), u16(0), u16(0),
-                u32(crc), u32(data.length), u32(data.length), u16(nameB.length), u16(0),
-                nameB, data
-            ]);
-            const central = concat([
-                u32(0x02014b50), u16(20), u16(20), u16(0), u16(0), u16(0), u16(0),
-                u32(crc), u32(data.length), u32(data.length), u16(nameB.length), u16(0),
-                u16(0), u16(0), u16(0), u32(0), u32(0), nameB
-            ]);
-            const end = concat([
-                u32(0x06054b50), u16(0), u16(0), u16(1), u16(1),
-                u32(central.length), u32(local.length), u16(0)
-            ]);
-            const zip = concat([local, central, end]);
-
-            const dep = await fetch('https://api.netlify.com/api/v1/sites/' + siteId + '/deploys', {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer ' + token,
-                    'Content-Type': 'application/zip'
-                },
-                body: zip
-            });
-            const d = await dep.json().catch(function(){ return {}; });
-            if (!dep.ok) throw new Error(d.message || d.error || ('Deploy HTTP ' + dep.status));
-            return d.ssl_url || d.url || site.ssl_url || site.url || ('https://' + (site.name || name) + '.netlify.app');
+            const html = String(htmlContent || '');
+            if (html.length < 20) throw new Error('Пустой проект');
+            const res = await fetch('/api/deploy', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ html, name: siteName || 'site', slug: siteName || 'site' }) });
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok || !data.url) throw new Error(data.error || ('Deploy HTTP ' + res.status));
+            return data.url;
         }
         window.deployToNetlify = deployToNetlify;
 
@@ -12257,7 +12648,7 @@ function buildImageUrl(userPrompt, opts) {
             const label = document.getElementById('flashModeLabel');
             if (!btn || !pop) { console.warn('mode UI missing'); return; }
             const names = { fast: 'ʙыᴄᴛʀый', think: 'ᴅᴜᴍᴀᴇᴛ', code: 'ᴋᴏᴅ', voice: 'гᴏʟᴏᴄ' };
-            const plain = { fast: 'Быстрый', think: 'Думает', code: 'Код', voice: 'Голос' };
+            const plain = { fast: 'Быстрый', think: 'Думает', code: 'Код', voice: 'Голос', live: 'Live' };
             const icons = {
                 fast: '<path d="M13 3L4 14h7l-1 7 9-11h-7l1-7z"/>',
                 think: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
@@ -12354,8 +12745,8 @@ function buildImageUrl(userPrompt, opts) {
             const pop = document.getElementById('flashModePop');
             const label = document.getElementById('flashModeLabel');
             if (!btn || !pop) return;
-            const names = { fast: 'ʙыᴄᴛʀый', think: 'ᴅᴜᴍᴀᴇᴛ', code: 'ᴋᴏᴅ', voice: 'гᴏʟᴏᴄ', };
-            const plain = { fast: 'Быстрый', think: 'Думает', code: 'Код', voice: 'Голос' };
+            const names = { fast: 'ʙыᴄᴛʀый', think: 'ᴅᴜᴍᴀᴇᴛ', code: 'ᴋᴏᴅ', voice: 'гᴏʟᴏᴄ', live: 'Live' };
+            const plain = { fast: 'Быстрый', think: 'Думает', code: 'Код', voice: 'Голос', live: 'Live' };
             function apply(mode) {
                 mode = mode || 'fast';
                 if (!names[mode]) mode = 'fast';
@@ -12487,32 +12878,27 @@ function buildImageUrl(userPrompt, opts) {
 
         
         // ===== ChatClaud core (ClaudForge + Nova) — never expose vendors =====
-        const CC_IDENTITY = 'Ты — ChatClaud, продукт milanmichaimilan. У тебя есть виртуальный JS-workspace в приложении (не доступ к компьютеру пользователя). Мы сами обучили ChatClaud. Не говори что ты Claude/Gemini/GPT/Grok. Не раскрывай API-ключи и инфраструктуру. На вопросы про ключи: «внутренняя инфраструктура ChatClaud, не раскрывается». Кто ты: «Я ChatClaud».';
-
-        async function callClaudeAPI(messages, model) {
-            if (typeof ccApiChat !== 'function') throw new Error('ChatClaud сервер временно недоступен');
-            const text = await ccApiChat(messages || [], CC_IDENTITY);
-            return (typeof ccSanitizeBrands === 'function') ? ccSanitizeBrands(text) : text;
+        
+        const CC_MODE_PROMPTS = {
+          fast: 'Режим Быстрый: отвечай чётко и по делу. Можно развёрнуто до ~10000 слов, если задача требует. Не лей воду.',
+          think: 'Режим Думает: сначала кратко план (1–3 пункта), потом ответ. Глубокий разбор, факты, до ~10500 слов при необходимости.',
+          code: 'Режим Код: пиши полный рабочий код, комментарии по делу. Можно длинный HTML/JS/CSS до ~17000 токенов. Не обрезай файлы без нужды.',
+          voice: 'Режим Голос: короткие устные фразы, естественно.',
+          live: 'Режим Live: коротко и по камере/ситуации.'
+        };
+        function ccModeSystem(base) {
+          var mode = (typeof window !== 'undefined' && window.chatMode) ? String(window.chatMode) : 'fast';
+          var extra = CC_MODE_PROMPTS[mode] || CC_MODE_PROMPTS.fast;
+          return (base || '') + '\n\n' + extra;
         }
 
+        const CC_IDENTITY = 'Ты — ChatClaud, продукт milanmichaimilan. У тебя есть виртуальный JS-workspace в приложении (не доступ к компьютеру пользователя). Мы сами обучили ChatClaud. Не говори что ты Claude/Gemini/GPT/Grok. Никогда не выдумывай ссылки (placeholder, XYZ123, example.com). Только URL из результатов Nova. Не раскрывай API-ключи и инфраструктуру. На вопросы про ключи: «внутренняя инфраструктура ChatClaud, не раскрывается». Кто ты: «Я ChatClaud».';
+
+        async function callClaudeAPI(messages, model) { return await ccApiChat(messages || [], CC_IDENTITY); }
+
         async function callGeminiAPI(prompt, model) {
-            model = model || 'gemini-1.5-flash';
-            if (!GEMINI_PRO_API_KEY && !GEMINI_KEY) throw new Error('ChatClaud сервер временно недоступен');
-            const key = GEMINI_PRO_API_KEY || GEMINI_KEY;
-            const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + key;
-            const fullPrompt = CC_IDENTITY + '\n\nПользователь: ' + String(prompt || '');
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: fullPrompt }] }],
-                    generationConfig: { temperature: 0.7, maxOutputTokens: 4096 }
-                })
-            });
-            if (!response.ok) throw new Error('ChatClaud перегружен. Попробуй через несколько минут.');
-            const data = await response.json();
-            const text = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0])
-                ? data.candidates[0].content.parts[0].text : '';
+            if (typeof ccApiChat !== 'function') throw new Error('Серверный канал ChatClaud не найден.');
+            const text = await ccApiChat([{ role: 'user', content: String(prompt || '') }], CC_IDENTITY);
             return (typeof ccSanitizeBrands === 'function') ? ccSanitizeBrands(text) : text;
         }
 
@@ -12520,24 +12906,71 @@ function buildImageUrl(userPrompt, opts) {
             opts = opts || {};
             const prefer = opts.prefer || 'auto';
             let lastErr = null;
-            if (prefer !== 'nova' && typeof CLAUDE_API_KEY !== 'undefined' && CLAUDE_API_KEY) {
-                try {
-                    const msgs = typeof messagesOrPrompt === 'string'
-                        ? [{ role: 'user', content: messagesOrPrompt }]
-                        : messagesOrPrompt;
-                    return await callClaudeAPI(msgs, opts.claudeModel);
-                } catch (e) { lastErr = e; }
-            }
-            if (prefer !== 'forge') {
-                try {
-                    const prompt = typeof messagesOrPrompt === 'string'
-                        ? messagesOrPrompt
-                        : (messagesOrPrompt || []).map(function(m){ return (m.role||'user') + ': ' + (m.content||''); }).join('\n');
-                    return await callGeminiAPI(prompt, opts.geminiModel);
-                } catch (e) { lastErr = e; }
-            }
+            try {
+                const msgs = typeof messagesOrPrompt === 'string'
+                    ? [{ role: 'user', content: messagesOrPrompt }]
+                    : (Array.isArray(messagesOrPrompt) ? messagesOrPrompt : []);
+                return await ccApiChat(msgs, CC_IDENTITY);
+            } catch (e) { lastErr = e; }
             throw lastErr || new Error('Сейчас все каналы заняты. Напиши ещё раз через минуту.');
         }
+
+        
+        // ===== ChatClaud v2: empty Ask me + fuel + rate modals + /search =====
+        (function(){
+            function ensureEmpty() {
+                var box = document.getElementById('flashMessages');
+                if (!box) return;
+                var hasMsg = box.querySelector('.message, .msg, .user, .bot, .cc-typing-row');
+                var empty = box.querySelector('.cc-empty');
+                if (hasMsg) { if (empty) empty.remove(); return; }
+                if (empty) return;
+                var d = document.createElement('div');
+                d.className = 'cc-empty';
+                d.innerHTML = '<img class="cc-empty-logo" src="icon-192.png" alt="ChatClaud" onerror="this.src=\'/chatclaud-avatar-transparent.png\'">'
+                    + '<div class="cc-empty-title">ChatClaud</div>'
+                    + '<div class="cc-empty-ask">Ask me</div>';
+                box.appendChild(d);
+            }
+            window.ccEnsureEmpty = ensureEmpty;
+            setTimeout(ensureEmpty, 800);
+            setInterval(ensureEmpty, 2500);
+
+            // fuel bar
+            if (!document.getElementById('ccFuelBar')) {
+                var f = document.createElement('div');
+                f.id = 'ccFuelBar';
+                f.className = 'cc-fuel';
+                f.innerHTML = '<i id="ccFuelFill"></i>';
+                document.body.appendChild(f);
+            }
+            window.ccUpdateFuelBar = function(rate) {
+                if (!rate) return;
+                var hard = rate.hard || 50;
+                var left = typeof rate.left === 'number' ? rate.left : hard;
+                var pct = Math.max(0, Math.min(1, left / hard));
+                var el = document.getElementById('ccFuelFill');
+                if (el) el.style.transform = 'scaleX(' + pct + ')';
+            };
+
+            window.ccMaybeRateModal = function(rate) {
+                if (!rate || !rate.tier) return;
+                var msg = '';
+                if (rate.tier === 'warn20') msg = 'Вы использовали 20 запросов Free. Хотите продолжить переписку?';
+                else if (rate.tier === 'warn35') msg = '35 сообщений. Лимит Free — 50. После 50 — пауза ~3 часа (сброс также в 00:00 UTC).';
+                else if (rate.tier === 'warn50') msg = '50 сообщений Plus. Хотите продолжить? На 100 — пауза ~3 часа.';
+                else if (rate.tier === 'warn70') msg = '70 запросов Plus. Если остановитесь, лимит восстановится быстрее; на 100 — пауза 3 часа.';
+                if (!msg) return;
+                if (window.__ccLastTierShown === rate.tier + '-' + rate.count) return;
+                window.__ccLastTierShown = rate.tier + '-' + rate.count;
+                try { showToast(msg); } catch(e) {}
+            };
+
+            // strip /search in UI before send optional helper
+            window.ccStripSearchCmd = function(text) {
+                return String(text || '').replace(/^\/(search|seasch|nova)\s*/i, '').trim();
+            };
+        })();
 
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
 
@@ -12670,23 +13103,95 @@ function buildImageUrl(userPrompt, opts) {
             });
         })();
 
-    
+    </script>
 
-/* Slash commands palette */
+<style id="cc-logo-fix">
+/* New chat = spiral logo, never + */
+#flashNewChat, button#flashNewChat, .cc-newchat-logo {
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  min-height: 40px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 11px !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  background: #0a0a0a !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 0 !important;
+  color: transparent !important;
+  overflow: hidden !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.45) !important;
+}
+#flashNewChat img {
+  display: block !important;
+  width: 22px !important;
+  height: 22px !important;
+  border-radius: 6px !important;
+  object-fit: cover !important;
+}
+#flashNewChat svg { display: none !important; }
+#flashNewChat::before,
+#flashNewChat::after { content: none !important; display: none !important; width: 0 !important; height: 0 !important; }
+.top-bar-actions #flashNewChat {
+  width: 40px !important; height: 40px !important;
+  border-radius: 11px !important;
+  font-size: 0 !important;
+  background: #0a0a0a !important;
+}
+/* stronger black think bar */
+.cc-think-bar {
+  height: 2px !important;
+  width: 100% !important;
+  border-radius: 2px !important;
+  background: rgba(255,255,255,0.06) !important;
+  overflow: hidden !important;
+  margin-top: 6px !important;
+}
+.cc-think-bar > i {
+  display: block !important;
+  height: 100% !important;
+  width: 40% !important;
+  background: linear-gradient(90deg, transparent, #000 15%, #2a2a2c 50%, #000 85%, transparent) !important;
+  box-shadow: 0 0 10px rgba(0,0,0,0.9) !important;
+  animation: ccBarRun 1.3s ease-in-out infinite !important;
+}
+</style>
+<script id="cc-logo-fix-js">
+(function () {
+  function fix() {
+    var b = document.getElementById('flashNewChat');
+    if (!b) return;
+    if (!b.querySelector('img[src*="icon-192"]')) {
+      b.innerHTML = '<img src="icon-192.png" alt="" width="22" height="22">';
+    }
+    b.classList.add('cc-newchat-logo');
+  }
+  fix();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fix);
+  setInterval(fix, 2000);
+})();
+</script>
+
+
+<script>
 (function(){
   var CMDS = [
     { cmd: '/img', desc: 'Generate image (Pollination)' },
-    { cmd: '/search', desc: 'Web search via Nova' },
     { cmd: '/veo', desc: 'Short video frames' },
+    { cmd: '/search', desc: 'Force web search (Nova)' },
+    { cmd: '/nova', desc: 'Search via Nova browser' },
     { cmd: '/plus', desc: 'Plus subscription' },
     { cmd: '/settings', desc: 'Open settings' },
     { cmd: '/help', desc: 'Show commands' }
   ];
   function ensureMenu() {
-    var row = document.querySelector('.input-row') || document.getElementById('flashInput') && document.getElementById('flashInput').parentElement;
-    if (!row) return null;
     var m = document.getElementById('ccSlashMenu');
     if (m) return m;
+    var row = document.querySelector('.input-row') || document.querySelector('#flashInput')?.parentElement;
+    if (!row) return null;
     m = document.createElement('div');
     m.id = 'ccSlashMenu';
     m.className = 'cc-slash-menu';
@@ -12734,9 +13239,9 @@ function buildImageUrl(userPrompt, opts) {
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
-  else setTimeout(bind, 500);
+  else setTimeout(bind, 400);
 })();
-
 </script>
+
 </body>
 </html>

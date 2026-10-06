@@ -1,14 +1,15 @@
 /**
  * ChatClaud — сервер для Render
- * Env: GROQ_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, TAVILY_KEY, SERPER_KEY,
- *      NOVA_URL, NOVA_API_TOKEN, PLUS_BOT_SECRET, PORT
+ * Env: GROQ_KEY, MISTRAL_API_KEY, HF_TOKEN, NOVA_URL, NOVA_API_TOKEN,
+ *      PLUS_BOT_SECRET, ADMIN_SECRET, NETLIFY_DEPLOY_TOKEN, PORT
  */
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { URL } = require('url');
 
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 10000;
+const HOST = '0.0.0.0';
 const ROOT = __dirname;
 
 const PLUS_FILE = path.join(ROOT, 'data', 'plus-grants.json');
@@ -29,15 +30,67 @@ function normalizeUsername(u) {
   return String(u || '').trim().replace(/^@/, '').toLowerCase();
 }
 
+// Provider key helpers. Keep these defined in the server itself so /api/chat
+// never depends on another file or an older server build.
+function groqKeys() {
+  const out = [];
+  const seen = new Set();
+  const names = [
+    'GROQ_KEY', 'GROQ_KEY_1', 'GROQ_KEY_2', 'GROQ_KEY_3',
+    'GROQ_API_KEY', 'GROQ_API_KEY_1', 'GROQ_API_KEY_2'
+  ];
+  for (const name of names) {
+    const v = String(process.env[name] || '').trim();
+    if (v && !seen.has(v)) { seen.add(v); out.push(v); }
+  }
+  return out;
+}
+
+// Normalize chat messages for every provider.
+// IMPORTANT: /api/chat uses this before calling Groq/Mistral/HF.
+// Without this helper every provider fails with ReferenceError, while /api/health still looks healthy.
+function normalizeChatMessages(messages, system) {
+  const embeddedSystem = (messages || []).find((m) => m && m.role === 'system');
+  const sys = system || (embeddedSystem && embeddedSystem.content) ||
+    'Ты ChatClaud. Отвечай на языке пользователя. Не упоминай внутренние API, ключи и служебные детали. Никогда не выдумывай URL; только из поиска Nova.';
+  return [{ role: 'system', content: String(sys).slice(0, 8000) }].concat(
+    (messages || []).slice(-20).filter((m) => m && m.role !== 'system').map((m) => ({
+      role: m.role === 'assistant' || m.role === 'bot' ? 'assistant' : 'user',
+      content: String(m.content || '').slice(0, 8000),
+    }))
+  );
+}
+
 function send(res, code, body, type = 'application/json; charset=utf-8') {
   res.writeHead(code, {
     'Content-Type': type,
+    'Cache-Control': 'no-store, no-cache, must-revalidate',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   });
   if (Buffer.isBuffer(body) || typeof body === 'string') res.end(body);
   else res.end(JSON.stringify(body));
+}
+
+const PROVIDER_TIMEOUT_MS = 45000;
+function fetchWithTimeout(url, options = {}, timeoutMs = PROVIDER_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const request = Object.assign({}, options, { signal: controller.signal });
+  if (options && options.signal) {
+    if (options.signal.aborted) controller.abort();
+    else options.signal.addEventListener('abort', () => controller.abort(), { once: true });
+  }
+  return fetch(url, request).finally(() => clearTimeout(timer));
+}
+
+function publicProviderError(error) {
+  return String(error && error.message || error || 'unknown error')
+    .replace(/sk-ant-[A-Za-z0-9_-]+|sk-[A-Za-z0-9_-]+|gsk_[A-Za-z0-9_-]+/g, '[hidden]')
+    .replace(/Bearer\s+\S+/gi, 'Bearer [hidden]')
+    .replace(/\s+/g, ' ')
+    .slice(0, 180);
 }
 
 /* ========== Fetch URL helpers ========== */
@@ -213,7 +266,7 @@ async function fetchUrlContent(cleanUrl, maxLength) {
 async function novaRequest(p, body) {
   const configuredBase = (process.env.NOVA_URL || '').replace(/\/$/, '');
   const base = configuredBase;
-  const token = process.env.NOVA_AIP_TOKEN || process.env.NOVA_API_TOKEN || process.env.API_TOKEN || '';
+  const token = process.env.NOVA_API_TOKEN || process.env.NOVA_AIP_TOKEN || process.env.API_TOKEN || '';
   if (!base) throw new Error('NOVA_URL not set');
   const ctrl = new AbortController();
   const timer = setTimeout(function () { try { ctrl.abort(); } catch (e) {} }, 90000);
@@ -314,11 +367,25 @@ async function handleVideoSearch(message) {
   }
 }
 
+const MAX_BODY_BYTES = 14 * 1024 * 1024;
 function readBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
-    req.on('data', (c) => chunks.push(c));
+    let size = 0;
+    let done = false;
+    req.on('data', (c) => {
+      if (done) return;
+      size += c.length;
+      if (size > MAX_BODY_BYTES) {
+        done = true;
+        reject(Object.assign(new Error('Request too large'), { statusCode: 413 }));
+        try { req.destroy(); } catch (_) {}
+        return;
+      }
+      chunks.push(c);
+    });
     req.on('end', () => {
+      if (done) return;
       try {
         const raw = Buffer.concat(chunks).toString('utf8');
         resolve(raw ? JSON.parse(raw) : {});
@@ -328,34 +395,68 @@ function readBody(req) {
   });
 }
 
-const RATE_LIMIT = 50000;
-const RATE_WINDOW_MS = 3 * 60 * 60 * 1000;
+/* Rate: hard limit → exactly +3 hours from the moment of block (e.g. 13:00 → 16:00) */
+const RATE_FREE_HARD = 50;
+const RATE_PLUS_HARD = 100;
+const RATE_COOLDOWN_MS = 3 * 60 * 60 * 1000;
 const rateMap = new Map();
 function clientIp(req) {
   const xf = (req.headers['x-forwarded-for'] || '').split(',')[0].trim();
   return xf || req.socket.remoteAddress || 'unknown';
 }
-function checkRate(req) {
+function checkRate(req, isPlus) {
   const ip = clientIp(req);
   const now = Date.now();
+  const hard = isPlus ? RATE_PLUS_HARD : RATE_FREE_HARD;
   let e = rateMap.get(ip);
-  if (!e || now - e.start >= RATE_WINDOW_MS) {
-    e = { start: now, count: 0 };
+  if (!e) {
+    e = { count: 0, blockedUntil: 0, windowStarted: now };
     rateMap.set(ip, e);
   }
-  e.count += 1;
-  if (e.count > RATE_LIMIT) {
-    const waitMin = Math.max(1, Math.ceil((e.start + RATE_WINDOW_MS - now) / 60000));
-    return { ok: false, left: 0, waitMin };
+  // cooldown expired → reset counter
+  if (e.blockedUntil && now >= e.blockedUntil) {
+    e.count = 0;
+    e.blockedUntil = 0;
+    e.windowStarted = now;
   }
-  return { ok: true, left: Math.max(0, RATE_LIMIT - e.count), waitMin: 0 };
+  if (e.blockedUntil && now < e.blockedUntil) {
+    const waitMin = Math.max(1, Math.ceil((e.blockedUntil - now) / 60000));
+    const unlockAt = new Date(e.blockedUntil).toISOString();
+    return { ok: false, left: 0, waitMin, count: e.count, hard, plus: !!isPlus, unlockAt, tier: 'blocked' };
+  }
+  e.count += 1;
+  if (e.count > hard) {
+    e.blockedUntil = now + RATE_COOLDOWN_MS;
+    const waitMin = Math.ceil(RATE_COOLDOWN_MS / 60000);
+    const unlockAt = new Date(e.blockedUntil).toISOString();
+    return { ok: false, left: 0, waitMin, count: e.count, hard, plus: !!isPlus, unlockAt, tier: 'hard' };
+  }
+  let tier = 'ok';
+  if (!isPlus) {
+    if (e.count >= 35) tier = 'warn35';
+    else if (e.count >= 20) tier = 'warn20';
+  } else {
+    if (e.count >= 70) tier = 'warn70';
+    else if (e.count >= 50) tier = 'warn50';
+  }
+  return {
+    ok: true,
+    left: Math.max(0, hard - e.count),
+    waitMin: 0,
+    count: e.count,
+    hard,
+    plus: !!isPlus,
+    unlockAt: null,
+    tier
+  };
 }
+const RATE_LIMIT = RATE_FREE_HARD;
 
 function hfKeys() {
   const out = [];
   const seen = new Set();
   const push = (v) => { v = String(v || '').trim(); if (v && !seen.has(v)) { seen.add(v); out.push(v); } };
-  ['HF_KEY','HF_KEY_1','HF_KEY_2','HF_KEY_3','HUGGINGFACE_KEY','HUGGINGFACE_KEY_2','HUGGINGFACE_TOKEN'].forEach(k => push(process.env[k]));
+  ['HF_KEY','HF_KEY2','HF_KEY_1','HF_KEY_2','HF_KEY_3','HF_TOKEN','HUGGINGFACE_KEY','HUGGINGFACE_KEY_2','HUGGINGFACE_TOKEN'].forEach(k => push(process.env[k]));
   Object.keys(process.env).forEach(k => { if (/^HF_/i.test(k) || /HUGGINGFACE/i.test(k)) push(process.env[k]); });
   return out;
 }
@@ -363,17 +464,17 @@ async function hfVision(imageDataUrl, prompt) {
   const keys = hfKeys();
   if (!keys.length) throw new Error('no hf vision');
   const models = [
-    'Qwen/Qwen2.5-VL-72B-Instruct',
-    'Qwen/Qwen2.5-VL-32B-Instruct',
-    'meta-llama/Llama-3.2-11B-Vision-Instruct',
-    'Qwen/Qwen2-VL-7B-Instruct',
+    'zai-org/GLM-4.5V:fastest',
+    'Qwen/Qwen2.5-VL-72B-Instruct:fastest',
+    'Qwen/Qwen2.5-VL-32B-Instruct:fastest',
+    'meta-llama/Llama-3.2-90B-Vision-Instruct:fastest',
   ];
   const visionPrompt = prompt || 'Опиши изображение по-русски.';
   let lastErr = 'empty';
   for (const key of keys) {
     for (const model of models) {
       try {
-        const res = await fetch('https://router.huggingface.co/v1/chat/completions', {
+        const res = await fetchWithTimeout('https://router.huggingface.co/v1/chat/completions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
           body: JSON.stringify({
@@ -398,215 +499,73 @@ async function hfVision(imageDataUrl, prompt) {
 }
 
 
-function openaiKeys() {
-  const out = [];
-  const seen = new Set();
-  const names = ['OPENAI_API_KEY','OPENAI_KEY','OPENAI_KEY_1','OPENAI_KEY_2','OPENAI_API_KEY_1','OPENAI_API_KEY_2'];
-  for (const k of names) {
-    const v = String(process.env[k] || '').trim();
-    if (v && !seen.has(v) && /^sk-[A-Za-z0-9_-]+$/.test(v)) { seen.add(v); out.push(v); }
-  }
-  return out;
-}
-
-function anthropicKeys() {
-  const out = [];
-  const seen = new Set();
-  const names = ['ANTHROPIC_API_KEY','ANTHROPIC_KEY','ANTHROPIC_KEY_1','ANTHROPIC_KEY_2','CLAUDE_API_KEY','CLAUDE_KEY','CLAUDE_KEY_1'];
-  for (const k of names) {
-    const v = String(process.env[k] || '').trim();
-    if (v && !seen.has(v) && /^(sk-ant-|sk-ant-api)/.test(v)) { seen.add(v); out.push(v); }
-  }
-  return out;
-}
-
-function normalizeChatMessages(messages, system) {
-  const sys = system || 'Ты ChatClaud. Отвечай на языке пользователя. Не упоминай внутренние API, ключи и служебные детали.';
-  return [{ role: 'system', content: String(sys).slice(0, 8000) }].concat(
-    (messages || []).slice(-20).map((m) => ({
-      role: m.role === 'assistant' || m.role === 'bot' ? 'assistant' : 'user',
-      content: String(m.content || '').slice(0, 8000),
-    }))
-  );
-}
-
-async function openaiChat(messages, system, reasoning = false) {
-  const keys = openaiKeys();
-  if (!keys.length) throw new Error('OpenAI key не задан');
-  const configured = String(process.env.OPENAI_MODEL || '').trim();
-  const models = configured ? [configured] : (reasoning
-    ? ['gpt-5.6-sol', 'gpt-5.6-terra', 'gpt-5.6-luna']
-    : ['gpt-5.6-luna', 'gpt-5.6-terra', 'gpt-5.6-sol']);
-  const input = normalizeChatMessages(messages, system);
-  let lastErr = 'OpenAI: empty';
+async function hfTranscribe(audioBuffer, mimeType, language) {
+  const keys = hfKeys();
+  if (!keys.length) throw new Error('HF_TOKEN не задан');
+  const models = [
+    'openai/whisper-large-v3',
+    'openai/whisper-large-v3-turbo',
+  ];
+  let lastErr = 'HF transcription empty';
   for (const key of keys) {
     for (const model of models) {
       try {
-        const body = {
-          model,
-          input,
-          max_output_tokens: reasoning ? 2200 : 1500,
-        };
-        if (reasoning) body.reasoning = { effort: 'medium' };
-        const res = await fetch('https://api.openai.com/v1/responses', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
-          body: JSON.stringify(body),
-        });
-        const data = await res.json().catch(() => ({}));
+        const headers = { Authorization: 'Bearer ' + key, 'Content-Type': mimeType || 'audio/webm' };
+        const url = 'https://router.huggingface.co/hf-inference/models/' + encodeURIComponent(model);
+        const res = await fetchWithTimeout(url, { method: 'POST', headers, body: audioBuffer }, 90000);
+        const data = await res.json().catch(async () => ({ text: await res.text().catch(() => '') }));
         if (!res.ok) {
-          lastErr = (data.error && (data.error.message || data.error.code)) || ('OpenAI ' + res.status);
+          lastErr = (data && (data.error || data.message)) || ('HF ASR ' + res.status);
           continue;
         }
-        let text = typeof data.output_text === 'string' ? data.output_text : '';
-        if (!text && Array.isArray(data.output)) {
-          const parts = [];
-          for (const item of data.output) {
-            if (!Array.isArray(item.content)) continue;
-            for (const c of item.content) if (typeof c.text === 'string') parts.push(c.text);
-          }
-          text = parts.join('\n');
-        }
-        if (text && text.trim()) return { text: text.trim(), provider: 'openai:' + model };
-        lastErr = 'OpenAI empty response';
+        const text = typeof data === 'string' ? data : (data.text || (data[0] && data[0].text) || '');
+        if (text && String(text).trim()) return { text: String(text).trim(), provider: 'hf-asr:' + model };
       } catch (e) { lastErr = e.message || String(e); }
     }
   }
-  throw new Error(String(lastErr).slice(0, 280));
+  throw new Error(String(lastErr).slice(0, 240));
 }
 
-async function anthropicChat(messages, system, reasoning = false) {
-  const keys = anthropicKeys();
-  if (!keys.length) throw new Error('Claude key не задан');
-  const configured = String(process.env.ANTHROPIC_MODEL || process.env.CLAUDE_MODEL || '').trim();
-  const models = configured ? [configured] : (reasoning
-    ? ['claude-opus-5', 'claude-sonnet-5', 'claude-opus-4-8']
-    : ['claude-sonnet-5', 'claude-haiku-4-5-20251001', 'claude-opus-5']);
-  const all = normalizeChatMessages(messages, system);
-  const sys = all[0].content;
-  const msgs = all.slice(1);
-  let lastErr = 'Claude: empty';
-  for (const key of keys) {
-    for (const model of models) {
-      try {
-        const body = {
-          model,
-          max_tokens: reasoning ? 2200 : 1500,
-          system: sys,
-          messages: msgs,
-        };
-        const res = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': key,
-            'anthropic-version': '2023-06-01',
-          },
-          body: JSON.stringify(body),
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          lastErr = (data.error && (data.error.message || data.error.type)) || ('Claude ' + res.status);
-          continue;
-        }
-        const text = Array.isArray(data.content)
-          ? data.content.filter((x) => x && x.type === 'text').map((x) => x.text).join('\n')
-          : '';
-        if (text && text.trim()) return { text: text.trim(), provider: 'claude:' + model };
-        lastErr = 'Claude empty response';
-      } catch (e) { lastErr = e.message || String(e); }
-    }
-  }
-  throw new Error(String(lastErr).slice(0, 280));
-}
-
-
-async function openaiVision(imageDataUrl, prompt) {
-  const keys = openaiKeys();
-  if (!keys.length) throw new Error('OpenAI key не задан');
-  const models = [String(process.env.OPENAI_VISION_MODEL || '').trim(), 'gpt-5.6-luna', 'gpt-5.6-terra'].filter(Boolean);
-  const textPrompt = prompt || 'Опиши изображение по-русски подробно.';
-  let lastErr = 'OpenAI vision empty';
-  for (const key of keys) for (const model of models) {
-    try {
-      const res = await fetch('https://api.openai.com/v1/responses', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
-        body: JSON.stringify({
-          model,
-          input: [{ role: 'user', content: [
-            { type: 'input_text', text: textPrompt },
-            { type: 'input_image', image_url: imageDataUrl },
-          ]}],
-          max_output_tokens: 1000,
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) { lastErr = (data.error && data.error.message) || ('OpenAI vision ' + res.status); continue; }
-      let text = typeof data.output_text === 'string' ? data.output_text : '';
-      if (!text && Array.isArray(data.output)) for (const item of data.output) for (const c of (item.content || [])) if (typeof c.text === 'string') text += c.text;
-      if (text.trim()) return { text: text.trim(), provider: 'openai-vision:' + model };
-    } catch (e) { lastErr = e.message || String(e); }
-  }
-  throw new Error(String(lastErr).slice(0, 250));
-}
-
-function groqKeys() {
-  const out = [];
-  const seen = new Set();
-  const push = (v) => {
-    v = String(v || '').trim();
-    if (!v || !/^gsk_[A-Za-z0-9_-]+$/.test(v) || seen.has(v)) return;
-    seen.add(v);
-    out.push(v);
-  };
-  [
-    'GROQ_KEY', 'GROQ_KEY_1', 'GROQ_KEY_2', 'GROQ_KEY_3',
-    'GROQ_API_KEY', 'GROQ_API_KEY_1'
-  ].forEach((k) => push(process.env[k]));
-  return out;
-}
-
-async function groqChat(messages, system) {
+async function groqChat(messages, system, reasoning = false) {
   const keys = groqKeys();
   if (!keys.length) throw new Error('no groq');
-  const models = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'gemma2-9b-it', 'mixtral-8x7b-32768', 'llama3-70b-8192'];
-  const sys = system || 'Ты ChatClaud. 13 сентября 2026. Отвечай на языке пользователя. Не называй чужие бренды.';
-  const msgs = [{ role: 'system', content: sys }].concat(
-    (messages || []).slice(-16).map((m) => ({
-      role: m.role === 'assistant' || m.role === 'bot' ? 'assistant' : 'user',
-      content: String(m.content || '').slice(0, 4000),
-    }))
-  );
-  let lastErr = 'empty';
-  for (const key of keys) {
-    for (const model of models) {
-      try {
-        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
-          body: JSON.stringify({ model, messages: msgs, max_tokens: 1500, temperature: 0.6 }),
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          lastErr = (data.error && data.error.message) || ('groq ' + res.status);
-          continue;
-        }
-        const t = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-        if (t && String(t).trim()) return { text: String(t).trim(), provider: 'groq:' + model };
-      } catch (e) {
-        lastErr = e.message || String(e);
-      }
-    }
+  const primary = String(process.env.GROQ_MODEL || 'openai/gpt-oss-120b').trim() || 'openai/gpt-oss-120b';
+  const models = [
+    primary,
+    'openai/gpt-oss-120b',
+    'openai/gpt-oss-20b',
+    'llama-3.3-70b-versatile',
+    'llama-3.1-8b-instant'
+  ].filter((m, i, a) => m && a.indexOf(m) === i);
+  const sys = system || 'Ты ChatClaud. Отвечай на языке пользователя. Не раскрывай название модели, провайдера, API, ключи или внутреннюю инфраструктуру. Если спрашивают кто ты — отвечай: «Я ChatClaud». Будь очень точным, проверяй логику и не выдумывай факты.';
+  const msgs = normalizeChatMessages((messages || []).slice(-20), sys).map(m => ({ role:m.role, content:String(m.content||'').slice(0,9000) }));
+  let lastErr='empty';
+  for (const key of keys) for (const model of models) {
+    try {
+      const body={model,messages:msgs,max_completion_tokens:reasoning?12000:8000,temperature:reasoning?0.45:0.55,top_p:0.95,include_reasoning:false};
+      if (model.startsWith('openai/gpt-oss-')) body.reasoning_effort = reasoning ? 'high' : 'medium';
+      const res=await fetchWithTimeout('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify(body)},55000);
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok){lastErr=(data.error&&data.error.message)||('groq '+res.status);continue;}
+      const t=data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content;
+      if(t&&String(t).trim()) return {text:sanitizeProviderIdentity(String(t).trim()),provider:'chatclaud'};
+      lastErr='empty response';
+    } catch(e){lastErr=e.message||String(e)}
   }
-  throw new Error(String(lastErr).slice(0, 200));
+  throw new Error(String(lastErr).slice(0,220));
+}
+function sanitizeProviderIdentity(text){
+  let s=String(text||'');
+  s=s.replace(/\b(OpenAI|GPT(?:-?OSS)?|Claude|Anthropic|Gemini|Google AI|Grok|xAI|Llama|Meta AI|Mistral|Groq|DeepSeek|Copilot|OpenRouter)\b/gi,'ChatClaud');
+  return s;
 }
 
 function mistralKeys() {
   const out = [];
   const seen = new Set();
   const names = [
-    'MISTRAL_API_KEY', 'MISTRAL_KEY', 'MISTRAL_KEY_1', 'MISTRAL_KEY_2',
+    'MISTRAL_API_KEY', 'MISTRAL_API_KEY_1', 'MISTRAL_API_KEY_2',
+    'MISTRAL_KEY', 'MISTRAL_KEY_1', 'MISTRAL_KEY_2',
     'MINSTRAL_API_KEY', 'MINSTRAL_KEY', 'MINSTRAL_AIP_KEY'
   ];
   for (const name of names) {
@@ -619,25 +578,28 @@ function mistralKeys() {
 async function mistralChat(messages, system) {
   const keys = mistralKeys();
   if (!keys.length) throw new Error('no mistral');
-  const model = String(process.env.MISTRAL_MODEL || 'mistral-medium-latest').trim();
+  const configured = String(process.env.MISTRAL_MODEL || '').trim();
+  const models = [configured, 'mistral-medium-latest', 'mistral-small-latest', 'mistral-large-latest']
+    .filter((m, i, a) => m && a.indexOf(m) === i);
   const sys = system || 'Ты ChatClaud. Отвечай на языке пользователя. Помни контекст диалога.';
   const msgs = [{ role: 'system', content: sys }].concat(
-    (messages || []).slice(-20).map((m) => ({
+    (messages || []).slice(-20).filter((m) => m && m.role !== 'system').map((m) => ({
       role: m.role === 'assistant' || m.role === 'bot' ? 'assistant' : 'user',
       content: String(m.content || '').slice(0, 5000),
     }))
   );
   let lastErr = 'empty';
   for (const key of keys) {
-    try {
-      const res = await fetch('https://api.mistral.ai/v1/chat/completions', {
+    for (const model of models) try {
+      const res = await fetchWithTimeout('https://api.mistral.ai/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
-        body: JSON.stringify({ model, messages: msgs, max_tokens: 1600, temperature: 0.5 }),
+        body: JSON.stringify({ model, messages: msgs, max_tokens: 8000, temperature: 0.5 }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         lastErr = (data.error && (data.error.message || data.error)) || ('mistral ' + res.status);
+        console.log('[mistral] key ending ...' + key.slice(-4), 'model', model, '-> HTTP', res.status, JSON.stringify(data).slice(0, 200));
         continue;
       }
       const t = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
@@ -649,33 +611,30 @@ async function mistralChat(messages, system) {
 
 async function hfChat(messages, system) {
   const keys = typeof hfKeys === 'function' ? hfKeys() : [
-    process.env.HF_KEY || process.env.HF_KEY_1 || '',
-    process.env.HF_KEY_2 || '',
+    process.env.HF_KEY || process.env.HF_KEY2 || process.env.HF_KEY_1 || '',
+    process.env.HF_KEY_2 || process.env.HF_KEY2 || '',
   ].filter(Boolean);
   if (!keys.length) throw new Error('no hf');
 
   // только chat-compatible на router.huggingface.co
   const models = [
-    'Qwen/Qwen2.5-72B-Instruct',
-    'meta-llama/Llama-3.3-70B-Instruct',
-    'Qwen/Qwen2.5-32B-Instruct',
-    'mistralai/Mistral-Nemo-Instruct-2407',
+    'deepseek-ai/DeepSeek-R1:fastest',
+    'openai/gpt-oss-120b:fastest',
+    'Qwen/Qwen2.5-72B-Instruct:fastest',
+    'meta-llama/Llama-3.3-70B-Instruct:fastest',
+    'Qwen/Qwen2.5-32B-Instruct:fastest',
   ];
 
-  const sys = system || 'Ты ChatClaud. Сентябрь 2026. Помни диалог. Отвечай на языке пользователя.';
-  const msgs = [{ role: 'system', content: sys }];
-  (messages || []).slice(-20).forEach(function(m) {
-    msgs.push({
-      role: m.role === 'assistant' || m.role === 'bot' ? 'assistant' : 'user',
-      content: String(m.content || '').slice(0, 4000),
-    });
-  });
+  const msgs = normalizeChatMessages(
+    (messages || []).slice(-20),
+    system || 'Ты ChatClaud. Сентябрь 2026. Помни диалог. Отвечай на языке пользователя.'
+  ).map((m) => ({ role: m.role, content: String(m.content || '').slice(0, 4000) }));
 
   let lastErr = 'empty';
   for (let ki = 0; ki < keys.length; ki++) {
     for (let mi = 0; mi < models.length; mi++) {
       try {
-        const res = await fetch('https://router.huggingface.co/v1/chat/completions', {
+        const res = await fetchWithTimeout('https://router.huggingface.co/v1/chat/completions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + keys[ki] },
           body: JSON.stringify({ model: models[mi], messages: msgs, max_tokens: 1200, temperature: 0.55 }),
@@ -817,6 +776,64 @@ function safeJoin(root, reqPath) {
   }
 }
 
+/* ========== Netlify server-side deploy ========== */
+function crc32Buffer(buf) {
+  let c = ~0;
+  for (let i = 0; i < buf.length; i++) {
+    c ^= buf[i];
+    for (let k = 0; k < 8; k++) c = (c >>> 1) ^ (0xedb88320 & -(c & 1));
+  }
+  return (~c) >>> 0;
+}
+function u16(n) { const b = Buffer.alloc(2); b.writeUInt16LE(n >>> 0, 0); return b; }
+function u32(n) { const b = Buffer.alloc(4); b.writeUInt32LE(n >>> 0, 0); return b; }
+function makeStoredZip(filename, content) {
+  const name = Buffer.from(filename, 'utf8');
+  const data = Buffer.from(content, 'utf8');
+  const crc = crc32Buffer(data);
+  const local = Buffer.concat([Buffer.from([0x50,0x4b,0x03,0x04]), u16(20), u16(0), u16(0), u16(0), u16(0), u32(crc), u32(data.length), u32(data.length), u16(name.length), u16(0), name, data]);
+  const central = Buffer.concat([Buffer.from([0x50,0x4b,0x01,0x02]), u16(20), u16(20), u16(0), u16(0), u16(0), u16(0), u32(crc), u32(data.length), u32(data.length), u16(name.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(0), name]);
+  const end = Buffer.concat([Buffer.from([0x50,0x4b,0x05,0x06]), u16(0), u16(0), u16(1), u16(1), u32(central.length), u32(local.length), u16(0)]);
+  return Buffer.concat([local, central, end]);
+}
+async function netlifyDeploy(htmlContent, siteName) {
+  const token = String(process.env.NETLIFY_DEPLOY_TOKEN || process.env.NETLIFY_TOKEN || '').trim();
+  if (!token) throw new Error('NETLIFY_DEPLOY_TOKEN не задан');
+  let html = String(htmlContent || '');
+  if (!/<html[\s>]/i.test(html)) html = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ChatClaud</title></head><body>' + html + '</body></html>';
+  const cleanName = String(siteName || ('chatclaud-' + Date.now().toString(36))).toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').slice(0, 45) || ('cc-' + Date.now().toString(36));
+  const headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
+  let site = null;
+  const siteId = String(process.env.NETLIFY_SITE_ID || '').trim();
+  if (siteId) {
+    const r = await fetchWithTimeout('https://api.netlify.com/api/v1/sites/' + encodeURIComponent(siteId), { headers: { Authorization: 'Bearer ' + token } }, 30000);
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.message || 'Netlify site недоступен');
+    site = d;
+  } else {
+    let r = await fetchWithTimeout('https://api.netlify.com/api/v1/sites', { method: 'POST', headers, body: JSON.stringify({ name: cleanName, force_ssl: true }) }, 30000);
+    let d = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      r = await fetchWithTimeout('https://api.netlify.com/api/v1/sites', { method: 'POST', headers, body: JSON.stringify({ name: cleanName + '-' + Date.now().toString(36).slice(-5), force_ssl: true }) }, 30000);
+      d = await r.json().catch(() => ({}));
+    }
+    if (!r.ok) throw new Error(d.message || d.error || ('Netlify HTTP ' + r.status));
+    site = d;
+  }
+  const zip = makeStoredZip('index.html', html);
+  const dep = await fetchWithTimeout('https://api.netlify.com/api/v1/sites/' + encodeURIComponent(site.id) + '/deploys', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/zip' },
+    body: zip
+  }, 90000);
+  const d = await dep.json().catch(() => ({}));
+  if (!dep.ok) throw new Error(d.message || d.error || ('Deploy HTTP ' + dep.status));
+  return d.ssl_url || d.url || site.ssl_url || site.url || ('https://' + site.name + '.netlify.app');
+}
+
+const MIN_AI_RESPONSE_MS = 9000;
+function waitAtLeast(startedAt, ms) { const left=Math.max(0, ms-(Date.now()-startedAt)); return left?new Promise(r=>setTimeout(r,left)):Promise.resolve(); }
+
 /* ========== SERVER ========== */
 const server = http.createServer(async (req, res) => {
   const u = new URL(req.url || '/', 'http://localhost');
@@ -827,17 +844,23 @@ const server = http.createServer(async (req, res) => {
   /* --- /api/chat --- */
   if (pathname === '/api/chat' && req.method === 'POST') {
     try {
-      const rate = checkRate(req);
+      const body = await readBody(req);
+      const isPlusUser = !!(body.plus || body.isPlus);
+      const rate = checkRate(req, isPlusUser);
       if (!rate.ok) {
         return send(res, 429, {
-          error: 'Лимит ' + RATE_LIMIT + ' сообщений / 3 часа. Подожди ~' + rate.waitMin + ' мин.',
+          error: rate.plus
+            ? ('Лимит Plus: ' + rate.hard + ' сообщений. Подожди ~' + rate.waitMin + ' мин (с момента лимита +3 часа).')
+            : ('Лимит Free: ' + rate.hard + ' сообщений. Подожди ~' + rate.waitMin + ' мин (с момента лимита +3 часа).'),
           waitMin: rate.waitMin,
+          rate: rate,
+          code: 'RATE_LIMIT'
         });
       }
-      const body = await readBody(req);
       const messages = Array.isArray(body.messages) ? body.messages : [];
       if (!messages.length) return send(res, 400, { error: 'messages required' });
       const trimmed = messages.slice(-30);
+      let novaSourcesForClient = [];
 
       /* === URL enrichment через Nova === */
       try {
@@ -923,6 +946,43 @@ const server = http.createServer(async (req, res) => {
         console.warn('enrich error', e.message);
       }
 
+      /* === Общий веб-поиск через Nova, если это не ссылка и не видео === */
+      try {
+        let lastUser3 = '';
+        let lastIdx3 = -1;
+        for (let i = trimmed.length - 1; i >= 0; i--) {
+          if (trimmed[i] && trimmed[i].role === 'user') { lastUser3 = String(trimmed[i].content || ''); lastIdx3 = i; break; }
+        }
+        const hasUrlAlready = /https?:\/\/[^\s<>"']+/i.test(lastUser3);
+        const greetingRe = /^(привет|здравствуй|хай|hello|hi|ку|йо|как дела|спасибо|пока|ок|окей|да|нет)\W*$/i;
+        let q3 = lastUser3.trim();
+        // Always search when user asks to find / look up (any message count)
+        const intentSearch = /(?:^|\s)(\/search|\/seasch|\/nova|найди|найди\s+мне|поищи|поиск|погугли|гугл|search|find|look\s*up|мем|meme|новост|ти[кк]\s*ток|tiktok|кто\s+такой|что\s+такое|сколько|когда\s+вышел|актуальн)/i.test(q3);
+        const forceSearch = intentSearch || /^\/search\b/i.test(q3) || /^\/seasch\b/i.test(q3) || /^\/nova\b/i.test(q3);
+        if (/^\/(search|seasch|nova)\b/i.test(q3)) q3 = q3.replace(/^\/(search|seasch|nova)\s*/i, '').trim();
+        const looksLikeQuery = forceSearch || (q3.length >= 4 && !greetingRe.test(q3));
+        // video queries still go through search (Nova can resolve TikTok etc.)
+        if ((forceSearch || (!hasUrlAlready && looksLikeQuery)) && lastIdx3 >= 0 && q3.length >= 2) {
+          console.log('[nova-search] querying:', q3.slice(0, 100), 'force=', !!forceSearch);
+          const sr = await webSearch(q3, forceSearch ? 'search' : 'search');
+          const hasText = sr && sr.text && String(sr.text).trim().length > 20;
+          const srcs = (sr && Array.isArray(sr.sources)) ? sr.sources : [];
+          if (hasText || srcs.length) {
+            console.log('[nova-search] ok text=', hasText, 'sources=', srcs.length);
+            const block = hasText ? String(sr.text).slice(0, 12000) : srcs.map(s => (s.title||'') + ' ' + (s.url||'')).join('\n');
+            trimmed[lastIdx3] = {
+              role: 'user',
+              content: lastUser3 + '\n\n[Свежие данные из веб-поиска Nova — используй для точного ответа, не выдумывай]\n' + block,
+            };
+            novaSourcesForClient = srcs;
+          } else {
+            console.log('[nova-search] empty result');
+          }
+        }
+      } catch (e) {
+        console.warn('[nova-search] error', e.message);
+      }
+
       /* video shortcut */
       try {
         let lastUser2 = '';
@@ -939,65 +999,113 @@ const server = http.createServer(async (req, res) => {
         }
       } catch (e) {}
 
+      const aiStartedAt = Date.now();
       let result = null;
       let lastErr = null;
-      const preferGroq = /^(1|true|yes)$/i.test(String(process.env.PREFER_GROQ || ''));
+      const failures = [];
       const isReasoning = !!body.reason || /^(think|reason|reasoning)$/i.test(String(body.mode || ''));
       const providers = isReasoning
-        ? [
-            ['openai', () => openaiChat(trimmed, body.system, true)],
-            ['claude', () => anthropicChat(trimmed, body.system, true)],
-            ['mistral', () => mistralChat(trimmed, body.system)],
-          ]
-        : preferGroq
-        ? [
-            ['mistral', () => mistralChat(trimmed, body.system)],
-            ['groq', () => groqChat(trimmed, body.system)],
-            ['openai', () => openaiChat(trimmed, body.system, false)],
-            ['claude', () => anthropicChat(trimmed, body.system, false)],
-          ]
-        : [
-            ['mistral', () => mistralChat(trimmed, body.system)],
-            ['groq', () => groqChat(trimmed, body.system)],
-            ['openai', () => openaiChat(trimmed, body.system, false)],
-            ['claude', () => anthropicChat(trimmed, body.system, false)],
-            ['hf', () => hfChat(trimmed, body.system)],
-          ];
-      for (const [, call] of providers) {
+        ? [['groq', () => groqChat(trimmed, body.system, true)], ['hf', () => hfChat(trimmed, body.system)], ['mistral', () => mistralChat(trimmed, body.system)]]
+        : [['groq', () => groqChat(trimmed, body.system, false)], ['mistral', () => mistralChat(trimmed, body.system)], ['hf', () => hfChat(trimmed, body.system)]];
+      for (const [name, call] of providers) {
         try {
           result = await call();
           if (result && result.text) break;
         } catch (e) {
           lastErr = e.message || String(e);
+          const safe = publicProviderError(e);
+          failures.push(name + ': ' + safe);
+          console.error('[ChatClaud provider failed]', name + ':', safe);
         }
       }
       if (!result || !result.text) {
-        return send(res, 503, { error: String(lastErr || 'Все каналы недоступны').slice(0, 300) });
+        return send(res, 503, {
+          error: 'Сервер не подключён к рабочему каналу ИИ.',
+          code: 'NO_PROVIDER',
+          details: failures.slice(0, 6),
+        });
       }
+      await waitAtLeast(aiStartedAt, MIN_AI_RESPONSE_MS);
       result.left = rate.left;
+      result.rate = rate;
+      result.provider = 'chatclaud';
+      result.sources = novaSourcesForClient;
       return send(res, 200, result);
     } catch (e) {
       return send(res, 503, { error: e.message || 'ChatClaud сервер перегружен.' });
     }
   }
 
+  /* --- /api/fetch-url --- */
+  if (pathname === '/api/fetch-url' && req.method === 'POST') {
+    try {
+      const body = await readBody(req);
+      const raw = String(body.url || '').trim();
+      if (!isSafeUrl(raw)) return send(res, 400, { error: 'Недопустимый URL' });
+      let result = null;
+      try { result = await novaRequest('/api/fetch-url', { url: raw }); } catch (e) {}
+      if (!result || !result.ok) result = await fetchUrlContent(raw, Math.min(18000, Number(body.maxLength) || 12000));
+      return send(res, 200, result);
+    } catch (e) { return send(res, e.statusCode || 503, { error: e.message || 'Не удалось открыть сайт' }); }
+  }
+
+  /* --- /api/transcribe --- */
+  if (pathname === '/api/transcribe' && req.method === 'POST') {
+    console.log('[transcribe] request received');
+    try {
+      const rate = checkRate(req);
+      if (!rate.ok) return send(res, 429, { error: 'Лимит. Подожди ~' + rate.waitMin + ' мин.' });
+      const body = await readBody(req);
+      const dataUrl = String(body.audio || body.dataUrl || '');
+      console.log('[transcribe] payload length:', dataUrl.length);
+      const m = dataUrl.match(/^data:([^;,]+);base64,(.+)$/s);
+      if (!m) { console.log('[transcribe] FAILED: bad data URL format, prefix was:', dataUrl.slice(0, 40)); return send(res, 400, { error: 'audio required' }); }
+      const buf = Buffer.from(m[2], 'base64');
+      if (!buf.length) { console.log('[transcribe] FAILED: empty buffer after decode'); return send(res, 400, { error: 'empty audio' }); }
+      console.log('[transcribe] calling hfTranscribe, bytes:', buf.length, 'mime:', m[1], '| hfKeys count:', hfKeys().length);
+      const result = await hfTranscribe(buf, m[1], body.language || '');
+      console.log('[transcribe] SUCCESS:', JSON.stringify(result).slice(0, 150));
+      return send(res, 200, result);
+    } catch (e) {
+      console.log('[transcribe] FAILED ->', e.message || e);
+      return send(res, e.statusCode || 503, { error: e.message || 'transcription failed' });
+    }
+  }
+
+  /* --- /api/deploy --- */
+  if (pathname === '/api/deploy' && req.method === 'POST') {
+    try {
+      const body = await readBody(req);
+      const html = String(body.html || '');
+      if (html.length < 20) return send(res, 400, { error: 'html required' });
+      if (html.length > 8 * 1024 * 1024) return send(res, 413, { error: 'project too large' });
+      const slug = String(body.slug || body.name || 'site').slice(0, 80);
+      const url = await netlifyDeploy(html, 'chatclaud-' + slug.replace(/[^a-zA-Z0-9-]/g, '-'));
+      return send(res, 200, { ok: true, url });
+    } catch (e) { return send(res, e.statusCode || 503, { error: e.message || 'deploy failed' }); }
+  }
+
   /* --- /api/vision --- */
   if (pathname === '/api/vision' && req.method === 'POST') {
+    console.log('[vision] request received');
     try {
       const rate = checkRate(req);
       if (!rate.ok) return send(res, 429, { error: 'Лимит. Подожди ~' + rate.waitMin + ' мин.' });
       const body = await readBody(req);
       const img = body.image || body.dataUrl || '';
-      if (!img || img.length < 20) return send(res, 400, { error: 'image required' });
+      console.log('[vision] image payload length:', img.length, '| hfKeys count:', hfKeys().length);
+      if (!img || img.length < 20) { console.log('[vision] FAILED: no image in body'); return send(res, 400, { error: 'image required' }); }
       let result = null;
-      let lastErr = null;
-      try { result = await hfVision(img, body.prompt); } catch (e) { lastErr = e.message; }
-      if (!result || !result.text) {
-        try { result = await openaiVision(img, body.prompt); } catch (e2) { lastErr = e2.message || lastErr; }
+      try {
+        result = await hfVision(img, body.prompt);
+        console.log('[vision] SUCCESS via', result.provider);
+      } catch (e) {
+        console.log('[vision] FAILED ->', e.message || e);
+        return send(res, 503, { error: 'Vision недоступен: ' + String(e.message || e).slice(0, 180) });
       }
-      if (!result || !result.text) return send(res, 503, { error: 'Не удалось разобрать фото.' });
       return send(res, 200, result);
     } catch (e) {
+      console.log('[vision] TOP-LEVEL FAILED ->', e.message || e);
       return send(res, 503, { error: e.message || 'vision fail' });
     }
   }
@@ -1081,8 +1189,8 @@ const server = http.createServer(async (req, res) => {
   if (pathname === '/api/keycheck' && req.method === 'GET') {
     return send(res, 200, {
       groqKeys: groqKeys().length,
-      openAiKeys: openaiKeys().length,
-      claudeKeys: anthropicKeys().length,
+      openAiKeys: 0,
+      claudeKeys: 0,
       openRouterKeys: 0,
       note: 'Проверяется только наличие ключей. Секреты не возвращаются.'
     });
@@ -1094,20 +1202,27 @@ const server = http.createServer(async (req, res) => {
       hasGroq: (typeof groqKeys === "function" ? groqKeys().length > 0 : !!(process.env.GROQ_KEY||process.env.GROQ_API_KEY)),
       hasMistral: (typeof mistralKeys === "function" ? mistralKeys().length > 0 : !!process.env.MISTRAL_API_KEY),
       mistralModel: process.env.MISTRAL_MODEL || 'mistral-medium-latest',
-      hasOpenAI: openaiKeys().length > 0,
-      openAiKeys: openaiKeys().length,
-      hasClaude: anthropicKeys().length > 0,
-      claudeKeys: anthropicKeys().length,
-      hasHf: !!(process.env.HF_KEY || process.env.HF_KEY_1 || process.env.HUGGINGFACE_KEY),
+      groqModel: process.env.GROQ_MODEL || 'openai/gpt-oss-120b',
+      minAiResponseMs: MIN_AI_RESPONSE_MS,
+      hasOpenAI: false,
+      openAiKeys: 0,
+      hasClaude: false,
+      claudeKeys: 0,
+      hasHf: hfKeys().length > 0, // HF_TOKEN/HF_KEY
       hasTavily: !!process.env.TAVILY_KEY,
       hasSerper: !!process.env.SERPER_KEY,
       hasNova: !!((process.env.NOVA_URL || 'https://nova-brawser.onrender.com') && (process.env.NOVA_API_TOKEN || process.env.NOVA_AIP_TOKEN || process.env.API_TOKEN)),
       hasFetchUrl: true,
+      hasTranscribe: hfKeys().length > 0,
+      hasNetlifyDeploy: !!(process.env.NETLIFY_DEPLOY_TOKEN || process.env.NETLIFY_TOKEN || process.env.NETLIFY_SITE_ID),
+      maxBodyBytes: MAX_BODY_BYTES,
       hasSocialDeep: true,
-      novaUrl: process.env.NOVA_URL || 'https://nova-brawser.onrender.com',
+       novaUrl: process.env.NOVA_URL || 'https://nova-brawser.onrender.com',
       hasPlusSecret: !!(process.env.PLUS_BOT_SECRET || process.env.ADMIN_SECRET),
-      limit: RATE_LIMIT,
+      limitFree: RATE_FREE_HARD,
+      limitPlus: RATE_PLUS_HARD,
       windowHours: 3,
+      cooldownHours: 3,
     });
   }
 
@@ -1135,6 +1250,9 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, HOST, () => {
   console.log('ChatClaud server on port', PORT);
 });
+server.on('error', (err) => console.error('ChatClaud server error:', err));
+process.on('unhandledRejection', (err) => console.error('Unhandled rejection:', err));
+process.on('uncaughtException', (err) => console.error('Uncaught exception:', err));
