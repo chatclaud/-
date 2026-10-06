@@ -6978,7 +6978,9 @@ body {
     </div>
 <div id="landingScreen" class="screen hidden">
         <div class="landing-box">
+            <div class="landing-logo-spin"><img src="icon-512.png" alt="ChatClaud" onerror="this.src='icon-192.png'"></div>
             <h1>ChatClaud</h1>
+            <div class="landing-tag">AI · Chat · Code · Create</div>
             <div class="oauth-buttons">
                 <button class="oauth-btn" id="googleLoginBtn">
                     <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
@@ -7036,6 +7038,14 @@ body {
                 <div class="settings-token"><span>Сообщения Pro сегодня</span><span id="usageExpert">0</span></div>
                 <div class="settings-token"><span>Изображения сегодня</span><span id="usageImages">0</span></div>
                 <div class="settings-token"><span>Видео сегодня</span><span id="usageVideos">0</span></div>
+            </div>
+
+            <div class="settings-section">
+                <label style="font-size:0.75rem;color:#888;">Chat background</label>
+                <div class="cc-bg-picker">
+                  <button type="button" class="cc-bg-opt active" data-bg="classic"><div class="cc-bg-preview"></div>Classic</button>
+                  <button type="button" class="cc-bg-opt" data-bg="wave"><div class="cc-bg-preview"></div>Waves</button>
+                </div>
             </div>
             <div class="settings-section">
                 <label style="font-size:0.75rem;color:#888;">Theme</label>
@@ -10577,7 +10587,16 @@ function buildImageUrl(userPrompt, opts) {
             showTypingIndicator() {
                 this.hideTypingIndicator(true);
                 try { this.setStopVisible(true); } catch(e) {}
-                this._thinkShownAt = Date.now(); this._thinkMinMs = 9000;
+                this._thinkShownAt = Date.now();
+                var _lu = '';
+                try {
+                    var _h = this.history || [];
+                    for (var _i = _h.length - 1; _i >= 0; _i--) {
+                        if (_h[_i] && _h[_i].role === 'user') { _lu = String(_h[_i].content || ''); break; }
+                    }
+                } catch (_e) {}
+                var _shortQ = _lu.length > 0 && _lu.length <= 40 && !/https?:|найди|поищи|search|code|код|нарисуй|\/img|\/search|\/nova/i.test(_lu);
+                this._thinkMinMs = _shortQ ? 6000 : 19000;
                 var lastUser = '';
                 try {
                     var hist = this.history || [];
@@ -13322,6 +13341,346 @@ window.ccPickMaleVoice = function(){
   box-shadow: 0 8px 32px rgba(0,0,0,0.35) !important;
 }
 </style>
+
+
+<style id="cc-orb-think-v2">
+/* Detailed think orb — NO pulse scale */
+.cc-mini-orb {
+  width: 22px !important; height: 22px !important;
+  border-radius: 50% !important;
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center; justify-content: center;
+  background:
+    radial-gradient(circle at 35% 30%, #fff 0%, #f0f0f0 25%, #d0d0d4 55%, #a8a8b0 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.25),
+    0 2px 8px rgba(0,0,0,0.35),
+    inset 0 -2px 4px rgba(0,0,0,0.12),
+    inset 0 2px 3px rgba(255,255,255,0.7) !important;
+  animation: ccOrbIdle 6s ease-in-out infinite !important;
+  overflow: hidden !important;
+}
+@keyframes ccOrbIdle {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.06); }
+}
+/* highlight sweep — not pulse */
+.cc-mini-orb::before {
+  content: '' !important;
+  position: absolute !important; inset: -20% !important;
+  background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.55) 50%, transparent 60%) !important;
+  animation: ccOrbSweep 3.8s ease-in-out infinite !important;
+  pointer-events: none !important;
+}
+@keyframes ccOrbSweep {
+  0% { transform: translateX(-60%) rotate(0deg); opacity: 0; }
+  30% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { transform: translateX(60%) rotate(8deg); opacity: 0; }
+}
+.cc-mini-orb-face {
+  position: absolute !important; inset: 0 !important;
+  display: flex !important; align-items: center; justify-content: center; gap: 5px !important;
+  animation: ccLookAround 5.5s ease-in-out infinite !important;
+  z-index: 2 !important;
+}
+.cc-mini-orb-face .e, .cc-mini-orb-face .e1, .cc-mini-orb-face .e2 {
+  width: 4px !important; height: 4.5px !important;
+  border-radius: 50% !important;
+  background: #1a1a1c !important;
+  box-shadow: 0 0 0 0.5px rgba(0,0,0,0.2) !important;
+  animation: ccBlink 4.8s ease-in-out infinite !important;
+}
+.cc-mini-orb-face .e2 { animation-delay: 0.06s !important; }
+@keyframes ccLookAround {
+  0%, 18% { transform: translate(0, 0); }
+  28% { transform: translate(2.5px, -1px); }
+  42% { transform: translate(-2.5px, 0.5px); }
+  58% { transform: translate(1.5px, 1.5px); }
+  72% { transform: translate(-1px, -1.5px); }
+  88%, 100% { transform: translate(0, 0); }
+}
+@keyframes ccBlink {
+  0%, 40%, 46%, 100% { transform: scaleY(1); }
+  43% { transform: scaleY(0.12); }
+}
+/* kill pulse/breathe on think orb */
+.cc-mini-orb[data-kind="think"] {
+  animation: ccOrbIdle 6s ease-in-out infinite !important;
+}
+.cc-mini-orb[data-kind="think"] .cc-mini-orb-globe { display: none !important; }
+
+/* Big Live orb upgrades */
+#voiceOrb.voice-orb, .voice-orb#voiceOrb, div#voiceOrb {
+  width: 120px !important; height: 120px !important;
+  border-radius: 50% !important;
+  background:
+    radial-gradient(circle at 32% 28%, #ffffff 0%, #f5f5f7 22%, #e4e4e8 48%, #c8c8d0 75%, #a0a0aa 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.3),
+    0 12px 40px rgba(0,0,0,0.45),
+    inset 0 -6px 16px rgba(0,0,0,0.1),
+    inset 0 4px 10px rgba(255,255,255,0.65) !important;
+  animation: none !important; /* no pulse */
+  position: relative !important;
+  overflow: hidden !important;
+}
+#voiceOrb.voice-orb::before {
+  content: '' !important;
+  position: absolute !important; inset: -30% !important;
+  background: linear-gradient(120deg, transparent 35%, rgba(255,255,255,0.5) 50%, transparent 65%) !important;
+  animation: ccOrbSweep 4s ease-in-out infinite !important;
+}
+#voiceOrb.voice-orb.listen {
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.35),
+    0 0 40px rgba(255,255,255,0.15),
+    0 12px 40px rgba(0,0,0,0.45) !important;
+}
+#voiceOrb.voice-orb.speaking {
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,0.4),
+    0 0 50px rgba(255,255,255,0.2),
+    0 12px 40px rgba(0,0,0,0.45) !important;
+}
+/* eyes on big orb if present */
+#voiceOrb .voice-core, #voiceOrb .orb-eyes {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  animation: ccLookAround 5s ease-in-out infinite;
+  z-index: 2;
+}
+#voiceOrb .orb-eye {
+  width: 10px; height: 12px; border-radius: 50%; background: #1a1a1c;
+  animation: ccBlink 5s ease-in-out infinite;
+}
+
+/* Think bar — slow line, not pulse dots */
+.cc-think-bar {
+  height: 2px !important; width: 120px !important; max-width: 40vw !important;
+  margin-top: 8px !important;
+  background: rgba(255,255,255,0.08) !important;
+  border-radius: 2px !important; overflow: hidden !important;
+}
+.cc-think-bar i {
+  display: block !important; height: 100% !important; width: 40% !important;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent) !important;
+  animation: ccThinkLine 2.2s ease-in-out infinite !important;
+  border-radius: 2px !important;
+}
+@keyframes ccThinkLine {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(320%); }
+}
+.cc-think-dots, .thinking .dot, .flash-think-dots span {
+  animation: none !important;
+  opacity: 0.5 !important;
+}
+.cc-status-pill {
+  display: inline-flex; flex-direction: column; align-items: flex-start;
+  gap: 2px; padding: 0.25rem 0;
+}
+.cc-status-line {
+  display: inline-flex; align-items: center; gap: 0.55rem;
+  color: rgba(255,255,255,0.55) !important;
+  font-size: 0.88rem !important;
+}
+.cc-think-label { letter-spacing: 0.02em; }
+
+/* ========== Chat background modes ========== */
+#flashChat .chat-layout {
+  position: relative;
+}
+#flashChat .messages, #flashMessages, .chat-messages {
+  position: relative;
+  z-index: 1;
+}
+body.cc-bg-wave #flashChat,
+html.cc-bg-wave #flashChat,
+#flashChat.cc-bg-wave {
+  background: #000 !important;
+}
+body.cc-bg-wave #flashChat::before,
+#flashChat.cc-bg-wave::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 100%, rgba(180,180,200,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 20% 80%, rgba(255,255,255,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 35% at 80% 85%, rgba(200,200,220,0.06) 0%, transparent 50%),
+    #000;
+}
+/* animated wave lines (screenshot style) */
+#ccChatWaveBg {
+  display: none;
+  position: absolute; left: 0; right: 0; bottom: 0; height: 55%;
+  z-index: 0; pointer-events: none; overflow: hidden;
+}
+body.cc-bg-wave #ccChatWaveBg, #flashChat.cc-bg-wave #ccChatWaveBg {
+  display: block;
+}
+#ccChatWaveBg svg {
+  width: 140%; height: 100%; margin-left: -20%;
+  opacity: 0.55;
+}
+#ccChatWaveBg path {
+  fill: none;
+  stroke: rgba(220,220,230,0.35);
+  stroke-width: 1.2;
+  animation: ccWaveDrift 14s ease-in-out infinite;
+}
+#ccChatWaveBg path:nth-child(2) { stroke: rgba(200,200,215,0.28); animation-duration: 18s; animation-delay: -3s; }
+#ccChatWaveBg path:nth-child(3) { stroke: rgba(255,255,255,0.18); animation-duration: 22s; animation-delay: -6s; }
+#ccChatWaveBg path:nth-child(4) { stroke: rgba(180,180,200,0.22); animation-duration: 16s; animation-delay: -2s; }
+#ccChatWaveBg path:nth-child(5) { stroke: rgba(230,230,240,0.15); animation-duration: 20s; animation-delay: -8s; }
+@keyframes ccWaveDrift {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(-4%) translateY(-2%); }
+}
+
+/* ========== Landing upgrade ========== */
+#landingScreen {
+  background: #000 !important;
+  overflow: hidden;
+}
+#landingScreen::before {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(255,255,255,0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 80% 100%, rgba(167,139,250,0.06) 0%, transparent 50%),
+    #000;
+  animation: ccLandingGlow 8s ease-in-out infinite;
+}
+@keyframes ccLandingGlow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+#landingScreen .landing-box {
+  position: relative; z-index: 1;
+  background: rgba(18,18,22,0.72) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  backdrop-filter: blur(28px) saturate(1.3) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(1.3) !important;
+  border-radius: 1.75rem !important;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.5) !important;
+  padding: 2rem 1.5rem !important;
+  animation: formIn 0.7s cubic-bezier(0.16,1,0.3,1) both;
+}
+#landingScreen .landing-box h1 {
+  font-size: 1.85rem !important;
+  letter-spacing: -0.03em !important;
+  background: linear-gradient(180deg, #fff 0%, #b0b0b8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+#landingScreen .landing-logo-spin {
+  width: 64px; height: 64px; margin: 0 auto 1rem;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.4);
+  animation: ccLogoFloat 4s ease-in-out infinite;
+}
+#landingScreen .landing-logo-spin img {
+  width: 100%; height: 100%; object-fit: cover;
+  animation: welcomeSpin 12s linear infinite;
+}
+@keyframes ccLogoFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes welcomeSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+#landingScreen .landing-tag {
+  text-align: center; color: rgba(255,255,255,0.45);
+  font-size: 0.85rem; margin: -0.5rem 0 1.25rem;
+  letter-spacing: 0.04em;
+}
+#welcomeScreen .welcome-logo {
+  animation: ccLogoFloat 3.5s ease-in-out infinite;
+}
+#welcomeScreen .welcome-logo img {
+  animation: welcomeSpin 10s linear infinite;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+}
+
+/* Settings bg picker */
+.cc-bg-picker {
+  display: flex; gap: 0.6rem; margin: 0.75rem 0 0.25rem;
+}
+.cc-bg-opt {
+  flex: 1; padding: 0.75rem 0.5rem; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: #ccc; font-size: 0.78rem; cursor: pointer;
+  text-align: center; transition: 0.2s;
+}
+.cc-bg-opt:hover { border-color: rgba(255,255,255,0.25); color: #fff; }
+.cc-bg-opt.active {
+  border-color: rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+.cc-bg-opt .cc-bg-preview {
+  height: 36px; border-radius: 8px; margin-bottom: 0.4rem;
+  background: #0a0a0a;
+}
+.cc-bg-opt[data-bg="wave"] .cc-bg-preview {
+  background:
+    radial-gradient(ellipse 100% 80% at 50% 100%, rgba(200,200,220,0.25) 0%, transparent 60%),
+    #000;
+}
+</style>
+
+
+<script id="cc-bg-wave-js">
+(function(){
+  function ensureWave(){
+    var chat = document.getElementById('flashChat');
+    if(!chat) return;
+    if(document.getElementById('ccChatWaveBg')) return;
+    var wrap = document.createElement('div');
+    wrap.id = 'ccChatWaveBg';
+    wrap.innerHTML = '<svg viewBox="0 0 800 400" preserveAspectRatio="none" aria-hidden="true">'
+      + '<path d="M0,280 C80,240 160,300 240,260 C320,220 400,300 480,250 C560,200 640,280 720,240 C760,220 800,250 800,250 L800,400 L0,400 Z"/>'
+      + '<path d="M0,300 C100,270 180,320 280,290 C380,260 460,320 560,280 C660,240 740,300 800,270 L800,400 L0,400 Z"/>'
+      + '<path d="M0,320 C120,300 200,340 300,310 C420,275 520,330 640,300 C720,280 800,310 800,310 L800,400 L0,400 Z"/>'
+      + '<path d="M0,250 C90,210 170,270 250,230 C350,180 450,260 550,210 C650,160 750,230 800,200"/>'
+      + '<path d="M0,200 C100,170 200,220 300,180 C400,140 500,210 600,170 C700,130 800,180 800,180"/>'
+      + '</svg>';
+    var layout = chat.querySelector('.chat-layout') || chat;
+    layout.style.position = layout.style.position || 'relative';
+    layout.insertBefore(wrap, layout.firstChild);
+  }
+  function applyBg(mode){
+    mode = mode === 'wave' ? 'wave' : 'classic';
+    try { localStorage.setItem('cc_chat_bg', mode); } catch(e){}
+    document.body.classList.toggle('cc-bg-wave', mode === 'wave');
+    var chat = document.getElementById('flashChat');
+    if(chat) chat.classList.toggle('cc-bg-wave', mode === 'wave');
+    if(mode === 'wave') ensureWave();
+    document.querySelectorAll('.cc-bg-opt').forEach(function(b){
+      b.classList.toggle('active', b.getAttribute('data-bg') === mode);
+    });
+  }
+  window.ccApplyChatBg = applyBg;
+  function bind(){
+    ensureWave();
+    var mode = 'classic';
+    try { mode = localStorage.getItem('cc_chat_bg') || 'classic'; } catch(e){}
+    applyBg(mode);
+    document.querySelectorAll('.cc-bg-opt').forEach(function(b){
+      b.addEventListener('click', function(){ applyBg(b.getAttribute('data-bg')); });
+    });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', bind);
+  else setTimeout(bind, 400);
+})();
+</script>
 
 </body>
 </html>

@@ -1006,8 +1006,17 @@ async function netlifyDeploy(htmlContent, siteName) {
   return d.ssl_url || d.url || site.ssl_url || site.url || ('https://' + site.name + '.netlify.app');
 }
 
-const MIN_AI_RESPONSE_MS = 9000;
+const MIN_AI_RESPONSE_MS = 19000;
+const MIN_AI_RESPONSE_SHORT_MS = 6000;
 function waitAtLeast(startedAt, ms) { const left=Math.max(0, ms-(Date.now()-startedAt)); return left?new Promise(r=>setTimeout(r,left)):Promise.resolve(); }
+function pickThinkMs(messages) {
+  try {
+    const last = (messages || []).slice().reverse().find(m => m && (m.role === 'user' || m.role === 'human'));
+    const t = String((last && last.content) || '').trim();
+    if (t.length > 0 && t.length <= 40 && !/https?:|найди|поищи|search|code|код|нарисуй|\/img|\/search|\/nova/i.test(t)) return MIN_AI_RESPONSE_SHORT_MS;
+  } catch (e) {}
+  return MIN_AI_RESPONSE_MS;
+}
 
 /* ========== SERVER ========== */
 const server = http.createServer(async (req, res) => {
@@ -1208,7 +1217,7 @@ const server = http.createServer(async (req, res) => {
           details: failures.slice(0, 6),
         });
       }
-      await waitAtLeast(aiStartedAt, MIN_AI_RESPONSE_MS);
+      await waitAtLeast(aiStartedAt, pickThinkMs(trimmed));
       result.left = rate.left;
       result.rate = rate;
       result.provider = 'chatclaud';
