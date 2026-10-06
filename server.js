@@ -1141,7 +1141,9 @@ const server = http.createServer(async (req, res) => {
         const greetingRe = /^(привет|здравствуй|хай|hello|hi|ку|йо|как дела|спасибо|пока|ок|окей|да|нет)\W*$/i;
         let q3 = lastUser3.trim();
         // Always search when user asks to find / look up (any message count)
-        const intentSearch = /(?:^|\s)(\/search|\/find|\/seasch|\/nova|найди|найди\s+мне|поищи|поиск|погугли|загугли|гугл|search\b|find\b|look\s*up|google\b|what\s+is\b|who\s+is\b|how\s+many\b|when\s+did\b|latest\b|news\b|мем|meme|новост|ти[кк]\s*ток|tiktok|кто\s+такой|что\s+такое|сколько|когда\s+вышел|актуальн)/i.test(q3);
+        const intentSearch = /(?:^|\s)(\/search|\/find|\/seasch|\/nova|найди|поищи|загугли|погугли|search\b|find\b|look\s*up|google\b|новост)/i.test(q3)
+          || /^(найди|поищи|загугли|погугли|search|find)\b/i.test(q3)
+          || (/\b(tiktok|тикток|youtube|ютуб)\b/i.test(q3) && /(найди|поищи|видео|ролик)/i.test(q3));
         const forceSearch = intentSearch
           || /^\/search\b/i.test(q3)
           || /^\/find\b/i.test(q3)
@@ -1152,9 +1154,9 @@ const server = http.createServer(async (req, res) => {
           || /(поищи|найди).{0,12}(ещ[её]|again|once more)/i.test(q3)
           || /(search|find).{0,12}(again|more)/i.test(q3);
         if (/^\/(search|seasch|nova)\b/i.test(q3)) q3 = q3.replace(/^\/(search|seasch|nova)\s*/i, '').trim();
-        const looksLikeQuery = forceSearch || (q3.length >= 4 && !greetingRe.test(q3));
+        const looksLikeQuery = false; // search ONLY when forceSearch
         // video queries still go through search (Nova can resolve TikTok etc.)
-        if ((forceSearch || (!hasUrlAlready && looksLikeQuery)) && lastIdx3 >= 0 && q3.length >= 2) {
+        if (forceSearch && lastIdx3 >= 0 && q3.length >= 2) {
           console.log('[nova-search] querying:', q3.slice(0, 100), 'force=', !!forceSearch);
           const sr = await webSearch(q3, forceSearch ? 'search' : 'search');
           const hasText = sr && sr.text && String(sr.text).trim().length > 20;

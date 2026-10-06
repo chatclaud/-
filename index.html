@@ -7041,10 +7041,12 @@ body {
             </div>
 
             <div class="settings-section">
-                <label style="font-size:0.75rem;color:#888;">Chat background</label>
+                <label style="font-size:0.75rem;color:#888;">Тема чата</label>
                 <div class="cc-bg-picker">
-                  <button type="button" class="cc-bg-opt active" data-bg="classic"><div class="cc-bg-preview"></div>Classic</button>
-                  <button type="button" class="cc-bg-opt" data-bg="wave"><div class="cc-bg-preview"></div>Waves</button>
+                  <button type="button" class="cc-bg-opt active" data-bg="classic"><div class="cc-bg-preview cc-prev-dark"></div>Чёрный</button>
+                  <button type="button" class="cc-bg-opt" data-bg="light"><div class="cc-bg-preview cc-prev-light"></div>Белый</button>
+                  <button type="button" class="cc-bg-opt" data-bg="wave"><div class="cc-bg-preview cc-prev-wave"></div>Волны</button>
+                  <button type="button" class="cc-bg-opt" data-bg="blue"><div class="cc-bg-preview cc-prev-blue"></div>Синий</button>
                 </div>
             </div>
             <div class="settings-section">
@@ -8175,17 +8177,15 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
         function needsWebSearch(text) {
             const t = (text || '').trim();
             if (!t || t.length < 2) return false;
-            if (/^\/(img|gif|help|clear|deploy|plus|settings)\b/i.test(t)) return false;
-            // Explicit commands — ALWAYS search (every time, not only first)
+            if (/^\/(img|gif|help|clear|deploy|plus|settings|veo)\b/i.test(t)) return false;
+            if (/(не ищи|без поиска|просто поговор|просто ответь|no search|don't search)/i.test(t)) return false;
+            // ONLY explicit search — not every message
             if (/^\/(search|find|seasch|nova)\b/i.test(t)) return true;
             if (/^(найди|поищи|загугли|погугли|найти)\b/i.test(t)) return true;
             if (/(поищи|найди).{0,15}(ещ[её]|again)/i.test(t)) return true;
             if (/^(search|find|look\s*up|google)\b/i.test(t)) return true;
-            if (/^(привет|hello|hi|hey|здарова|хай|бро|ку|ок|ладно|спасибо|thanks|пока|bye|да|нет|yes|no|лол|ахах|хм+|хорошо|норм|понял|ok)\s*[!.]?$/i.test(t)) return false;
-            if (/(не ищи|без поиска|просто поговор|просто ответь|no search|don't search)/i.test(t)) return false;
-            if (/(найди|найти|поищи|поиск|ссылк|сайт|ютуб|youtube|video|видео|тикток|tiktok|google|гугл|новост|актуальн|сейчас|сегодня|сколько|подписчик|рейтинг|курс|цена|погода|кто такой|что такое|where|how many|latest|look\s*up|what is|who is|2024|2025|2026)/i.test(t)) return true;
-            if (/(steam|epic|игры|магазин|скачать|watch|канал|news)/i.test(t)) return true;
-            if (t.length > 40) return true;
+            if (/\b(новост[иь]|latest news|курс\s*(доллар|евро|btc)|погода\s+в)\b/i.test(t)) return true;
+            if (/\b(ютуб|youtube|тикток|tiktok)\b/i.test(t) && /(найди|поищи|видео|ролик|канал)/i.test(t)) return true;
             return false;
         }
 
@@ -10092,10 +10092,10 @@ function buildImageUrl(userPrompt, opts) {
                 var __searchPromise = null;
                 try {
                     var _q = (text || '').trim();
-                    var needS = true;
-                    try { needS = typeof needsWebSearch === 'function' ? needsWebSearch(_q) : true; } catch(e) {}
+                    var needS = false;
+                    try { needS = typeof needsWebSearch === 'function' ? needsWebSearch(_q) : false; } catch(e) {}
                     // URL / video / find always search
-                    if (/https?:\/\/|ютуб|youtube|найди|видео|сайт|поиск/i.test(_q)) needS = true;
+                    if (/^\/(search|nova|find)\b/i.test(_q) || /^(найди|поищи)\b/i.test(_q)) needS = true;
                     if (_q && needS && typeof multiWebSearch === 'function') {
                         __searchPromise = multiWebSearch(_q).catch(function(){ return ''; });
                     }
@@ -13679,6 +13679,65 @@ body.cc-bg-wave #ccChatWaveBg, #flashChat.cc-bg-wave #ccChatWaveBg {
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', bind);
   else setTimeout(bind, 400);
+})();
+</script>
+
+
+<style id="cc-themes-4">
+.cc-bg-picker { display:flex; flex-wrap:wrap; gap:0.5rem !important; }
+.cc-bg-opt { flex:1 1 40%; min-width:110px !important; }
+.cc-prev-dark { background:#0a0a0a !important; }
+.cc-prev-light { background:linear-gradient(180deg,#f5f5f7,#e8e8ed) !important; border:1px solid #ccc; }
+.cc-prev-wave { background:radial-gradient(ellipse 100% 80% at 50% 100%,rgba(200,200,220,.35) 0%,transparent 60%),#000 !important; }
+.cc-prev-blue { background:radial-gradient(ellipse 100% 80% at 50% 100%,rgba(60,100,180,.45) 0%,transparent 55%),#02040a !important; }
+body.cc-bg-light #flashChat, #flashChat.cc-bg-light { background:#f2f2f7 !important; color:#1a1a1a !important; }
+body.cc-bg-light #flashChat .top-bar, body.cc-bg-light #flashChat .input-shell {
+  background:rgba(255,255,255,.9) !important; border-color:rgba(0,0,0,.08) !important; color:#1a1a1a !important;
+}
+body.cc-bg-light .user-msg, body.cc-bg-light .msg.user { background:rgba(0,0,0,.08) !important; color:#111 !important; }
+body.cc-bg-light #ccChatWaveBg { display:none !important; }
+body.cc-bg-blue #flashChat, #flashChat.cc-bg-blue { background:#02040a !important; }
+body.cc-bg-blue #flashChat::before {
+  content:''; position:absolute; inset:0; z-index:0; pointer-events:none;
+  background:radial-gradient(ellipse 80% 50% at 50% 100%,rgba(40,90,180,.22) 0%,transparent 55%),#02040a;
+}
+body.cc-bg-blue #ccChatWaveBg { display:block !important; }
+body.cc-bg-blue #ccChatWaveBg path { stroke:rgba(100,150,255,.35) !important; }
+body.cc-bg-wave #ccChatWaveBg, #flashChat.cc-bg-wave #ccChatWaveBg { display:block !important; opacity:1 !important; z-index:0 !important; }
+#flashChat .chat-layout { position:relative !important; }
+#flashChat .messages, #flashMessages, .chat-messages, .top-bar, .input-row, .input-shell { position:relative; z-index:2; }
+#ccChatWaveBg { z-index:0 !important; pointer-events:none; }
+</style>
+<script id="cc-themes-4-js">
+(function(){
+  function ensureWave(){
+    var chat=document.getElementById('flashChat'); if(!chat) return;
+    if(document.getElementById('ccChatWaveBg')) return;
+    var wrap=document.createElement('div'); wrap.id='ccChatWaveBg';
+    wrap.innerHTML='<svg viewBox="0 0 800 400" preserveAspectRatio="none"><path d="M0,280 C80,240 160,300 240,260 C320,220 400,300 480,250 C560,200 640,280 720,240 C760,220 800,250 800,250 L800,400 L0,400 Z"/><path d="M0,300 C100,270 180,320 280,290 C380,260 460,320 560,280 C660,240 740,300 800,270 L800,400 L0,400 Z"/><path d="M0,320 C120,300 200,340 300,310 C420,275 520,330 640,300 C720,280 800,310 800,310 L800,400 L0,400 Z"/><path d="M0,250 C90,210 170,270 250,230 C350,180 450,260 550,210 C650,160 750,230 800,200"/><path d="M0,200 C100,170 200,220 300,180 C400,140 500,210 600,170 C700,130 800,180 800,180"/></svg>';
+    var layout=chat.querySelector('.chat-layout')||chat; layout.style.position='relative'; layout.insertBefore(wrap, layout.firstChild);
+  }
+  function applyBg(mode){
+    if(['classic','light','wave','blue'].indexOf(mode)<0) mode='classic';
+    try{localStorage.setItem('cc_chat_bg',mode);}catch(e){}
+    document.body.classList.remove('cc-bg-wave','cc-bg-light','cc-bg-blue');
+    var chat=document.getElementById('flashChat');
+    if(chat) chat.classList.remove('cc-bg-wave','cc-bg-light','cc-bg-blue');
+    if(mode==='wave'){ document.body.classList.add('cc-bg-wave'); if(chat) chat.classList.add('cc-bg-wave'); ensureWave(); try{document.documentElement.setAttribute('data-theme','dark');}catch(e){} }
+    else if(mode==='blue'){ document.body.classList.add('cc-bg-blue'); if(chat) chat.classList.add('cc-bg-blue'); ensureWave(); try{document.documentElement.setAttribute('data-theme','dark');}catch(e){} }
+    else if(mode==='light'){ document.body.classList.add('cc-bg-light'); if(chat) chat.classList.add('cc-bg-light'); try{document.documentElement.setAttribute('data-theme','light');}catch(e){} }
+    else { try{document.documentElement.setAttribute('data-theme','dark');}catch(e){} }
+    document.querySelectorAll('.cc-bg-opt').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-bg')===mode); });
+  }
+  window.ccApplyChatBg=applyBg;
+  function bind(){
+    var mode='classic'; try{mode=localStorage.getItem('cc_chat_bg')||'classic';}catch(e){}
+    applyBg(mode);
+    document.querySelectorAll('.cc-bg-opt').forEach(function(b){ b.onclick=function(){ applyBg(b.getAttribute('data-bg')); }; });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', bind);
+  else setTimeout(bind,300);
+  setTimeout(bind,1000);
 })();
 </script>
 
