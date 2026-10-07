@@ -8192,13 +8192,10 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
             if (/^\/(search|find|seasch|nova)\b/i.test(t)) return true;
             if (/\b(search|find|look\s*up)\b/i.test(t)) return true;
             if (/^(найди|поищи|загугли|погугли|найти)\b/i.test(t)) return true;
-            if (/(поищи|найди).{0,15}(ещ[её]|again)/i.test(t)) return true;
             if (/https?:\/\//i.test(t)) return true;
-            if (/tiktok\.com|vm\.tiktok|youtube\.com|youtu\.be|instagram\.com/i.test(t)) return true;
-            if (/\b(новост[иь]|latest news|курс\s*(доллар|евро|btc)|погода\s+в)\b/i.test(t)) return true;
+            if (/tiktok\.com|vm\.tiktok|youtube\.com|youtu\.be/i.test(t)) return true;
             return false;
         }
-
 
         function isPlus() {
             if (globalSettings.plusUntil) {
@@ -14881,7 +14878,7 @@ body.cc-bg-blue #flashChat .chat-layout {
 
 
 <!-- ========== BLOCK: FINAL DESIGN + AGENT TRACE + LIMITS ========== -->
-<style id="cc-final-design">
+<style id="cc-final-design-disabled">
 /* Ghost top — no black strip */
 #flashChat .top-bar,
 #flashChat header.top-bar,
@@ -15205,7 +15202,7 @@ body.cc-bg-light #flashMessages .message.user {
           if (n.id === 'ccAgentTrace') return;
           if (n.classList && (n.classList.contains('message') || n.classList.contains('msg'))) {
             // delay slightly so steps visible
-            setTimeout(function(){ window.ccTraceEnd(); }, 200);
+            setTimeout(function(){ window.ccTraceEnd(); }, 1200);
           }
         });
       });
@@ -15280,6 +15277,136 @@ body.cc-bg-light #flashMessages .message.user {
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', polish);
   else setTimeout(polish, 300);
+})();
+</script>
+
+
+<style id="cc-clean-v1">
+/* ========== CLEAN UI: no contours, no top strip ========== */
+
+/* Top bar fully ghost */
+#flashChat .top-bar,
+.chat-layout > .top-bar,
+#flashChat header {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 0 !important;
+  border-bottom: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  outline: none !important;
+}
+#flashChat .top-bar::before,
+#flashChat .top-bar::after { display: none !important; content: none !important; }
+
+/* Chat stage */
+#flashChat .chat-layout {
+  border: 0 !important;
+  box-shadow: none !important;
+  background-color: #000 !important;
+}
+
+/* BOT — pure text, ZERO box */
+#flashMessages .message.bot,
+#flashChat .message.bot,
+#flashMessages .msg.bot,
+#flashChat .msg.bot,
+#flashMessages .bot-msg,
+.message.bot, .msg.bot {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding: 0.35rem 0.15rem !important;
+  max-width: 92% !important;
+  border-radius: 0 !important;
+}
+#flashMessages .message.bot::before,
+#flashMessages .message.bot::after { display: none !important; content: none !important; }
+
+/* USER — soft pill + real shadow, no stroke */
+#flashMessages .message.user,
+#flashChat .message.user,
+.message.user, .msg.user {
+  background: rgba(255,255,255,0.12) !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.55) !important;
+  border-radius: 1.2rem 1.2rem 0.35rem 1.2rem !important;
+  padding: 0.7rem 1rem !important;
+  color: #fff !important;
+}
+
+/* Input — one glass capsule, no double frame */
+#flashChat .input-shell,
+#flashChat .input-row {
+  background: rgba(18,18,20,0.75) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.6) !important;
+  backdrop-filter: blur(28px) !important;
+  -webkit-backdrop-filter: blur(28px) !important;
+  border-radius: 1.4rem !important;
+}
+#flashChat .input-row textarea,
+#flashChat textarea#flashInput,
+#flashChat textarea {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+#flashChat .input-row textarea:focus,
+#flashChat textarea:focus {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Kill purple/old message borders from base CSS */
+.message {
+  border: none !important;
+}
+.message.bot { box-shadow: none !important; }
+
+/* Slash popup ok */
+/* Agent trace soft */
+.cc-trace {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0.4rem 0.2rem !important;
+}
+
+/* Light theme */
+body.cc-bg-light #flashMessages .message.bot { color: #111 !important; background: transparent !important; }
+body.cc-bg-light #flashMessages .message.user {
+  background: #fff !important; color: #111 !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+}
+</style>
+
+<script id="cc-vision-force">
+(function(){
+  // Ensure HF vision is used when user attaches image
+  window.CC = window.CC || {};
+  var origDescribe = window.describeImageForChat;
+  window.describeImageForChat = async function(b64) {
+    try {
+      if (window.CC.Vision && window.CC.Vision.describe) {
+        return await window.CC.Vision.describe(b64);
+      }
+    } catch (e) {
+      console.warn('CC.Vision failed', e);
+      if (typeof showToast === 'function') showToast('Vision: ' + (e.message || e));
+      throw e;
+    }
+    if (origDescribe) return origDescribe(b64);
+    throw new Error('Vision not available — set HF_KEY on Render');
+  };
 })();
 </script>
 
