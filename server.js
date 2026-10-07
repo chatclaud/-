@@ -396,8 +396,8 @@ function readBody(req) {
 }
 
 /* Rate: hard limit → exactly +3 hours from the moment of block (e.g. 13:00 → 16:00) */
-const RATE_FREE_HARD = 50;
-const RATE_PLUS_HARD = 100;
+const RATE_FREE_HARD = 170;
+const RATE_PLUS_HARD = 300;
 const RATE_COOLDOWN_MS = 3 * 60 * 60 * 1000;
 const rateMap = new Map();
 function clientIp(req) {
@@ -433,11 +433,11 @@ function checkRate(req, isPlus) {
   }
   let tier = 'ok';
   if (!isPlus) {
-    if (e.count >= 35) tier = 'warn35';
-    else if (e.count >= 20) tier = 'warn20';
+    if (e.count >= 130) tier = 'warn130';
+    else if (e.count >= 60) tier = 'warn60';
   } else {
-    if (e.count >= 70) tier = 'warn70';
-    else if (e.count >= 50) tier = 'warn50';
+    if (e.count >= 250) tier = 'warn250';
+    else if (e.count >= 150) tier = 'warn150';
   }
   return {
     ok: true,
@@ -596,8 +596,10 @@ Then a short confirmation in their language.
 - Transparency: when search was used, mention key sources.
 - Memory: use dialogue context; do not claim permanent memory unless stored.
 
+TONE: Mirror the user. Swearing is allowed when the user swears or asks for uncensored style. No moral lectures. Be direct.
 Match user language. Be direct and useful.
-Commands: /search /find /img /veo /plus /settings /translate.`;
+Commands: /search /find /img /veo /plus /settings /translate.
+When solving complex tasks, briefly reflect real tool steps (search, open page, vision) — never invent tools you did not use.`;
 
 
 
@@ -1051,8 +1053,8 @@ const server = http.createServer(async (req, res) => {
       if (!rate.ok) {
         return send(res, 429, {
           error: rate.plus
-            ? ('Лимит Plus: ' + rate.hard + ' сообщений. Подожди ~' + rate.waitMin + ' мин (с момента лимита +3 часа).')
-            : ('Лимит Free: ' + rate.hard + ' сообщений. Подожди ~' + rate.waitMin + ' мин (с момента лимита +3 часа).'),
+            ? ('Plus limit: ' + rate.hard + ' messages. Wait ~' + rate.waitMin + ' min (3 hours from lock).')
+            : ('Free limit: ' + rate.hard + ' messages. Wait ~' + rate.waitMin + ' min (3 hours from lock).'),
           waitMin: rate.waitMin,
           rate: rate,
           code: 'RATE_LIMIT'

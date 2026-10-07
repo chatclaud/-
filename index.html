@@ -8346,13 +8346,13 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
         }
         function saveUsage(u) { localStorage.setItem('chatclaud_usage', JSON.stringify(u)); }
         function getLimits() {
-            if (isPlus()) return { expertMsgs: 50, images: 9999, videos: 15 };
-            return { expertMsgs: 20, images: 5, videos: 0 };
+            if (isPlus()) return { expertMsgs: 300, images: 9999, videos: 15 };
+            return { expertMsgs: 170, images: 5, videos: 0 };
         }
         function checkExpertLimit() {
             const u = getUsage(); const lim = getLimits();
             if (u.expertMsgs >= lim.expertMsgs) {
-                showToast(isPlus() ? 'Limit Pro: 50 messages/день' : 'Limit Free: 20 messages/день в Pro. Нужен Plus');
+                showToast(isPlus() ? 'Limit Plus: 300 messages/window' : 'Limit Free: 170 messages. Plus unlocks more.');
                 return false;
             }
             return true;
@@ -14876,6 +14876,410 @@ body.cc-bg-blue #flashChat .chat-layout {
     }
     return false;
   };
+})();
+</script>
+
+
+<!-- ========== BLOCK: FINAL DESIGN + AGENT TRACE + LIMITS ========== -->
+<style id="cc-final-design">
+/* Ghost top — no black strip */
+#flashChat .top-bar,
+#flashChat header.top-bar,
+.chat-layout > .top-bar {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding-top: max(0.5rem, env(safe-area-inset-top, 0px)) !important;
+}
+#flashChat .top-bar::before,
+#flashChat .top-bar::after { display: none !important; content: none !important; }
+
+/* Deep black stage */
+#flashChat .chat-layout {
+  background: #000 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+body.cc-bg-wave #flashChat .chat-layout {
+  background-image:
+    radial-gradient(ellipse 130% 80% at 50% 130%, rgba(255,255,255,0.2) 0%, transparent 48%),
+    radial-gradient(ellipse 70% 50% at 80% 100%, rgba(220,220,240,0.08) 0%, transparent 50%),
+    linear-gradient(180deg, #000 0%, #050508 100%) !important;
+}
+body.cc-bg-blue #flashChat .chat-layout {
+  background-image:
+    radial-gradient(ellipse 130% 80% at 50% 130%, rgba(50,140,255,0.38) 0%, transparent 48%),
+    linear-gradient(180deg, #000105 0%, #000818 100%) !important;
+}
+body.cc-bg-light #flashChat .chat-layout {
+  background: #eaeaef !important;
+}
+
+/* Bot: soft dark bubble like reference — subtle fill, NO hard frame */
+#flashMessages .message.bot,
+#flashChat .message.bot {
+  background: rgba(28, 28, 30, 0.92) !important;
+  border: none !important;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 8px 28px rgba(0,0,0,0.35) !important;
+  border-radius: 1.25rem 1.25rem 1.25rem 0.4rem !important;
+  padding: 0.85rem 1.05rem !important;
+  max-width: 88% !important;
+  color: rgba(255,255,255,0.94) !important;
+  backdrop-filter: blur(12px) !important;
+}
+/* User pill */
+#flashMessages .message.user,
+#flashChat .message.user {
+  background: rgba(58, 58, 60, 0.95) !important;
+  border: none !important;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4) !important;
+  border-radius: 1.25rem 1.25rem 0.4rem 1.25rem !important;
+  padding: 0.75rem 1rem !important;
+  color: #fff !important;
+}
+body.cc-bg-light #flashMessages .message.bot {
+  background: #fff !important;
+  color: #111 !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important;
+}
+body.cc-bg-light #flashMessages .message.user {
+  background: #0a0a0a !important;
+  color: #fff !important;
+}
+
+/* Input capsule — no gray frame, glass only */
+#flashChat .input-shell,
+#flashChat .input-row {
+  background: rgba(22, 22, 24, 0.82) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07) !important;
+  backdrop-filter: blur(32px) saturate(1.4) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(1.4) !important;
+  border-radius: 1.5rem !important;
+}
+#flashChat .input-row textarea,
+#flashChat textarea {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  outline: none !important;
+}
+#flashChat .input-row textarea:focus {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Agent Trace UI */
+.cc-trace {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.55rem 0.85rem;
+  margin: 0.25rem 0 0.5rem;
+  max-width: 92%;
+  border-radius: 1rem;
+  background: rgba(20,20,22,0.75);
+  border: none;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.4);
+  animation: messageSpring 0.4s both;
+}
+.cc-trace-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 0.15rem;
+}
+.cc-trace-step {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.84rem;
+  color: rgba(255,255,255,0.4);
+  transition: color 0.25s;
+}
+.cc-trace-step.active {
+  color: rgba(255,255,255,0.92);
+}
+.cc-trace-step.done {
+  color: rgba(255,255,255,0.5);
+}
+.cc-trace-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  flex-shrink: 0;
+}
+.cc-trace-step.active .cc-trace-dot {
+  background: #fff;
+  box-shadow: 0 0 10px rgba(255,255,255,0.5);
+  animation: ccDotPulse 1s ease-in-out infinite;
+}
+.cc-trace-step.done .cc-trace-dot {
+  background: rgba(255,255,255,0.55);
+}
+@keyframes ccDotPulse {
+  0%,100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.35); opacity: 0.7; }
+}
+.cc-trace-label-shimmer {
+  background: linear-gradient(90deg, #6a6a70 0%, #6a6a70 28%, #f2f2f7 50%, #6a6a70 72%, #6a6a70 100%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: ccTextShimmer 2s linear infinite;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+</style>
+
+<script id="cc-agent-trace">
+(function(){
+  window.CC = window.CC || {};
+
+  function detectLevel(text) {
+    var t = String(text || '').trim();
+    if (!t) return 'think';
+    if (/^\/(search|find|nova|seasch)\b/i.test(t)) return 'agent';
+    if (/\b(search|найди|поищи|загугли|look\s*up|google)\b/i.test(t)) return 'agent';
+    if (/https?:\/\//i.test(t) || /tiktok|youtube|instagram/i.test(t)) return 'agent';
+    if (/^\/(img|veo|gif)\b/i.test(t)) return 'agent';
+    if (t.length > 180 || /объясни|разбер|сравни|analyze|explain|why|how does|как работает|выпиши|план/i.test(t)) return 'reason';
+    return 'think';
+  }
+
+  window.CC.Trace = {
+    el: null,
+    level: 'think',
+    steps: [],
+    detect: detectLevel,
+    mount: function(level) {
+      this.remove();
+      this.level = level || 'think';
+      this.steps = [];
+      var box = document.getElementById('flashMessages');
+      if (!box) return;
+      var el = document.createElement('div');
+      el.className = 'cc-trace';
+      el.id = 'ccAgentTrace';
+      if (level === 'think') {
+        el.innerHTML = '<div class="cc-trace-label-shimmer">Thinking…</div>';
+      } else if (level === 'reason') {
+        el.innerHTML = '<div class="cc-trace-title">Reasoning</div><div class="cc-trace-label-shimmer">Reasoning…</div>';
+      } else {
+        el.innerHTML = '<div class="cc-trace-title">Agent Trace</div><div class="cc-trace-steps"></div>';
+      }
+      box.appendChild(el);
+      box.scrollTop = box.scrollHeight;
+      this.el = el;
+    },
+    push: function(label) {
+      if (this.level === 'think') return;
+      if (this.level === 'reason') {
+        // update single line
+        if (!this.el) return;
+        var s = this.el.querySelector('.cc-trace-label-shimmer');
+        if (s) s.textContent = label;
+        return;
+      }
+      if (!this.el) return;
+      var host = this.el.querySelector('.cc-trace-steps');
+      if (!host) return;
+      // mark previous done
+      host.querySelectorAll('.cc-trace-step.active').forEach(function(n){
+        n.classList.remove('active');
+        n.classList.add('done');
+      });
+      var row = document.createElement('div');
+      row.className = 'cc-trace-step active';
+      row.innerHTML = '<span class="cc-trace-dot"></span><span>' + label.replace(/</g,'&lt;') + '</span>';
+      host.appendChild(row);
+      this.steps.push(label);
+      var box = document.getElementById('flashMessages');
+      if (box) box.scrollTop = box.scrollHeight;
+    },
+    done: function() {
+      if (!this.el) return;
+      this.el.querySelectorAll('.cc-trace-step.active').forEach(function(n){
+        n.classList.remove('active');
+        n.classList.add('done');
+      });
+    },
+    remove: function() {
+      var el = document.getElementById('ccAgentTrace');
+      if (el && el.parentNode) el.parentNode.removeChild(el);
+      this.el = null;
+      this.steps = [];
+    }
+  };
+
+  // Hook into send pipeline via wrapping needsWebSearch path and showTyping
+  var _origShowTyping = null;
+
+  function patchSend() {
+    // Intercept by listening to send button - wrap ChatSession prototype if exists
+    // Fallback: monkey-patch when flashSend is clicked - use MutationObserver on messages for cleanup
+  }
+
+  // Global helpers for existing code paths
+  window.ccTraceStart = function(text) {
+    try {
+      var level = detectLevel(text);
+      window.CC.Trace.mount(level);
+      if (level === 'agent') {
+        if (/^\/(img|veo|gif)\b/i.test(text)) window.CC.Trace.push('Preparing image pipeline…');
+        else if (/https?:\/\//i.test(text)) window.CC.Trace.push('Opening link…');
+        else window.CC.Trace.push('Searching Nova…');
+      } else if (level === 'reason') {
+        window.CC.Trace.push('Reasoning…');
+      }
+      return level;
+    } catch (e) { return 'think'; }
+  };
+  window.ccTracePush = function(label) {
+    try { window.CC.Trace.push(label); } catch (e) {}
+  };
+  window.ccTraceEnd = function() {
+    try { window.CC.Trace.done(); window.CC.Trace.remove(); } catch (e) {}
+  };
+
+  // Wrap showTyping if defined later
+  var iv = setInterval(function(){
+    if (typeof window.showTyping === 'function' && !window.showTyping.__ccTrace) {
+      var orig = window.showTyping;
+      window.showTyping = function() {
+        // keep original dots if no trace mounted
+        return orig.apply(this, arguments);
+      };
+      window.showTyping.__ccTrace = true;
+    }
+  }, 1000);
+  setTimeout(function(){ clearInterval(iv); }, 15000);
+
+  // Patch ChatSession.send via prototype search
+  function tryPatchSession() {
+    if (window.__ccSendPatched) return;
+    // find instance on flashSend click
+    var btn = document.getElementById('flashSend');
+    if (!btn) return;
+    // wrap addEventListener style - intercept at capture on form
+    document.addEventListener('click', function(e) {
+      var t = e.target.closest && e.target.closest('#flashSend, .send-icon');
+      if (!t) return;
+      try {
+        var input = document.getElementById('flashInput') || document.querySelector('#flashChat textarea');
+        var text = input ? input.value : '';
+        if (text && text.trim()) window.ccTraceStart(text.trim());
+      } catch (err) {}
+    }, true);
+
+    // Also Enter key
+    document.addEventListener('keydown', function(e) {
+      if (e.key !== 'Enter' || e.shiftKey) return;
+      var input = e.target;
+      if (!input || (input.id !== 'flashInput' && !input.closest('#flashChat'))) return;
+      try {
+        var text = input.value;
+        if (text && text.trim()) window.ccTraceStart(text.trim());
+      } catch (err) {}
+    }, true);
+
+    window.__ccSendPatched = true;
+  }
+  setInterval(tryPatchSession, 800);
+
+  // When bot message appears, end trace
+  function observeMsgs() {
+    var box = document.getElementById('flashMessages');
+    if (!box || box.__ccTraceObs) return;
+    box.__ccTraceObs = true;
+    new MutationObserver(function(muts) {
+      muts.forEach(function(mu) {
+        mu.addedNodes.forEach(function(n) {
+          if (n.nodeType !== 1) return;
+          if (n.id === 'ccAgentTrace') return;
+          if (n.classList && (n.classList.contains('message') || n.classList.contains('msg'))) {
+            // delay slightly so steps visible
+            setTimeout(function(){ window.ccTraceEnd(); }, 200);
+          }
+        });
+      });
+    }).observe(box, { childList: true });
+  }
+  setTimeout(observeMsgs, 600);
+  setTimeout(observeMsgs, 2500);
+
+  // Instrument fetch to /api/chat for search steps
+  if (!window.__ccFetchTrace) {
+    window.__ccFetchTrace = true;
+    var ofetch = window.fetch;
+    window.fetch = function(url, opts) {
+      try {
+        var u = String(url || '');
+        if (u.indexOf('/api/chat') >= 0) {
+          window.ccTracePush && window.ccTracePush('Writing answer…');
+        }
+        if (u.indexOf('/api/vision') >= 0) {
+          window.ccTracePush && window.ccTracePush('Reading image…');
+        }
+        if (u.indexOf('/api/search') >= 0 || u.indexOf('nova') >= 0) {
+          window.ccTracePush && window.ccTracePush('Searching Nova…');
+        }
+      } catch (e) {}
+      return ofetch.apply(this, arguments).then(function(res) {
+        try {
+          var u = String(url || '');
+          if (u.indexOf('/api/chat') >= 0 && window.CC && window.CC.Trace && window.CC.Trace.level === 'agent') {
+            window.ccTracePush && window.ccTracePush('Comparing sources…');
+          }
+        } catch (e) {}
+        return res;
+      });
+    };
+  }
+
+  // Rate limit banners for tiers from server
+  window.ccHandleRateTier = function(data) {
+    if (!data) return;
+    var tier = data.tier || '';
+    var count = data.count || 0;
+    var left = data.left;
+    if (tier === 'warn60' || (count >= 60 && count < 130)) {
+      if (typeof showLimitBanner === 'function')
+        showLimitBanner('You have used ' + count + ' of 170 free messages. Limit at 170 → 3 hour wait.');
+      else if (typeof showToast === 'function')
+        showToast('Warning: ' + count + '/170 free messages');
+    }
+    if (tier === 'warn130' || (count >= 130 && count < 170)) {
+      if (typeof showLimitBanner === 'function')
+        showLimitBanner('Warning: ' + count + '/170 messages. At 170 the limit locks for 3 hours.');
+      else if (typeof showToast === 'function')
+        showToast('Warning: ' + count + '/170 — approaching limit');
+    }
+  };
+})();
+</script>
+
+<script id="cc-landing-polish">
+(function(){
+  // Soft English landing tweaks without breaking structure
+  function polish() {
+    var h = document.querySelector('#landingScreen h1, #welcomeScreen h1, .landing-box h1');
+    if (h && /ChatClaud/i.test(h.textContent) && h.textContent.length < 40) {
+      /* keep */
+    }
+    var tag = document.querySelector('.landing-tag, #landingTag');
+    if (tag) tag.textContent = 'Chat · Code · Search · Create';
+    var sub = document.querySelector('.landing-sub, .welcome-sub');
+    if (sub && /помощник|Мгновен/i.test(sub.textContent)) sub.textContent = 'Your AI workspace — search, code, images, live.';
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', polish);
+  else setTimeout(polish, 300);
 })();
 </script>
 
