@@ -8378,7 +8378,18 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
             return true;
         }
         function bumpExpertMsg() {
-            const u = getUsage(); var add = typeof estimateTokens === 'function' ? estimateTokens(window.__ccLastSendText || '') : 3; u.tokens = (u.tokens || 0) + add; u.expertMsgs = (u.expertMsgs || 0) + 1; saveUsage(u); window.__ccLastSendText = '';
+            const u = getUsage();
+            var src = window.__ccLastSendText || '';
+            var add = typeof estimateTokens === 'function' ? estimateTokens(src) : 3;
+            if (!add || add < 1) add = 3;
+            u.tokens = (u.tokens || 0) + add;
+            u.expertMsgs = (u.expertMsgs || 0) + 1;
+            saveUsage(u);
+            window.__ccLastSendText = '';
+            try {
+              var el = document.getElementById('usageExpert');
+              if (el) el.textContent = (u.tokens || 0) + ' / ' + (typeof getTokenLimit === 'function' ? getTokenLimit() : 170);
+            } catch (e) {}
         }
         function checkImageLimit() {
             const u = getUsage(); const lim = getLimits();
@@ -9876,6 +9887,7 @@ function buildImageUrl(userPrompt, opts) {
                 }
                 if (!this.input) return;
                 let text = this.input.value.trim();
+                try { window.__ccLastSendText = text || ''; } catch (e) {}
                 try { if (text && window.CC && window.CC.UI && window.CC.UI.tryLocalCommand && window.CC.UI.tryLocalCommand(text)) { /* theme etc applied */ } } catch (e) {}
                 if (!text && !this.currentFileText && !this.currentImageB64) return;
 
@@ -9902,7 +9914,7 @@ function buildImageUrl(userPrompt, opts) {
                     const badge = document.getElementById('trialBadge');
                     if (badge) badge.textContent = 'Пробный режим · осталось ' + Math.max(0, trialLeft) + ' сообщ.';
                 }
-                if (this.providerKey === 'expert' && !checkExpertLimit()) return;
+                if ((this.providerKey === 'expert' || this.providerKey === 'flash') && !checkExpertLimit()) return;
                 if (typeof ccIsAdminUnlock === 'function' && await ccIsAdminUnlock(text)) {
                     showAdminPanel(); this.input.value = ''; return;
                 }
@@ -10250,7 +10262,7 @@ function buildImageUrl(userPrompt, opts) {
                     this.isGenerating = false; try { document.body.classList.remove('is-generating'); } catch(e) {};
                     this.setStopVisible(false);
                     this.currentFileText = null; this.currentImageB64 = null;
-                    if (this.providerKey === 'expert') bumpExpertMsg();
+                    if (this.providerKey === 'expert' || this.providerKey === 'flash') bumpExpertMsg(); try { if (typeof updateUsageUI === 'function') updateUsageUI(); else if (typeof refreshUsageUI === 'function') refreshUsageUI(); } catch(e) {}
                     this.saveActiveSession();
                     globalSettings.tokenStats.tokens += accumulatedText.length;
                     saveSettings();
@@ -15498,6 +15510,58 @@ body.cc-bg-light #flashMessages .message.user {
   padding: 0.6rem 0.75rem !important;
 }
 .cc-sources-list a { color: #7eb6ff !important; }
+</style>
+
+
+<style id="cc-input-fix-v2">
+/* Kill ALL frames on composer */
+#flashChat .input-row,
+#flashChat .input-shell,
+#flashChat .composer,
+#flashChat form.input-row,
+#flashChat .bottom-bar,
+#flashChat .chat-input-wrap {
+  border: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  outline: none !important;
+  background: rgba(14,14,16,0.72) !important;
+  box-shadow: 0 22px 55px rgba(0,0,0,0.7) !important;
+  backdrop-filter: blur(30px) !important;
+  -webkit-backdrop-filter: blur(30px) !important;
+  border-radius: 1.55rem !important;
+}
+#flashChat .input-row textarea,
+#flashChat .input-shell textarea,
+#flashChat textarea,
+#flashChat #flashInput {
+  border: none !important;
+  border-width: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  border-radius: 1rem !important;
+}
+#flashChat .input-row textarea:focus,
+#flashChat textarea:focus {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+/* Side wall depth */
+#flashChat .chat-layout {
+  box-shadow:
+    inset 18px 0 28px -18px rgba(0,0,0,0.85),
+    inset -18px 0 28px -18px rgba(0,0,0,0.85) !important;
+}
+#flashMessages .message.user {
+  box-shadow: 0 12px 36px rgba(0,0,0,0.6) !important;
+}
+/* remove old purple focus ring rules for input */
+.input-row textarea:focus {
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
 </style>
 
 </body>
