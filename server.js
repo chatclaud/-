@@ -460,17 +460,25 @@ function hfKeys() {
   Object.keys(process.env).forEach(k => { if (/^HF_/i.test(k) || /HUGGINGFACE/i.test(k)) push(process.env[k]); });
   return out;
 }
+
 async function hfVision(imageDataUrl, prompt) {
   const keys = hfKeys();
-  if (!keys.length) throw new Error('no hf vision');
+  if (!keys.length) throw new Error('no hf vision — set HF_KEY in Render');
+  let dataUrl = String(imageDataUrl || '');
+  // strip whitespace
+  dataUrl = dataUrl.trim();
+  if (dataUrl.length > 2_500_000) {
+    // too large for many routers — still try but warn
+    console.log('[vision] large payload', dataUrl.length);
+  }
   const models = [
-    'zai-org/GLM-4.5V:fastest',
-    'Qwen/Qwen2.5-VL-72B-Instruct:fastest',
-    'Qwen/Qwen2.5-VL-32B-Instruct:fastest',
-    'meta-llama/Llama-3.2-90B-Vision-Instruct:fastest',
     'Qwen/Qwen2.5-VL-7B-Instruct:fastest',
+    'zai-org/GLM-4.5V:fastest',
+    'Qwen/Qwen2.5-VL-32B-Instruct:fastest',
+    'meta-llama/Llama-3.2-11B-Vision-Instruct:fastest',
+    'Qwen/Qwen2.5-VL-72B-Instruct:fastest',
   ];
-  const visionPrompt = prompt || 'Опиши изображение по-русски.';
+  const visionPrompt = prompt || 'Describe this image in detail in English. Be accurate.';
   let lastErr = 'empty';
   for (const key of keys) {
     for (const model of models) {
@@ -479,20 +487,22 @@ async function hfVision(imageDataUrl, prompt) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
           body: JSON.stringify({
-            model, max_tokens: 400,
+            model, max_tokens: 500, temperature: 0.2,
             messages: [{ role: 'user', content: [
               { type: 'text', text: visionPrompt },
-              { type: 'image_url', image_url: { url: imageDataUrl } },
+              { type: 'image_url', image_url: { url: dataUrl } },
             ]}],
           }),
-        });
+        }, 90000);
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
           lastErr = (data.error && (data.error.message || data.error)) || ('HF ' + res.status);
+          console.log('[vision] fail', model, lastErr);
           continue;
         }
         const t = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-        if (t && String(t).trim().length > 8) return { text: String(t).trim(), provider: 'hf-vis:' + model };
+        if (t && String(t).trim().length > 5) return { text: String(t).trim(), provider: 'hf-vis:' + model };
+        lastErr = 'empty content';
       } catch (e) { lastErr = e.message || String(e); }
     }
   }
@@ -1326,7 +1336,7 @@ const server = http.createServer(async (req, res) => {
         console.log('[vision] SUCCESS via', result.provider);
       } catch (e) {
         console.log('[vision] FAILED ->', e.message || e);
-        return send(res, 503, { error: 'Vision недоступен: ' + String(e.message || e).slice(0, 180) });
+        return send(res, 503, { error: 'Vision unavailable: ' + String(e.message || e).slice(0, 180) + ' (check HF_KEY on Render)' });
       }
       return send(res, 200, result);
     } catch (e) {

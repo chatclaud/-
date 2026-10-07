@@ -3748,6 +3748,16 @@ setTimeout(function() {
 
 </head>
 <body>
+<!--
+  ChatClaud BLOCK MAP (edit by section, don't mix):
+  1) CSS variables & base
+  2) Screens: welcome / landing / chat / settings
+  3) ChatSession JS
+  4) Search needsWebSearch
+  5) LiveChat
+  6) CANONICAL overrides at end: cc-canon-ui, vision, UI control, omega search server-side
+-->
+
 <div id="appSkeleton" class="screen" style="z-index:999; background:#000;">
         <div style="width:340px;height:260px;background:linear-gradient(90deg,rgba(255,255,255,0.02)25%,rgba(167,139,250,0.1)50%,rgba(255,255,255,0.02)75%);background-size:200% 100%;animation:skeleton-loading 2s infinite ease-in-out;border-radius:1.5rem;margin:0 auto;"></div>
         <style>@keyframes skeleton-loading{0%{background-position:200% 0}100%{background-position:-200% 0}}
@@ -6816,7 +6826,7 @@ body {
     <!-- МОДАЛЬНЫЕ ОКНА -->
     <div id="privacyModal" class="modal-overlay">
         <div class="modal-box" style="max-width:500px;max-height:80vh;overflow-y:auto;text-align:left;padding:1.5rem;">
-            <h3 style="color:#fff;text-align:center;margin-bottom:1rem;">Политика конфиденциальности</h3>
+            <h3 style="color:#fff;text-align:center;margin-bottom:1rem;">Privacy Policy</h3>
             <div style="font-size:0.85rem;color:#ccc;line-height:1.5;">
                 <p>Настоящий документ регулирует условия использования Сервиса ChatClaud.</p>
                 <p><strong>1. Общие положения:</strong> Используя Сервис, вы соглашаетесь со всеми условиями.</p>
@@ -6991,8 +7001,8 @@ body {
                     GitHub
                 </button>
             </div>
-            <input type="email" class="field" id="emailInput" placeholder="Type a message…" autocomplete="email">
-            <input type="password" class="field" id="passwordInput" placeholder="Type a message…" autocomplete="current-password">
+            <input type="email" class="field" id="emailInput" placeholder="Email" autocomplete="email">
+            <input type="password" class="field" id="passwordInput" placeholder="Password" autocomplete="current-password">
             <label class="agree-row" id="agreeRow" for="agreeTerms">
                 <input type="checkbox" id="agreeTerms" name="agreeTerms">
                 <span class="agree-box" aria-hidden="true"></span>
@@ -9845,7 +9855,9 @@ function buildImageUrl(userPrompt, opts) {
                     } else return;
                 }
                 if (!this.input) return;
-                let text = this.input.value.trim(); if (!text && !this.currentFileText && !this.currentImageB64) return;
+                let text = this.input.value.trim();
+                try { if (text && window.CC && window.CC.UI && window.CC.UI.tryLocalCommand && window.CC.UI.tryLocalCommand(text)) { /* theme etc applied */ } } catch (e) {}
+                if (!text && !this.currentFileText && !this.currentImageB64) return;
 
                 if (typeof trialMode !== 'undefined' && trialMode) {
                     const t = (this.input.value || '').trim();
@@ -14625,6 +14637,245 @@ body.cc-bg-light .input-shell, body.cc-bg-light .input-row {
       setTimeout(function(){ if (!list.classList.contains('cc-open')) list.hidden = true; }, 320);
     }
   }, true);
+})();
+</script>
+
+
+<!-- ========== BLOCK: CANONICAL UI (wins over old CSS) ========== -->
+<style id="cc-canon-ui">
+/* --- Architecture markers: THEME | MSG | INPUT | LANDING | VISION | SEARCH --- */
+
+/* Messages: soft shadow, no contour on bot */
+#flashChat .message.bot,
+#flashChat .msg.bot,
+#flashChat .bot-msg,
+#flashMessages .message.bot {
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  max-width: 92% !important;
+  padding: 0.35rem 0.15rem !important;
+  color: rgba(255,255,255,0.92) !important;
+}
+#flashChat .message.user,
+#flashChat .msg.user,
+#flashMessages .message.user {
+  border: none !important;
+  background: rgba(255,255,255,0.12) !important;
+  box-shadow:
+    0 4px 6px rgba(0,0,0,0.2),
+    0 12px 28px rgba(0,0,0,0.35) !important;
+  color: #fff !important;
+  border-radius: 1.15rem 1.15rem 0.35rem 1.15rem !important;
+  padding: 0.7rem 1rem !important;
+  max-width: 85% !important;
+}
+body.cc-bg-light #flashChat .message.user {
+  background: #fff !important;
+  color: #111 !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.06) !important;
+}
+body.cc-bg-light #flashChat .message.bot { color: #1c1c1e !important; }
+
+/* Top bar: cut-out / transparent */
+#flashChat .top-bar {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Input: solid glass only chrome */
+#flashChat .input-shell,
+#flashChat .input-row {
+  background: rgba(18,18,22,0.78) !important;
+  backdrop-filter: blur(30px) saturate(1.35) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(1.35) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  box-shadow:
+    0 16px 48px rgba(0,0,0,0.5),
+    inset 0 1px 0 rgba(255,255,255,0.06) !important;
+  border-radius: 1.35rem !important;
+}
+body.cc-bg-light #flashChat .input-shell,
+body.cc-bg-light #flashChat .input-row {
+  background: rgba(255,255,255,0.92) !important;
+  border-color: rgba(0,0,0,0.08) !important;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.1) !important;
+}
+
+/* 3D Themes high contrast */
+#flashChat .chat-layout {
+  background: #030303 !important;
+}
+body.cc-bg-light #flashChat .chat-layout {
+  background: #e8e8ed !important;
+}
+body.cc-bg-wave #flashChat .chat-layout {
+  background-color: #000 !important;
+  background-image:
+    radial-gradient(ellipse 120% 70% at 50% 125%, rgba(255,255,255,0.22) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 10% 90%, rgba(200,200,220,0.1) 0%, transparent 50%),
+    linear-gradient(180deg, #000 0%, #0a0a0e 100%) !important;
+}
+body.cc-bg-blue #flashChat .chat-layout {
+  background-color: #000510 !important;
+  background-image:
+    radial-gradient(ellipse 120% 70% at 50% 125%, rgba(40,130,255,0.4) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 40% at 90% 70%, rgba(60,100,255,0.15) 0%, transparent 50%),
+    linear-gradient(180deg, #000208 0%, #001028 100%) !important;
+}
+
+/* Landing English polish */
+#landingScreen .landing-box h1 {
+  letter-spacing: -0.04em !important;
+}
+#landingScreen .landing-tag { color: rgba(255,255,255,0.5) !important; }
+
+/* Slash menu English already */
+</style>
+
+<script id="cc-canon-vision">
+/* BLOCK: VISION — compress + call /api/vision reliably */
+(function(){
+  function compressDataUrl(dataUrl, maxW, quality) {
+    return new Promise(function(resolve) {
+      try {
+        var img = new Image();
+        img.onload = function() {
+          var w = img.width, h = img.height;
+          var scale = Math.min(1, (maxW || 1280) / Math.max(w, h));
+          var cw = Math.round(w * scale), ch = Math.round(h * scale);
+          var c = document.createElement('canvas');
+          c.width = cw; c.height = ch;
+          var ctx = c.getContext('2d');
+          ctx.drawImage(img, 0, 0, cw, ch);
+          resolve(c.toDataURL('image/jpeg', quality || 0.82));
+        };
+        img.onerror = function() { resolve(dataUrl); };
+        img.src = dataUrl;
+      } catch (e) { resolve(dataUrl); }
+    });
+  }
+
+  window.CC = window.CC || {};
+  window.CC.Vision = window.CC.Vision || {};
+  window.CC.Vision.describe = async function(dataUrl) {
+    if (!dataUrl || dataUrl.length < 40) throw new Error('No image');
+    var small = await compressDataUrl(dataUrl, 1280, 0.8);
+    var url = (window.ccApiUrl && window.ccApiUrl('/api/vision')) || 'https://chatclaud.onrender.com/api/vision';
+    var res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        image: small,
+        prompt: 'Describe this image in clear English. Be specific about objects, text, people, and setting. Do not mention APIs.'
+      })
+    });
+    var raw = await res.text();
+    var data = {};
+    try { data = JSON.parse(raw); } catch (e) {
+      throw new Error('Vision returned non-JSON. Is server.js deployed on Render?');
+    }
+    if (!res.ok) throw new Error(data.error || ('Vision HTTP ' + res.status));
+    var text = data.text || data.description || '';
+    if (!text) throw new Error('Empty vision response');
+    return text;
+  };
+
+  // Override global helpers
+  window.describeImageForChat = function(b64) {
+    return window.CC.Vision.describe(b64);
+  };
+  if (typeof window.analyzePhotoWithGemini === 'function') {
+    window.analyzePhotoWithGemini = function(b64, hint) {
+      return window.CC.Vision.describe(b64).then(function(t) {
+        return hint ? (hint + '\n' + t) : t;
+      });
+    };
+  }
+})();
+</script>
+
+<script id="cc-canon-ui-control">
+/* BLOCK: UI CONTROL — "change theme", "open settings" */
+(function(){
+  window.CC = window.CC || {};
+  window.CC.UI = {
+    applyTheme: function(name) {
+      var map = { dark:'classic', black:'classic', classic:'classic', light:'light', white:'light',
+        waves:'wave', wave:'wave', blue:'blue', night:'blue' };
+      var mode = map[String(name||'').toLowerCase()] || 'classic';
+      if (window.CC.Theme && window.CC.Theme.apply) window.CC.Theme.apply(mode);
+      else if (window.ccApplyChatBg) window.ccApplyChatBg(mode);
+      try { if (window.showToast) showToast('Theme: ' + mode); } catch(e) {}
+    },
+    openSettings: function() {
+      var s = document.getElementById('settingsScreen');
+      if (s) s.classList.remove('hidden');
+    },
+    newChat: function() {
+      var b = document.getElementById('flashNewChat');
+      if (b) b.click();
+    },
+    parseAndRun: function(text) {
+      if (!text) return text;
+      var t = String(text);
+      var self = this;
+      t.replace(/\[\[CC_UI:theme=([a-zA-Z]+)\]\]/gi, function(_, n) { self.applyTheme(n); return ''; });
+      t.replace(/\[\[CC_UI:settings\]\]/gi, function() { self.openSettings(); return ''; });
+      t.replace(/\[\[CC_UI:newchat\]\]/gi, function() { self.newChat(); return ''; });
+      // natural language fallback on user side is in send interceptor
+      return t.replace(/\[\[CC_UI:[^\]]+\]\]/gi, '').replace(/\n{3,}/g, '\n\n').trim();
+    }
+  };
+
+  // User types "change theme to waves" → apply immediately + still send to AI
+  document.addEventListener('click', function(){}, true);
+  function hookSend() {
+    // observe bot messages for tokens
+    var box = document.getElementById('flashMessages');
+    if (!box || box.__ccUiObs) return;
+    box.__ccUiObs = true;
+    new MutationObserver(function(muts) {
+      muts.forEach(function(mu) {
+        mu.addedNodes.forEach(function(n) {
+          if (n.nodeType !== 1) return;
+          var text = n.innerText || '';
+          if (/\[\[CC_UI:/.test(text)) {
+            window.CC.UI.parseAndRun(text);
+            if (n.innerHTML) n.innerHTML = n.innerHTML.replace(/\[\[CC_UI:[^\]]+\]\]/gi, '');
+          }
+        });
+      });
+    }).observe(box, { childList: true, subtree: true });
+  }
+  setTimeout(hookSend, 500);
+  setTimeout(hookSend, 2000);
+
+  // Local instant UI commands before send
+  window.CC.UI.tryLocalCommand = function(text) {
+    var t = String(text || '').trim();
+    var m = t.match(/^(?:change|set|switch)\s+theme\s+(?:to\s+)?(dark|light|waves?|blue|black|white|classic)/i)
+      || t.match(/^(?:смени|поставь|включи)\s+тем[уы]\s+(?:на\s+)?(т[её]мн|светл|волн|син|dark|light|wave|blue)/i);
+    if (m) {
+      var name = m[1];
+      if (/т[её]мн|black|dark|classic/i.test(name)) name = 'dark';
+      else if (/светл|white|light/i.test(name)) name = 'light';
+      else if (/волн|wave/i.test(name)) name = 'waves';
+      else if (/син|blue/i.test(name)) name = 'blue';
+      window.CC.UI.applyTheme(name);
+      return true;
+    }
+    if (/^(open settings|open settings|открой настройки)$/i.test(t)) {
+      window.CC.UI.openSettings();
+      return true;
+    }
+    return false;
+  };
 })();
 </script>
 
