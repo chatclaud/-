@@ -7045,7 +7045,7 @@ body {
                 </div>
             </div>
             <div class="settings-section">
-                <div class="settings-token"><span>Pro messages today</span><span id="usageExpert">0</span></div>
+                <div class="settings-token"><span>Tokens today</span><span id="usageExpert">0 / 170</span></div>
                 <div class="settings-token"><span>Images today</span><span id="usageImages">0</span></div>
                 <div class="settings-token"><span>Videos today</span><span id="usageVideos">0</span></div>
             </div>
@@ -7078,16 +7078,16 @@ body {
             <button type="button" class="btn-black" id="copyUsernameBtn" style="width:100%;margin-top:0.45rem;background:transparent;border:1px solid var(--border);font-size:0.85rem;">Copy username for bot</button>
             <p id="plusHintText" style="font-size:0.72rem;color:#888;margin:0.5rem 0 0;line-height:1.4;">After paying with Stars, the bot will ask for your username — paste the one you copied.</p>
             <div class="settings-section">
-                <label style="font-size:0.75rem;color:#888;">Написать администратору</label>
+                <label style="font-size:0.75rem;color:#888;">Message admin</label>
                 <textarea id="adminReportInput" class="field" rows="3" placeholder="Bug or question..." style="resize:vertical;min-height:70px;"></textarea>
-                <button class="btn-black" id="sendAdminReportBtn" style="margin-top:0.5rem;width:100%;">Отправить</button>
+                <button class="btn-black" id="sendAdminReportBtn" style="margin-top:0.5rem;width:100%;">Send</button>
             </div>
             <div class="settings-section">
                 <button class="btn-black" id="settingsNewChatBtn" style="width:100%;margin-bottom:0.45rem;">New chat</button>
-                <button class="btn-black" id="settingsClearChatsBtn" style="width:100%;margin-bottom:0.45rem;background:transparent;border:1px solid var(--border);">Очистить историю чатов</button>
-                <button class="btn-black" id="settingsClearGalleryBtn" style="width:100%;margin-bottom:0.45rem;background:transparent;border:1px solid var(--border);">Очистить галерею</button>
+                <button class="btn-black" id="settingsClearChatsBtn" style="width:100%;margin-bottom:0.45rem;background:transparent;border:1px solid var(--border);">Clear chat history</button>
+                <button class="btn-black" id="settingsClearGalleryBtn" style="width:100%;margin-bottom:0.45rem;background:transparent;border:1px solid var(--border);">Clear gallery</button>
             </div>
-            <button class="btn-black" id="logoutBtn" style="margin-top:0.5rem;width:100%;">Sign out из аккаунта</button>
+            <button class="btn-black" id="logoutBtn" style="margin-top:0.5rem;width:100%;">Sign out</button>
             <button class="btn-black" id="settingsBackBtn" style="margin-top:0.5rem;width:100%;background:transparent;border:1px solid var(--border);">Back</button>
         </div>
     </div>
@@ -7224,7 +7224,7 @@ body {
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
                         </button>
                         <button type="button" class="stop-gen-btn" id="flashStopBtn" title="Стоп"><svg viewBox="0 0 24 24" width="12" height="12"><rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor"/></svg></button>
-                        <button class="send-icon" id="flashSend" title="Отправить"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+                        <button class="send-icon" id="flashSend" title="Send"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
                     </div>
                 </div>
             </div>
@@ -7708,6 +7708,10 @@ if (typeof window.ccApiUrl !== 'function') {
             }
             if (/401|403|auth|unauthor|invalid.*key|ключ/i.test(s)) {
                 return 'Render отклонил ключ провайдера. Проверь имя переменной, сам ключ и лимиты аккаунта.';
+            }
+            if (/overloaded|NO_PROVIDER|503/i.test(s) || (data && data.code === 'OVERLOADED') || (data && data.code === 'NO_PROVIDER')) {
+              if (typeof showLimitBanner === 'function') showLimitBanner('ChatClaud is overloaded right now. Please try again later.');
+              else if (typeof showToast === 'function') showToast('ChatClaud is overloaded. Try later.');
             }
             if (/rate|limit|429|TPM|TPD|quota|credit/i.test(s)) {
                 try { if (typeof showLimitBanner === 'function') try { showToast('Повтори через пару sec'); } catch(e) {} } catch(e) {}
@@ -8197,6 +8201,17 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
             return false;
         }
 
+        
+        function estimateTokens(text) {
+            var t = String(text || '');
+            if (t.length > 500 || (t.match(/\n/g) || []).length > 4) return 12;
+            if (t.length > 180) return 8;
+            return 3;
+        }
+        function getTokenLimit() {
+            return isPlus() ? 600 : 170;
+        }
+
         function isPlus() {
             if (globalSettings.plusUntil) {
                 try { if (new Date(globalSettings.plusUntil).getTime() > Date.now()) return true; } catch(e) {}
@@ -8337,9 +8352,9 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
         function getUsage() {
             try {
                 const u = JSON.parse(localStorage.getItem('chatclaud_usage') || '{}');
-                if (u.day !== todayKey()) return { day: todayKey(), expertMsgs: 0, images: 0, videos: 0 };
+                if (u.day !== todayKey()) return { day: todayKey(), expertMsgs: 0, tokens: 0, images: 0, videos: 0 };
                 return u;
-            } catch (e) { return { day: todayKey(), expertMsgs: 0, images: 0, videos: 0 }; }
+            } catch (e) { return { day: todayKey(), expertMsgs: 0, tokens: 0, images: 0, videos: 0 }; }
         }
         function saveUsage(u) { localStorage.setItem('chatclaud_usage', JSON.stringify(u)); }
         function getLimits() {
@@ -8348,14 +8363,22 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
         }
         function checkExpertLimit() {
             const u = getUsage(); const lim = getLimits();
-            if (u.expertMsgs >= lim.expertMsgs) {
-                showToast(isPlus() ? 'Limit Plus: 300 messages/window' : 'Limit Free: 170 messages. Plus unlocks more.');
+            var tok = (u.tokens || 0);
+            var maxT = getTokenLimit();
+            if (tok >= maxT) {
+                showToast(isPlus() ? 'Token limit reached. Wait or upgrade Plus.' : 'Free limit: 170 tokens used. Wait 3 hours or get Plus.');
+                if (typeof showLimitBanner === 'function') showLimitBanner('ChatClaud free tokens exhausted (170). Try again in ~3 hours or get Plus.');
                 return false;
+            }
+            if (!isPlus() && tok >= 130) {
+                if (typeof showLimitBanner === 'function') showLimitBanner('Warning: ' + tok + '/170 tokens. Limit locks at 170 for 3 hours.');
+            } else if (!isPlus() && tok >= 60) {
+                if (typeof showLimitBanner === 'function') showLimitBanner('You have used ' + tok + ' of 170 free tokens.');
             }
             return true;
         }
         function bumpExpertMsg() {
-            const u = getUsage(); u.expertMsgs = (u.expertMsgs || 0) + 1; saveUsage(u);
+            const u = getUsage(); var add = typeof estimateTokens === 'function' ? estimateTokens(window.__ccLastSendText || '') : 3; u.tokens = (u.tokens || 0) + add; u.expertMsgs = (u.expertMsgs || 0) + 1; saveUsage(u); window.__ccLastSendText = '';
         }
         function checkImageLimit() {
             const u = getUsage(); const lim = getLimits();
@@ -8431,7 +8454,7 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
             const u = getUsage();
             const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
             const lim = getLimits();
-            set('usageExpert', `${u.expertMsgs || 0} / ${lim.expertMsgs}`);
+            set('usageExpert', `${u.tokens || 0} / ${typeof getTokenLimit === 'function' ? getTokenLimit() : lim.expertMsgs}`);
             set('usageImages', isPlus() ? `${u.images || 0} / безлимит` : `${u.images || 0} / ${lim.images}`);
             set('usageVideos', isPlus() ? `${u.videos || 0} / ${lim.videos}` : 'Plus');
         }
@@ -8439,7 +8462,7 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
 
         // ==================== ЛОКАЛИЗАЦИЯ ====================
         const translations = {
-            ru: { welcome: 'Добро пожаловать', namePlaceholder: 'Your name', continue: 'Continue', newChat: '+ новый', back: '← выход', clearChat: 'Очистить чат', exportChats: 'Экспорт чатов', importChats: 'Импорт чатов', search: 'Search chats...', lightTheme: 'Light тема', darkTheme: 'Dark тема', deploy: 'Задеплоить проект', personaDefault: 'Нейтральный', personaHarsh: 'Дерзкий', personaCustom: 'Свой промпт', langLabel: 'Язык интерфейса', send: 'Отправить', inputPlaceholder: 'Type a message…' },
+            ru: { welcome: 'Добро пожаловать', namePlaceholder: 'Your name', continue: 'Continue', newChat: '+ новый', back: '← выход', clearChat: 'Очистить чат', exportChats: 'Экспорт чатов', importChats: 'Импорт чатов', search: 'Search chats...', lightTheme: 'Light тема', darkTheme: 'Dark тема', deploy: 'Задеплоить проект', personaDefault: 'Нейтральный', personaHarsh: 'Дерзкий', personaCustom: 'Свой промпт', langLabel: 'Язык интерфейса', send: 'Send', inputPlaceholder: 'Type a message…' },
             en: { welcome: 'Welcome', namePlaceholder: 'Your name', continue: 'Continue', newChat: '+ new', back: '← back', clearChat: 'Clear chat', exportChats: 'Export chats', importChats: 'Import chats', search: 'Search chat...', lightTheme: 'Light theme', darkTheme: 'Dark theme', deploy: 'Deploy project', personaDefault: 'Neutral', personaHarsh: 'Harsh', personaCustom: 'Custom prompt', langLabel: 'Language', send: 'Send', inputPlaceholder: 'Type your message...' }
         };
         let currentLang = globalSettings.lang || 'ru';
@@ -12511,7 +12534,7 @@ function buildImageUrl(userPrompt, opts) {
                 }
                 if (t.closest('#settingsClearChatsBtn')) {
                     ev.preventDefault();
-                    if (!confirm('Очистить все чаты на этом устройстве?')) return;
+                    if (!confirm('Clear all chats on this device?')) return;
                     try {
                         localStorage.removeItem('chatclaud_sessions_flash');
                         localStorage.removeItem('chatclaud_sessions');
@@ -15131,7 +15154,7 @@ body.cc-bg-light #flashMessages .message.user {
       if (level === 'agent') {
         if (/^\/(img|veo|gif)\b/i.test(text)) window.CC.Trace.push('Preparing image pipeline…');
         else if (/https?:\/\//i.test(text)) window.CC.Trace.push('Opening link…');
-        else window.CC.Trace.push('Searching Nova…');
+        else { window.CC.Trace.push('Question → Search'); window.CC.Trace.push('Searching Nova…'); }
       } else if (level === 'reason') {
         window.CC.Trace.push('Reasoning…');
       }
@@ -15232,6 +15255,7 @@ body.cc-bg-light #flashMessages .message.user {
         try {
           var u = String(url || '');
           if (u.indexOf('/api/chat') >= 0 && window.CC && window.CC.Trace && window.CC.Trace.level === 'agent') {
+            window.ccTracePush && window.ccTracePush('Analyze → Verify');
             window.ccTracePush && window.ccTracePush('Comparing sources…');
           }
         } catch (e) {}
@@ -15409,6 +15433,72 @@ body.cc-bg-light #flashMessages .message.user {
   };
 })();
 </script>
+
+
+<style id="cc-input-naked">
+#flashChat .input-shell,
+#flashChat .input-row,
+#flashChat .composer,
+#flashChat .input-wrap {
+  background: rgba(16,16,18,0.7) !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.65) !important;
+  border-radius: 1.5rem !important;
+}
+#flashChat .input-shell::before,
+#flashChat .input-row::before { display: none !important; }
+#flashChat textarea,
+#flashChat .input-row textarea {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+/* soft side depth on chat */
+#flashMessages {
+  padding-left: 0.85rem !important;
+  padding-right: 0.85rem !important;
+}
+#flashMessages .message.user {
+  box-shadow: 0 10px 32px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.3) !important;
+}
+</style>
+
+<style id="cc-sources-book">
+.cc-sources-toggle {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.4rem !important;
+  border: none !important;
+  background: rgba(255,255,255,0.06) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35) !important;
+  border-radius: 999px !important;
+  padding: 0.35rem 0.75rem !important;
+  color: rgba(255,255,255,0.7) !important;
+  font-size: 0.78rem !important;
+}
+.cc-sources-list {
+  overflow: hidden !important;
+  max-height: 0 !important;
+  opacity: 0 !important;
+  transform: rotateX(-12deg) scaleY(0.92) !important;
+  transform-origin: top center !important;
+  transition: max-height 0.4s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1) !important;
+  background: rgba(20,20,22,0.9) !important;
+  border: none !important;
+  border-radius: 0.85rem !important;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.5) !important;
+}
+.cc-sources-list.cc-open {
+  max-height: 480px !important;
+  opacity: 1 !important;
+  transform: none !important;
+  margin-top: 0.4rem !important;
+  padding: 0.6rem 0.75rem !important;
+}
+.cc-sources-list a { color: #7eb6ff !important; }
+</style>
 
 </body>
 </html>

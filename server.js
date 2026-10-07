@@ -850,6 +850,7 @@ async function webSearch(q, type) {
   // clean commands from query
   let query = String(q || '').trim()
     .replace(/^\/(search|find|seasch|nova)\s*/ig, '')
+    .replace(/^(earch|search)\s+/ig, '')
     .replace(/^(найди|поищи|загугли|погугли|search|find|look\s*up|google)\s+/ig, '')
     .trim()
     .slice(0, 300);
@@ -1257,7 +1258,7 @@ const server = http.createServer(async (req, res) => {
       }
       if (!result || !result.text) {
         return send(res, 503, {
-          error: 'Сервер не подключён к рабочему каналу ИИ.',
+          error: 'ChatClaud is overloaded right now. Please try again later.',
           code: 'NO_PROVIDER',
           details: failures.slice(0, 6),
         });
@@ -1269,7 +1270,7 @@ const server = http.createServer(async (req, res) => {
       result.sources = novaSourcesForClient;
       return send(res, 200, result);
     } catch (e) {
-      return send(res, 503, { error: e.message || 'ChatClaud сервер перегружен.' });
+      return send(res, 503, { error: 'ChatClaud is overloaded right now. Please try again later.', code: 'OVERLOADED' });
     }
   }
 
