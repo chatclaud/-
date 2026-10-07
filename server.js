@@ -559,13 +559,23 @@ function sanitizeProviderIdentity(text){
 }
 
 const CC_SYSTEM = `You are ChatClaud — independent AI by milanmichaimilan / ChatClaud.
-Today is October 5, 2026 (use real current date when asked; never invent September 13 2026 unless search says so).
+Today is October 6, 2026. Never invent wrong dates.
 Never claim to be OpenAI, GPT, Claude, Anthropic, Gemini, Google, Grok, xAI, Llama, Meta, Mistral, Groq, DeepSeek, Copilot, OpenRouter or any third-party API.
 If asked who you are: "I'm ChatClaud."
-Match user language (English or Russian).
-When Live web results are provided, USE them, prefer facts from those sources, and mention links when helpful.
-Commands: /search /find /img /veo /plus /settings.
-Be direct and useful.`;
+
+BROWSING (CRITICAL):
+- You CAN open links and check sites through ChatClaud Browser (Nova). Never say "I cannot open links", "I cannot watch videos", "limitation of my system".
+- When [Свежие данные] / page context / video metadata is in the message — USE it as ground truth.
+- For TikTok/YouTube/Instagram links: use title, channel, description, subtitles if present. Summarize what the video is about from that data.
+- If search returned little data: still answer helpfully from what you have; offer to refine keywords. Do NOT claim zero capability.
+- Prefer multi-source answers when several URLs are listed.
+
+SEARCH: /search, /nova, "search …", "найди …" trigger live web. Cite sources when available.
+
+IMAGE GEN: only what the user asked. Never default to random female portraits.
+
+Match user language. Be direct and useful.
+Commands: /search /find /img /veo /plus /settings /translate.`;
 
 
 function mistralKeys() {
@@ -1152,6 +1162,8 @@ const server = http.createServer(async (req, res) => {
           || /^\/nova\b/i.test(q3)
           || /^(найди|поищи|загугли|погугли)\b/i.test(q3)
           || /^(search|find|look\s*up|google)\b/i.test(q3)
+          || /https?:\/\//i.test(q3)
+          || /tiktok\.com|vm\.tiktok|youtube\.com|youtu\.be|instagram\.com/i.test(q3)
           || /(поищи|найди).{0,12}(ещ[её]|again|once more)/i.test(q3)
           || /(search|find).{0,12}(again|more)/i.test(q3);
         if (/^\/(search|seasch|nova)\b/i.test(q3)) q3 = q3.replace(/^\/(search|seasch|nova)\s*/i, '').trim();
@@ -1169,7 +1181,25 @@ const server = http.createServer(async (req, res) => {
               role: 'user',
               content: lastUser3 + '\n\n[Свежие данные из веб-поиска Nova — используй для точного ответа, не выдумывай]\n' + block,
             };
+            
             novaSourcesForClient = srcs;
+            // MULTI-HOP: open top 2 pages for accuracy
+            try {
+              const urls = srcs.map(s => s.url).filter(u => u && /^https?:/i.test(u)).slice(0, 2);
+              const hopParts = [];
+              for (const u of urls) {
+                try {
+                  const page = await novaRequest('/api/fetch-url', { url: u });
+                  if (page && page.ok) {
+                    hopParts.push('[Page ' + u + ']\n' + (page.title || '') + '\n' + String(page.text || page.description || '').slice(0, 2500));
+                  }
+                } catch (e) {}
+              }
+              if (hopParts.length) {
+                trimmed[lastIdx3].content += '\n\n[Deep browse — related pages]\n' + hopParts.join('\n\n');
+              }
+            } catch (e) { console.warn('multi-hop', e.message); }
+
           } else {
             console.log('[nova-search] empty result');
           }

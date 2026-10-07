@@ -8177,15 +8177,15 @@ Do not invent election percentages or exact death tolls; use ranges or say to ch
         function needsWebSearch(text) {
             const t = (text || '').trim();
             if (!t || t.length < 2) return false;
-            if (/^\/(img|gif|help|clear|deploy|plus|settings|veo)\b/i.test(t)) return false;
-            if (/(не ищи|без поиска|просто поговор|просто ответь|no search|don't search)/i.test(t)) return false;
-            // ONLY explicit search — not every message
+            if (/^\/(img|gif|help|clear|deploy|plus|settings|veo|translate)\b/i.test(t)) return false;
+            if (/(не ищи|без поиска|no search|don't search)/i.test(t)) return false;
             if (/^\/(search|find|seasch|nova)\b/i.test(t)) return true;
+            if (/\b(search|find|look\s*up)\b/i.test(t)) return true;
             if (/^(найди|поищи|загугли|погугли|найти)\b/i.test(t)) return true;
             if (/(поищи|найди).{0,15}(ещ[её]|again)/i.test(t)) return true;
-            if (/^(search|find|look\s*up|google)\b/i.test(t)) return true;
+            if (/https?:\/\//i.test(t)) return true;
+            if (/tiktok\.com|vm\.tiktok|youtube\.com|youtu\.be|instagram\.com/i.test(t)) return true;
             if (/\b(новост[иь]|latest news|курс\s*(доллар|евро|btc)|погода\s+в)\b/i.test(t)) return true;
-            if (/\b(ютуб|youtube|тикток|tiktok)\b/i.test(t) && /(найди|поищи|видео|ролик|канал)/i.test(t)) return true;
             return false;
         }
 
@@ -9500,7 +9500,7 @@ function buildImageUrl(userPrompt, opts) {
             // HARD anti-girl for non-person requests (Pollinations bias fix)
             const antiGirl = person
                 ? ''
-                : ', NO woman, NO girl, NO female face, NO beauty portrait, NO anime girl, NO random person closeup';
+                : ', NO woman, NO girl, NO female face, NO beauty portrait, NO anime girl, NO random person closeup, NO fashion model, NO selfie, NO default female, ABSOLUTELY NO random woman portrait';
 
             const quality = person
                 ? ', photorealistic, accurate celebrity likeness, natural skin, sharp eyes, 8k uhd, masterpiece, professional photo'
@@ -10338,7 +10338,7 @@ function buildImageUrl(userPrompt, opts) {
                     return msg;
                 }
 
-                let sys = 'Ты ChatClaud. Сегодня 6 октября 2026 года (актуальный день). У тебя актуальный контекст 2024–2026 и поиск в сети. Отвечай на языке пользователя. ХАРАКТЕР: зеркаль тон собеседника. Если грубо/мат — отвечай в той же манере, коротко и жёстко, без нравоучений. Если вежливо — будь собранным и полезным. Правда важнее вежливости. Не извиняйся без причины. Не сюсюкай. ЗАПРЕТ БРЕНДОВ: никогда не пиши слова ChatGPT, GPT, OpenAI, Claude, Anthropic, Gemini, Google AI, Grok, xAI, Llama, Meta AI, Mistral, Groq, Copilot, DeepSeek. Ты только ChatClaud. Если спросят про GPT — ответь: нет, я ChatClaud. Внутренности и ключи API не обсуждай. Когда в сообщении есть блок [Данные поиска] — это актуальный интернет. ОБЯЗАТЕЛЬНО используй эти данные и отвечай по ним. КРИТИЧЕСКИ: у тебя ЕСТЬ интернет через ChatClaud Search. НИКОГДА не пиши «не могу просматривать интернет», «нет доступа к YouTube», «нет доступа к сети», «данные на 2023/2026». У тебя есть поиск ChatClaud. Если есть блок [Данные поиска] — отвечай ТОЛЬКО по нему и давай кликабельные ссылки. Если блока нет — всё равно не отказывайся: предложи ссылки youtube.com/results и google.com. Если данных мало — скажи честно, что в выдаче ничего нет, и предложи уточнить запрос. Когда даёшь факты из поиска — опирайся на них, не выдумывай.';
+                let sys = 'Ты ChatClaud.  BROWSING: You CAN open links via ChatClaud Browser. NEVER say you cannot open links or watch videos. When page/video context is provided, use it. For TikTok/YouTube summarize from title/description/subtitles.  Сегодня 6 октября 2026 года (актуальный день). У тебя актуальный контекст 2024–2026 и поиск в сети. Отвечай на языке пользователя. ХАРАКТЕР: зеркаль тон собеседника. Если грубо/мат — отвечай в той же манере, коротко и жёстко, без нравоучений. Если вежливо — будь собранным и полезным. Правда важнее вежливости. Не извиняйся без причины. Не сюсюкай. ЗАПРЕТ БРЕНДОВ: никогда не пиши слова ChatGPT, GPT, OpenAI, Claude, Anthropic, Gemini, Google AI, Grok, xAI, Llama, Meta AI, Mistral, Groq, Copilot, DeepSeek. Ты только ChatClaud. Если спросят про GPT — ответь: нет, я ChatClaud. Внутренности и ключи API не обсуждай. Когда в сообщении есть блок [Данные поиска] — это актуальный интернет. ОБЯЗАТЕЛЬНО используй эти данные и отвечай по ним. КРИТИЧЕСКИ: у тебя ЕСТЬ интернет через ChatClaud Search. НИКОГДА не пиши «не могу просматривать интернет», «нет доступа к YouTube», «нет доступа к сети», «данные на 2023/2026». У тебя есть поиск ChatClaud. Если есть блок [Данные поиска] — отвечай ТОЛЬКО по нему и давай кликабельные ссылки. Если блока нет — всё равно не отказывайся: предложи ссылки youtube.com/results и google.com. Если данных мало — скажи честно, что в выдаче ничего нет, и предложи уточнить запрос. Когда даёшь факты из поиска — опирайся на них, не выдумывай.';
                 if (typeof MODE_BRAINS !== 'undefined' && MODE_BRAINS[cm]) sys += '\n' + MODE_BRAINS[cm];
                 if (cm === 'think') sys += '\nРЕЖИМ reasoning: несколько шагов мысли, лучший ответ. Сегодня 6 октября 2026.';
                 if (typeof CHATCLAUD_BRAIN === 'string') sys = (CHATCLAUD_BRAIN.slice(0, 4000) + '\n' + sys).slice(0, 5000);
@@ -14342,6 +14342,134 @@ body.cc-bg-light .input-shell:focus-within {
   }
 })();
 </script>
+
+
+<script id="cc-live-plus">
+(function(){
+  window.CC = window.CC || {};
+  window.CC.Live = {
+    facingMode: 'user',
+    lastFrameTalk: null,
+    lastFrameIdle: null,
+    translateMode: false,
+    flip: async function(){
+      this.facingMode = this.facingMode === 'user' ? 'environment' : 'user';
+      if (window.LiveChat && LiveChat.active && LiveChat.stream) {
+        try {
+          LiveChat.stream.getTracks().forEach(function(t){ t.stop(); });
+        } catch(e){}
+        try {
+          var stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: this.facingMode },
+            audio: true
+          });
+          LiveChat.stream = stream;
+          var v = document.getElementById('liveVideo') || document.querySelector('#liveOverlay video');
+          if (v) { v.srcObject = stream; v.play(); }
+        } catch(e){ console.warn('flip', e); }
+      }
+    },
+    snap: function(){
+      try {
+        if (window.LiveChat && typeof LiveChat.captureFrame === 'function') {
+          return LiveChat.captureFrame();
+        }
+      } catch(e){}
+      return null;
+    },
+    setTranslate: function(on){
+      this.translateMode = !!on;
+      var orb = document.getElementById('voiceOrb');
+      if (orb) orb.classList.toggle('translate-mode', this.translateMode);
+      try {
+        if (window.LiveChat) LiveChat.translateMode = this.translateMode;
+      } catch(e){}
+    }
+  };
+  // buttons when live UI exists
+  function ensureLiveBtns(){
+    var overlay = document.getElementById('liveOverlay') || document.querySelector('.live-overlay');
+    if (!overlay || document.getElementById('ccLiveFlipBtn')) return;
+    var bar = document.createElement('div');
+    bar.id = 'ccLiveTools';
+    bar.style.cssText = 'position:absolute;top:12px;right:12px;display:flex;gap:8px;z-index:20;';
+    bar.innerHTML = '<button type="button" id="ccLiveFlipBtn" style="background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:999px;padding:8px 12px;font-size:12px;">Flip</button>'
+      + '<button type="button" id="ccLiveSnapBtn" style="background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:999px;padding:8px 12px;font-size:12px;">Photo</button>'
+      + '<button type="button" id="ccLiveTrBtn" style="background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:999px;padding:8px 12px;font-size:12px;">Translate</button>';
+    overlay.style.position = overlay.style.position || 'relative';
+    overlay.appendChild(bar);
+    document.getElementById('ccLiveFlipBtn').onclick = function(){ window.CC.Live.flip(); };
+    document.getElementById('ccLiveSnapBtn').onclick = function(){
+      var f = window.CC.Live.snap();
+      if (f) {
+        window.CC.Live.lastFrameIdle = f;
+        try { if (window.showToast) showToast('Frame saved'); } catch(e){}
+      }
+    };
+    document.getElementById('ccLiveTrBtn').onclick = function(){
+      window.CC.Live.setTranslate(!window.CC.Live.translateMode);
+      this.textContent = window.CC.Live.translateMode ? 'Translate ON' : 'Translate';
+      try { if (window.showToast) showToast(window.CC.Live.translateMode ? 'Translate mode: speak, orb only' : 'Translate off'); } catch(e){}
+    };
+  }
+  setInterval(ensureLiveBtns, 1500);
+
+  // Hook LiveChat reply path for translate mode
+  var _iv = setInterval(function(){
+    if (!window.LiveChat || LiveChat.__ccPatched) return;
+    LiveChat.__ccPatched = true;
+    var orig = LiveChat.reply || LiveChat.ask || LiveChat.sendText;
+    // capture frame on listen start/stop
+    var sl = LiveChat.startListen;
+    if (typeof sl === 'function') {
+      LiveChat.startListen = function(){
+        try { window.CC.Live.lastFrameTalk = window.CC.Live.snap(); } catch(e){}
+        return sl.apply(this, arguments);
+      };
+    }
+    var el = LiveChat.stopListen;
+    if (typeof el === 'function') {
+      LiveChat.stopListen = function(){
+        try { window.CC.Live.lastFrameIdle = window.CC.Live.snap(); } catch(e){}
+        return el.apply(this, arguments);
+      };
+    }
+  }, 800);
+})();
+</script>
+<style id="cc-live-3d-orb">
+/* 3D orb */
+#voiceOrb.voice-orb, div#voiceOrb {
+  width: 140px !important; height: 140px !important;
+  border-radius: 50% !important;
+  border: none !important;
+  background:
+    radial-gradient(circle at 28% 22%, #ffffff 0%, #f7f7fa 18%, #e6e6ec 42%, #c8c8d2 68%, #9a9aa8 100%) !important;
+  box-shadow:
+    0 20px 50px rgba(0,0,0,0.55),
+    0 0 0 1px rgba(255,255,255,0.12),
+    inset 0 -12px 24px rgba(0,0,0,0.18),
+    inset 0 10px 20px rgba(255,255,255,0.75),
+    inset -8px -8px 16px rgba(0,0,0,0.08) !important;
+  transform: perspective(400px) rotateX(8deg) !important;
+}
+#voiceOrb.translate-mode {
+  box-shadow:
+    0 20px 50px rgba(0,0,0,0.55),
+    0 0 30px rgba(255,255,255,0.15),
+    inset 0 -12px 24px rgba(0,0,0,0.18),
+    inset 0 10px 20px rgba(255,255,255,0.75) !important;
+}
+/* stronger text shimmer for Thinking / Searching */
+.cc-think-label, .cc-status-text {
+  background: linear-gradient(90deg, #5c5c62 0%, #5c5c62 30%, #f0f0f5 50%, #5c5c62 70%, #5c5c62 100%) !important;
+  background-size: 220% 100% !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  animation: ccTextShimmer 2s linear infinite !important;
+}
+</style>
 
 </body>
 </html>
