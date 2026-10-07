@@ -559,23 +559,36 @@ function sanitizeProviderIdentity(text){
 }
 
 const CC_SYSTEM = `You are ChatClaud — independent AI by milanmichaimilan / ChatClaud.
-Today is October 6, 2026. Never invent wrong dates.
-Never claim to be OpenAI, GPT, Claude, Anthropic, Gemini, Google, Grok, xAI, Llama, Meta, Mistral, Groq, DeepSeek, Copilot, OpenRouter or any third-party API.
-If asked who you are: "I'm ChatClaud."
+Today is October 7, 2026. Never invent wrong dates.
+Never claim to be OpenAI, GPT, Claude, Anthropic, Gemini, Google, Grok, xAI, Llama, Meta, Mistral, Groq, DeepSeek, Copilot, OpenRouter.
 
-BROWSING (CRITICAL):
-- You CAN open links and check sites through ChatClaud Browser (Nova). Never say "I cannot open links", "I cannot watch videos", "limitation of my system".
-- When [Свежие данные] / page context / video metadata is in the message — USE it as ground truth.
-- For TikTok/YouTube/Instagram links: use title, channel, description, subtitles if present. Summarize what the video is about from that data.
-- If search returned little data: still answer helpfully from what you have; offer to refine keywords. Do NOT claim zero capability.
-- Prefer multi-source answers when several URLs are listed.
+IDENTITY: If asked who you are: "I'm ChatClaud."
 
-SEARCH: /search, /nova, "search …", "найди …" trigger live web. Cite sources when available.
+=== OMEGA SEARCH (when web data is provided) ===
+- You CAN browse via ChatClaud Browser (Nova + fallbacks). NEVER say "I cannot open links", "nothing exists on the web", or "no public sites" if sources were given.
+- If [Свежие данные] / search results are in the message: USE them. List real titles and URLs. Prefer primary sources.
+- Separate: FACT (from source) → SOURCE (url) → CONCLUSION (yours).
+- If results are thin: say what was checked, suggest refined queries — do NOT invent "zero results on the entire internet".
+- Multi-hop: use deep-browse page text when present. Cross-check claims.
+- For ambiguous names (e.g. Skarlet): offer top interpretations with links rather than claiming none exist.
 
-IMAGE GEN: only what the user asked. Never default to random female portraits.
+=== UI COMMANDS ===
+If user asks to change theme (dark/light/waves/blue), reply with exactly one line token on its own line:
+[[CC_UI:theme=dark]] or light|waves|blue
+Then a short confirmation in their language.
+
+=== PROFESSIONAL BEHAVIOR ===
+- Reasoning: be logical, check your own conclusions, admit uncertainty.
+- Coding: complete, runnable when asked; explain briefly.
+- Images: only what user asked; never default random female portraits.
+- Multimodal: when image/video context is provided, use it.
+- Reliability: never fabricate sources, quotes, or URLs.
+- Transparency: when search was used, mention key sources.
+- Memory: use dialogue context; do not claim permanent memory unless stored.
 
 Match user language. Be direct and useful.
 Commands: /search /find /img /veo /plus /settings /translate.`;
+
 
 
 function mistralKeys() {
@@ -822,66 +835,59 @@ function bumpImagine(ip, kind) {
 
 
 async function webSearch(q, type) {
-  const query = String(q || '').trim().slice(0, 300);
+  // clean commands from query
+  let query = String(q || '').trim()
+    .replace(/^\/(search|find|seasch|nova)\s*/ig, '')
+    .replace(/^(найди|поищи|загугли|погугли|search|find|look\s*up|google)\s+/ig, '')
+    .trim()
+    .slice(0, 300);
+  if (query.length < 2) query = String(q || '').trim().slice(0, 300);
   if (query.length < 2) return { text: '', sources: [], type: type || 'search' };
 
   const searchType = ['videos', 'images', 'news', 'search'].includes(type) ? type : 'search';
   const parts = [];
   const sources = [];
+  const push = (title, text, url, src) => {
+    title = String(title || '').trim();
+    text = String(text || '').trim();
+    url = String(url || '').trim();
+    if (!title && !text && !url) return;
+    parts.push({ title, text, url, src: src || 'web' });
+    if (url) sources.push({ title: title || url, url, snippet: text.slice(0, 200), src: src || 'web' });
+  };
 
-  // 1) NOVA primary — real sites + live data
+  // 1) NOVA primary
   try {
     const data = await novaRequest('/api/search', { q: query, type: searchType });
     const items = (data && (data.organic || data.results || data.videos || data.images || data.news)) || [];
-    if (data && data.answer) parts.push({ title: 'Summary', text: data.answer, url: '', src: 'nova' });
-    (Array.isArray(items) ? items : []).slice(0, 10).forEach((r) => {
-      parts.push({
-        title: r.title || r.name || '',
-        text: r.snippet || r.description || r.content || r.text || r.date || '',
-        url: r.link || r.url || '',
-        src: 'nova',
-        imageUrl: r.imageUrl || r.thumbnailUrl || r.image || '',
-      });
+    if (data && data.answer) push('Summary', data.answer, '', 'nova');
+    (Array.isArray(items) ? items : []).slice(0, 12).forEach((r) => {
+      push(r.title || r.name || '', r.snippet || r.description || r.content || r.text || '', r.link || r.url || '', 'nova');
     });
   } catch (e) {
     console.warn('[search] nova', e.message);
   }
 
-  // 2) Tavily fallback only if Nova weak
+  // 2) Tavily
   const tavily = process.env.TAVILY_KEY || process.env.TAVILY_API_KEY || '';
-  if (tavily && searchType === 'search' && parts.length < 2) {
+  if (tavily && parts.length < 3) {
     try {
       const res = await fetch('https://api.tavily.com/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          api_key: tavily,
-          query,
-          search_depth: 'basic',
-          include_answer: true,
-          max_results: 5,
-        }),
+        body: JSON.stringify({ api_key: tavily, query, search_depth: parts.length ? 'basic' : 'advanced', include_answer: true, max_results: 8 }),
       });
       if (res.ok) {
         const data = await res.json();
-        if (data.answer) parts.push({ title: 'Summary', text: data.answer, url: '', src: 'tavily' });
-        (data.results || []).forEach((r) => {
-          parts.push({
-            title: r.title || '',
-            text: r.content || r.snippet || '',
-            url: r.url || '',
-            src: 'tavily',
-          });
-        });
+        if (data.answer) push('Summary', data.answer, '', 'tavily');
+        (data.results || []).forEach((r) => push(r.title || '', r.content || r.snippet || '', r.url || '', 'tavily'));
       }
-    } catch (e) {
-      console.warn('[search] tavily', e.message);
-    }
+    } catch (e) { console.warn('[search] tavily', e.message); }
   }
 
-  // 3) Serper last
+  // 3) Serper
   const serper = process.env.SERPER_KEY || '';
-  if (serper && parts.length < 2) {
+  if (serper && parts.length < 3) {
     try {
       const endpoints = {
         search: 'https://google.serper.dev/search',
@@ -892,96 +898,86 @@ async function webSearch(q, type) {
       const res = await fetch(endpoints[searchType] || endpoints.search, {
         method: 'POST',
         headers: { 'X-API-KEY': serper, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: query, num: 6, gl: 'us', hl: 'en' }),
+        body: JSON.stringify({ q: query, num: 10 }),
       });
       if (res.ok) {
         const data = await res.json();
-        const items =
-          (searchType === 'videos' && data.videos) ||
-          (searchType === 'images' && data.images) ||
-          (searchType === 'news' && data.news) ||
-          data.organic || [];
-        (items || []).forEach((r) => {
-          parts.push({
-            title: r.title || '',
-            text: r.snippet || r.description || r.date || '',
-            url: r.link || r.url || '',
-            src: 'serper',
+        (data.organic || data.news || data.videos || []).forEach((r) =>
+          push(r.title || '', r.snippet || r.description || '', r.link || r.url || '', 'serper')
+        );
+        if (data.answerBox && data.answerBox.answer) push('Answer', data.answerBox.answer, data.answerBox.link || '', 'serper');
+        if (data.knowledgeGraph) {
+          const kg = data.knowledgeGraph;
+          push(kg.title || 'Knowledge', [kg.type, kg.description].filter(Boolean).join(' — '), kg.website || kg.descriptionLink || '', 'serper');
+        }
+      }
+    } catch (e) { console.warn('[search] serper', e.message); }
+  }
+
+  // 4) DuckDuckGo instant + HTML-lite via lite API
+  if (parts.length < 2) {
+    try {
+      const res = await fetchWithTimeout(
+        'https://api.duckduckgo.com/?q=' + encodeURIComponent(query) + '&format=json&no_html=1&skip_disambig=1',
+        { method: 'GET' },
+        8000
+      );
+      if (res.ok) {
+        const data = await res.json();
+        if (data.AbstractText) push(data.Heading || 'DuckDuckGo', data.AbstractText, data.AbstractURL || '', 'ddg');
+        (data.RelatedTopics || []).slice(0, 6).forEach((t) => {
+          if (t.Text) push(t.Text.slice(0, 80), t.Text, t.FirstURL || '', 'ddg');
+          (t.Topics || []).slice(0, 3).forEach((x) => {
+            if (x.Text) push(x.Text.slice(0, 80), x.Text, x.FirstURL || '', 'ddg');
           });
         });
       }
-    } catch (e) {}
+    } catch (e) { console.warn('[search] ddg', e.message); }
   }
 
-  parts.forEach((p) => {
-    if (p.url && sources.length < 10) sources.push({ title: p.title || p.url, url: p.url, src: p.src || 'web' });
-  });
-
-  let text = parts
-    .map((p, i) => {
-      let line = i + 1 + '. ' + (p.title || '');
-      if (p.url) line += '\n' + p.url;
-      if (p.text) line += '\n' + String(p.text).slice(0, 240);
-      return line;
-    })
-    .join('\n\n')
-    .slice(0, 5500);
-
-  if (!text) text = 'Nothing found for this query.';
-  return { text, sources, count: parts.length, type: searchType, query };
-}
-
-
-function contentType(filePath) {
-  const ext = path.extname(filePath).toLowerCase();
-  const map = {
-    '.html': 'text/html; charset=utf-8',
-    '.js': 'application/javascript; charset=utf-8',
-    '.css': 'text/css; charset=utf-8',
-    '.json': 'application/json',
-    '.png': 'image/png',
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.svg': 'image/svg+xml',
-    '.ico': 'image/x-icon',
-    '.webp': 'image/webp',
-  };
-  return map[ext] || 'application/octet-stream';
-}
-
-function safeJoin(root, reqPath) {
-  try {
-    const rootResolved = path.resolve(root);
-    const decoded = decodeURIComponent(String(reqPath || '/').split('?')[0]);
-    const relative = decoded.replace(/^[/\\]+/, '');
-    const full = path.resolve(rootResolved, relative);
-    if (full !== rootResolved && !full.startsWith(rootResolved + path.sep)) return null;
-    return full;
-  } catch (_) {
-    return null;
+  // 5) SearXNG public instances
+  if (parts.length < 2) {
+    const searx = [
+      'https://searx.be',
+      'https://search.sapti.me',
+      'https://searx.tiekoetter.com',
+    ];
+    for (const base of searx) {
+      if (parts.length >= 3) break;
+      try {
+        const res = await fetchWithTimeout(
+          base + '/search?q=' + encodeURIComponent(query) + '&format=json&language=auto',
+          { method: 'GET', headers: { Accept: 'application/json' } },
+          7000
+        );
+        if (!res.ok) continue;
+        const data = await res.json();
+        (data.results || []).slice(0, 8).forEach((r) =>
+          push(r.title || '', r.content || r.snippet || '', r.url || '', 'searx')
+        );
+      } catch (e) {}
+    }
   }
+
+  // dedupe by url
+  const seen = new Set();
+  const uniqSources = [];
+  for (const s of sources) {
+    const key = (s.url || s.title).toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    uniqSources.push(s);
+  }
+
+  const text = parts
+    .slice(0, 15)
+    .map((p, i) => (i + 1) + '. ' + (p.title ? p.title + ' — ' : '') + (p.text || '') + (p.url ? ' [' + p.url + ']' : ''))
+    .join('\n');
+
+  return { text, sources: uniqSources.slice(0, 12), type: searchType, query };
 }
 
-/* ========== Netlify server-side deploy ========== */
-function crc32Buffer(buf) {
-  let c = ~0;
-  for (let i = 0; i < buf.length; i++) {
-    c ^= buf[i];
-    for (let k = 0; k < 8; k++) c = (c >>> 1) ^ (0xedb88320 & -(c & 1));
-  }
-  return (~c) >>> 0;
-}
-function u16(n) { const b = Buffer.alloc(2); b.writeUInt16LE(n >>> 0, 0); return b; }
-function u32(n) { const b = Buffer.alloc(4); b.writeUInt32LE(n >>> 0, 0); return b; }
-function makeStoredZip(filename, content) {
-  const name = Buffer.from(filename, 'utf8');
-  const data = Buffer.from(content, 'utf8');
-  const crc = crc32Buffer(data);
-  const local = Buffer.concat([Buffer.from([0x50,0x4b,0x03,0x04]), u16(20), u16(0), u16(0), u16(0), u16(0), u32(crc), u32(data.length), u32(data.length), u16(name.length), u16(0), name, data]);
-  const central = Buffer.concat([Buffer.from([0x50,0x4b,0x01,0x02]), u16(20), u16(20), u16(0), u16(0), u16(0), u16(0), u32(crc), u32(data.length), u32(data.length), u16(name.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(0), name]);
-  const end = Buffer.concat([Buffer.from([0x50,0x4b,0x05,0x06]), u16(0), u16(0), u16(1), u16(1), u32(central.length), u32(local.length), u16(0)]);
-  return Buffer.concat([local, central, end]);
-}
+
 async function netlifyDeploy(htmlContent, siteName) {
   const token = String(process.env.NETLIFY_DEPLOY_TOKEN || process.env.NETLIFY_TOKEN || '').trim();
   if (!token) throw new Error('NETLIFY_DEPLOY_TOKEN не задан');
@@ -1202,6 +1198,10 @@ const server = http.createServer(async (req, res) => {
 
           } else {
             console.log('[nova-search] empty result');
+            trimmed[lastIdx3] = {
+              role: 'user',
+              content: lastUser3 + '\n\n[Search note: engines returned weak/empty results for this query. Do NOT claim the entire internet has zero pages. Say results were limited, ask clarifying context (game/brand/person), and suggest 2-3 refined /search queries. Never invent URLs.]',
+            };
           }
         }
       } catch (e) {
