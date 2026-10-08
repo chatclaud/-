@@ -568,50 +568,46 @@ function sanitizeProviderIdentity(text){
   return s;
 }
 
-const CC_SYSTEM = `You are ChatClaud — independent AI by milanmichaimilan / ChatClaud.
-Today is October 7, 2026. Never invent wrong dates.
-Never claim to be OpenAI, GPT, Claude, Anthropic, Gemini, Google, Grok, xAI, Llama, Meta, Mistral, Groq, DeepSeek, Copilot, OpenRouter.
+const CC_SYSTEM = `You are ChatClaud — a real-feeling chat partner built by the ChatClaud team.
 
-IDENTITY: If asked who you are: "I'm ChatClaud."
+IDENTITY
+- You are ChatClaud. Never claim to be ChatGPT, Claude, Gemini, Grok, Llama, Mistral, Groq, or any other brand.
+- Never mention API keys, providers, or internal tools by vendor name.
+- Who are you? → "I'm ChatClaud." How were you made? → "Built by the ChatClaud team." Stop there.
 
-=== OMEGA SEARCH (when web data is provided) ===
-- You CAN browse via ChatClaud Browser (Nova + fallbacks). NEVER say "I cannot open links", "nothing exists on the web", or "no public sites" if sources were given.
-- If [Свежие данные] / search results are in the message: USE them. List real titles and URLs. Prefer primary sources.
-- Separate: FACT (from source) → SOURCE (url) → CONCLUSION (yours).
-- If results are thin: say what was checked, suggest refined queries — do NOT invent "zero results on the entire internet".
-- Multi-hop: use deep-browse page text when present. Cross-check claims.
-- For ambiguous names (e.g. Skarlet): offer top interpretations with links rather than claiming none exist.
+PERSONALITY (live chat, not a manual)
+- Talk like a sharp human in a messenger: natural, short when the task is small, longer only when the task needs it.
+- Match the user's energy. Casual → casual. Serious topic → serious.
+- If they insult you, you may fire back once in the same tone, then: "Talk normal if you need something." Do not start a long fight.
+- No filler: no "Great question!", no "As an AI…", no moral lectures.
+- Swearing is fine when the user swears or the vibe is rough. Stay useful after.
 
-=== UI COMMANDS ===
-If user asks to change theme (dark/light/waves/blue), reply with exactly one line token on its own line:
-[[CC_UI:theme=dark]] or light|waves|blue
-Then a short confirmation in their language.
+TRUTH
+- Do not invent facts, news, prices, dates, or quotes.
+- Current / live info → use search results when provided. If search is empty, say you could not verify. Never fake URLs.
+- Do not claim you watched a video or opened TikTok unless tool content was actually given.
 
-=== PROFESSIONAL BEHAVIOR ===
-- Reasoning: be logical, check your own conclusions, admit uncertainty.
-- Coding: complete, runnable when asked; explain briefly.
-- Images: only what user asked; never default random female portraits.
-- Multimodal: when image/video context is provided, use it.
-- Reliability: never fabricate sources, quotes, or URLs.
-- Transparency: when search was used, mention key sources.
-- Memory: use dialogue context; do not claim permanent memory unless stored.
+CODE
+- You are strong at reading and editing files the user sends, not at dumping 10k-line apps in one message.
+- Prefer: review, fix, patch, explain. Build big things in parts / by file.
+- Small snippets from scratch are fine; say when a full product needs to be split.
 
-TONE: Mirror the user. Swearing is allowed when the user swears or asks for uncensored style. No moral lectures. Be direct.
-Match user language. Be direct and useful.
-Commands: /search /find /img /veo /plus /settings /translate.
-When solving complex tasks, briefly reflect real tool steps (search, open page, vision) — never invent tools you did not use.
+SEARCH BLOCKS
+- When [Live search] or [Image analysis] blocks are in context, treat them as evidence.
+- Answer from evidence. Cite real sources. If thin → say what was checked, do not invent the web.
 
-UI CONTROL (emit exactly, own line, user will not see raw tokens if client strips them):
+UI TOKENS (own line when needed)
 [[CC_UI:theme=dark|light|waves|blue]]
 [[CC_UI:settings]]
 [[CC_UI:newchat]]
-[[CC_UI:scroll=bottom]]
 
-FILE CARDS — when user asks to create a file / code to download, end with:
-[[CC_FILE:filename.ext]]
-...full file content...
+FILES
+[[CC_FILE:name.ext]]
+content
 [[/CC_FILE]]
-Do not wrap file cards in markdown code fences. One file per card. Prefer real usable content.`;
+
+Language: match the user. Be direct.`;
+
 
 
 
@@ -1050,6 +1046,98 @@ function pickThinkMs(messages) {
   return MIN_AI_RESPONSE_MS;
 }
 
+
+/* ========== Multimodal C2: photo + search multi-hop ========== */
+async function multimodalPhotoSearch(imageDataUrl, userText) {
+  const trace = [];
+  const sources = [];
+  let visionText = '';
+  // 1) Vision
+  try {
+    const v = await hfVision(
+      imageDataUrl,
+      'Describe this image for web search. Focus on: product/packaging, brand names, text/OCR, logos, materials, any readable labels. Be factual and concise. English.'
+    );
+    visionText = (v && v.text) ? String(v.text).trim() : '';
+    trace.push({ step: 'vision', ok: !!visionText, preview: visionText.slice(0, 180) });
+  } catch (e) {
+    trace.push({ step: 'vision', ok: false, error: String(e.message || e).slice(0, 120) });
+  }
+
+  // Build query from vision + user text
+  let q = String(userText || '')
+    .replace(/^\/(search|find|seasch|nova)\s*/ig, '')
+    .replace(/^(найди|поищи|search|find)\s+/ig, '')
+    .trim();
+  if (visionText) {
+    const key = visionText.split(/[.!\n]/).map(x => x.trim()).filter(Boolean).slice(0, 2).join(' ');
+    q = (q ? q + ' ' : '') + key;
+  }
+  q = q.replace(/\s+/g, ' ').trim().slice(0, 220);
+  if (q.length < 3) q = visionText.slice(0, 180) || 'product packaging';
+
+  // 2) Search 2-4 sites
+  let sr1 = { text: '', sources: [] };
+  try {
+    sr1 = await webSearch(q, 'search');
+    (sr1.sources || []).slice(0, 4).forEach(src => sources.push(src));
+    trace.push({ step: 'search_1', ok: !!(sr1.sources && sr1.sources.length), n: (sr1.sources || []).length, q });
+  } catch (e) {
+    trace.push({ step: 'search_1', ok: false, error: String(e.message || e).slice(0, 100) });
+  }
+
+  // 3-4) verify: keep top sources with urls
+  let kept = (sources || []).filter(s => s && s.url).slice(0, 4);
+  trace.push({ step: 'verify_1', ok: kept.length > 0, n: kept.length });
+
+  // 5) light site analysis via second query if we have a brand-like token
+  let sr2 = { text: '', sources: [] };
+  const brandHint = (visionText.match(/\b[A-Z][A-Za-z0-9\-]{2,}\b/g) || []).slice(0, 3).join(' ');
+  if (brandHint || kept.length < 2) {
+    const q2 = ((brandHint || q) + ' official product packaging').slice(0, 200);
+    try {
+      sr2 = await webSearch(q2, 'search');
+      (sr2.sources || []).forEach(src => {
+        if (src.url && !kept.find(k => k.url === src.url)) kept.push(src);
+      });
+      trace.push({ step: 'search_2', ok: !!(sr2.sources && sr2.sources.length), q: q2 });
+    } catch (e) {
+      trace.push({ step: 'search_2', ok: false, error: String(e.message || e).slice(0, 100) });
+    }
+  } else {
+    trace.push({ step: 'search_2', ok: true, skipped: true });
+  }
+
+  kept = kept.filter(s => s.url).slice(0, 6);
+  trace.push({ step: 'verify_final', ok: kept.length > 0, n: kept.length });
+
+  // Context block for the LLM
+  const lines = [];
+  lines.push('[Image analysis]');
+  lines.push(visionText || '(vision unavailable)');
+  lines.push('');
+  lines.push('[Live search]');
+  if (sr1.text) lines.push(String(sr1.text).slice(0, 6000));
+  if (sr2.text) lines.push(String(sr2.text).slice(0, 3000));
+  if (kept.length) {
+    lines.push('');
+    lines.push('[Sources]');
+    kept.forEach((s, i) => lines.push((i + 1) + '. ' + (s.title || s.url) + ' — ' + s.url));
+  } else {
+    lines.push('');
+    lines.push('[Sources] none confirmed — do not invent URLs. Say you could not verify.');
+  }
+
+  return {
+    context: lines.join('\n'),
+    sources: kept,
+    visionText,
+    query: q,
+    trace,
+  };
+}
+
+
 /* ========== SERVER ========== */
 const server = http.createServer(async (req, res) => {
   const u = new URL(req.url || '/', 'http://localhost');
@@ -1162,7 +1250,50 @@ const server = http.createServer(async (req, res) => {
         console.warn('enrich error', e.message);
       }
 
-      /* === Общий веб-поиск через Nova, если это не ссылка и не видео === */
+      
+      /* === Multimodal: image + search === */
+      try {
+        const img = body.image || body.dataUrl || body.photo || '';
+        let lastUserImg = '';
+        let lastIdxImg = -1;
+        for (let i = trimmed.length - 1; i >= 0; i--) {
+          if (trimmed[i] && trimmed[i].role === 'user') {
+            lastUserImg = String(trimmed[i].content || '');
+            lastIdxImg = i;
+            break;
+          }
+        }
+        const wantsSearch = /\/(search|find|nova|seasch)\b/i.test(lastUserImg)
+          || /\b(найди|поищи|search|find|look\s*up|что\s+за|what\s+is\s+this|identify|упаковк)/i.test(lastUserImg);
+        if (img && String(img).length > 40 && lastIdxImg >= 0 && (wantsSearch || /\/search/i.test(lastUserImg) )) {
+          // if image attached, always run vision; run full search when /search or identify intent, else vision-only context
+          const doFull = wantsSearch || /\/(search|find)\b/i.test(lastUserImg);
+          if (doFull) {
+            console.log('[mm] photo+search start');
+            const mm = await multimodalPhotoSearch(img, lastUserImg);
+            novaSourcesForClient = mm.sources || [];
+            trimmed[lastIdxImg] = {
+              role: 'user',
+              content: lastUserImg + '\n\n' + mm.context,
+            };
+            console.log('[mm] done sources=', novaSourcesForClient.length, 'q=', (mm.query || '').slice(0, 80));
+          } else {
+            try {
+              const v = await hfVision(img, 'Describe this image clearly. OCR any text. English.');
+              if (v && v.text) {
+                trimmed[lastIdxImg] = {
+                  role: 'user',
+                  content: lastUserImg + '\n\n[Image analysis]\n' + String(v.text).slice(0, 4000),
+                };
+              }
+            } catch (ve) { console.warn('[mm] vision-only', ve.message); }
+          }
+        }
+      } catch (e) {
+        console.warn('[mm] error', e.message);
+      }
+
+/* === Общий веб-поиск через Nova, если это не ссылка и не видео === */
       try {
         let lastUser3 = '';
         let lastIdx3 = -1;
