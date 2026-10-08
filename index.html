@@ -3746,6 +3746,19 @@ setTimeout(function() {
 })();
 </script>
 
+
+<style id="cc-multimodal-search-style">
+/* === CC MODULE: multimodal-search === */
+.cc-mm-trace{margin:.55rem 0 .2rem;border:0;border-radius:14px;background:rgba(255,255,255,.045);color:rgba(255,255,255,.7);overflow:hidden;font-size:.78rem;}
+.cc-mm-trace summary{cursor:pointer;padding:.55rem .7rem;list-style:none;opacity:.86;}
+.cc-mm-trace summary::-webkit-details-marker{display:none;}
+.cc-mm-trace-body{padding:0 .7rem .65rem;display:grid;gap:.28rem;}
+.cc-mm-trace-step{display:flex;gap:.45rem;align-items:flex-start;line-height:1.28;}
+.cc-mm-trace-dot{width:7px;height:7px;border-radius:50%;margin-top:.36rem;background:#7d8492;flex:0 0 auto;}
+.cc-mm-trace-step.done .cc-mm-trace-dot{background:#b8dfff;box-shadow:0 0 7px rgba(184,223,255,.45);}
+.cc-mm-trace-step.warning .cc-mm-trace-dot{background:#e7c77c;}
+.cc-mm-trace-step.error .cc-mm-trace-dot{background:#ff8a8a;}
+</style>
 </head>
 <body>
 <!--
@@ -7504,6 +7517,61 @@ if (typeof window.ccApiUrl !== 'function') {
             if (!res.ok) return { text: '', sources: [] };
             return data;
         }
+
+        async function prepareMultimodalSearchImage(dataUrl) {
+            const src = String(dataUrl || '');
+            if (!/^data:image\//i.test(src)) return src;
+            return await new Promise(function(resolve) {
+                const img = new Image();
+                img.onload = function() {
+                    try {
+                        const maxSide = 1800;
+                        const scale = Math.min(1, maxSide / Math.max(img.naturalWidth || img.width || 1, img.naturalHeight || img.height || 1));
+                        const w = Math.max(1, Math.round((img.naturalWidth || img.width) * scale));
+                        const h = Math.max(1, Math.round((img.naturalHeight || img.height) * scale));
+                        const canvas = document.createElement('canvas');
+                        canvas.width = w; canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        resolve(canvas.toDataURL('image/jpeg', 0.88));
+                    } catch (e) { resolve(src); }
+                };
+                img.onerror = function() { resolve(src); };
+                img.src = src;
+            });
+        }
+        async function ccApiMultimodalSearch(image, q) {
+            const compact = await prepareMultimodalSearchImage(image);
+            const res = await fetch(window.ccApiUrl('/api/multimodal-search'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: compact, query: q || 'найди информацию о товаре на фото' })
+            });
+            const data = await res.json().catch(function(){ return {}; });
+            if (!res.ok) throw new Error((data && data.error) || 'multimodal search failed');
+            return data;
+        }
+        function ccRenderMultimodalTrace(anchor, trace) {
+            try {
+                if (!anchor || !Array.isArray(trace) || !trace.length) return;
+                const card = document.createElement('details');
+                card.className = 'cc-mm-trace';
+                const first = trace[trace.length - 1] || {};
+                card.open = false;
+                const summary = document.createElement('summary');
+                summary.textContent = 'Multimodal search · ' + (first.status === 'done' ? 'verified' : 'trace');
+                card.appendChild(summary);
+                const body = document.createElement('div'); body.className = 'cc-mm-trace-body';
+                trace.forEach(function(step){
+                    const row = document.createElement('div'); row.className = 'cc-mm-trace-step ' + (step.status || 'done');
+                    const dot = document.createElement('span'); dot.className = 'cc-mm-trace-dot';
+                    const text = document.createElement('span'); text.textContent = String(step.name || 'Step') + (step.detail ? ' — ' + step.detail : '');
+                    row.appendChild(dot); row.appendChild(text); body.appendChild(row);
+                });
+                card.appendChild(body);
+                anchor.insertBefore(card, anchor.firstChild);
+            } catch (e) {}
+        }
         // если нет ключей в браузере — основной путь через сервер
         const __ccUseServer = true;
 
@@ -10063,6 +10131,66 @@ function buildImageUrl(userPrompt, opts) {
                 }
                 let fullPrompt = text || '';
                 if (this.currentFileText) { fullPrompt = `[Файл]:\n${this.currentFileText}\n\n[Запрос пользователя]:\n${text}`; }
+
+                // === MULTIMODAL SEARCH: photo -> NOVA -> 2-4 sites -> verify -> re-search -> final check ===
+                const mmSearchRequested = !!this.currentImageB64 && (
+                    /^\/(?:search|find|nova)\b/i.test(String(text || '')) ||
+                    /^(найди|поищи|загугли|погугли|search|find|look\s*up|google)\b/i.test(String(text || '').trim()) ||
+                    /\b(?:найди|поищи|search|find)\b/i.test(String(text || ''))
+                );
+                if (mmSearchRequested && this.providerKey === 'flash') {
+                    const attachedMM = this.currentImageB64;
+                    const rawMM = String(text || '').trim();
+                    const searchQMM = rawMM.replace(/^\/(?:search|find|nova)\s*/i, '').replace(/^(найди|поищи|загугли|погугли|search|find|look\s*up|google)\s+/i, '').trim() || 'найди информацию о товаре на фото';
+                    this.addMsg(rawMM || '/search', 'user');
+                    try {
+                        const last = this.container.querySelector('.message.user:last-child');
+                        if (last && !last.querySelector('img.user-attach')) {
+                            const im = document.createElement('img');
+                            im.className = 'user-attach'; im.src = attachedMM; im.alt = 'photo';
+                            im.style.cssText = 'max-width:min(100%,240px);border-radius:0.75rem;margin-top:0.4rem;display:block;';
+                            last.appendChild(im);
+                        }
+                    } catch (e) {}
+                    this.history.push({ role: 'user', content: rawMM + ' [+фото]' });
+                    this.input.value = ''; this.isGenerating = true; this._genStartedAt = Date.now();
+                    this.showTypingIndicator();
+                    let statusElMM = null;
+                    try {
+                        statusElMM = this.addMsg('', 'bot', false);
+                        statusElMM.classList.add('cc-thinking-msg');
+                        statusElMM.innerHTML = '<div class="cc-think"><span class="cc-think-label">Analyzing photo…</span><span class="cc-think-dots" aria-hidden="true"><i></i><i></i><i></i></span></div>';
+                    } catch (e) {}
+                    const setMM = function(label){ try { const x=statusElMM&&statusElMM.querySelector('.cc-think-label'); if(x) x.textContent=label; }catch(e){} };
+                    try {
+                        setMM('Analyzing photo…');
+                        const mm = await ccApiMultimodalSearch(attachedMM, searchQMM);
+                        setMM('Verified sources');
+                        try { if (statusElMM && statusElMM.parentNode) statusElMM.remove(); } catch(e) {}
+                        const botMM = this.addMsg(mm.text || 'Не удалось получить проверенный результат.', 'bot', false);
+                        if (Array.isArray(mm.sources) && mm.sources.length) {
+                            window.__ccLastSources = mm.sources.slice(0, 8);
+                            try { ccRenderSources(botMM, window.__ccLastSources); } catch(e) {}
+                            window.__ccLastSources = [];
+                        }
+                        try { ccRenderMultimodalTrace(botMM, mm.trace); } catch(e) {}
+                        this.history.push({ role: 'assistant', content: mm.text || 'Не удалось получить проверенный результат.' });
+                        try { if (typeof ccBumpMsg === 'function') ccBumpMsg(); } catch(e) {}
+                    } catch (e) {
+                        try { if (statusElMM && statusElMM.parentNode) statusElMM.remove(); } catch(x) {}
+                        const botFail = this.addMsg((typeof ccPublicError === 'function') ? ccPublicError(e) : 'ChatClaud временно недоступен.', 'bot', false);
+                        this.history.push({ role: 'assistant', content: botFail.textContent });
+                    } finally {
+                        this.hideTypingIndicator();
+                        this.isGenerating = false; this.setStopVisible(false);
+                        this.currentFileText = null; this.currentImageB64 = null;
+                        try { this.clearFileState(); } catch(e) {}
+                        try { if (this.providerKey === 'expert' || this.providerKey === 'flash') bumpExpertMsg(); } catch(e) {}
+                        try { updateUsageUI(); } catch(e) {}
+                        this.saveActiveSession();
+                    }
+                    return;
+                }
                 if (text && (/^\/(search|find|seasch|nova)\b/i.test(String(text)) || /^(найди|поищи|загугли|search|find|look\s*up|google)\b/i.test(String(text).trim()) || (typeof needsWebSearch === 'function' && needsWebSearch(text)))) {
                     let statusEl = null;
                     try {
@@ -15935,3 +16063,5 @@ textarea#flashInput,
 
 </body>
 </html>
+
+
