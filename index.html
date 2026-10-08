@@ -15564,5 +15564,320 @@ body.cc-bg-light #flashMessages .message.user {
 }
 </style>
 
+
+<!-- ========== TOP-TIER PATTERNS (assistant-ui / LibreChat / chatbot-ui / vercel) ========== -->
+<style id="cc-top-tier">
+/* Composer field pattern (assistant-ui surfaces.field) */
+#flashChat .input-shell,
+#flashChat .input-row {
+  background: rgba(255,255,255,0.045) !important;
+  border: none !important;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.55) !important;
+  border-radius: 1.5rem !important;
+}
+#flashChat textarea { border: none !important; box-shadow: none !important; outline: none !important; background: transparent !important; }
+
+/* Send = ink button */
+#flashChat .send-icon, #flashSend {
+  background: #fff !important;
+  color: #000 !important;
+  border: none !important;
+  border-radius: 999px !important;
+  transition: transform 0.15s cubic-bezier(0.23,1,0.32,1), opacity 0.15s !important;
+}
+#flashChat .send-icon:active, #flashSend:active { transform: scale(0.96) !important; }
+
+/* Empty state (vercel ai-chatbot) */
+.cc-empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 3rem 1.5rem; gap: 0.75rem;
+  min-height: 40dvh; pointer-events: none;
+}
+.cc-empty-state .cc-empty-logo {
+  width: 56px; height: 56px; border-radius: 16px; object-fit: cover;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.45); margin-bottom: 0.5rem;
+}
+.cc-empty-state h2 {
+  font-size: 1.25rem; font-weight: 600; letter-spacing: -0.03em;
+  color: rgba(255,255,255,0.92); margin: 0;
+}
+.cc-empty-state p {
+  font-size: 0.9rem; color: rgba(255,255,255,0.4); max-width: 280px; margin: 0; line-height: 1.45;
+}
+.cc-empty-hints {
+  display: flex; flex-wrap: wrap; gap: 0.45rem; justify-content: center;
+  margin-top: 1rem; pointer-events: auto; max-width: 340px;
+}
+.cc-empty-hint {
+  font-size: 0.75rem; padding: 0.45rem 0.75rem; border-radius: 999px;
+  background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.65);
+  border: none; cursor: pointer; transition: background 0.15s, transform 0.15s;
+}
+.cc-empty-hint:active { transform: scale(0.96); background: rgba(255,255,255,0.1); }
+
+/* File card (LibreChat artifacts lite) */
+.cc-file-card {
+  margin: 0.6rem 0; border-radius: 1rem; overflow: hidden;
+  background: rgba(28,28,30,0.95);
+  box-shadow: 0 12px 36px rgba(0,0,0,0.45);
+  border: none; max-width: 100%;
+}
+.cc-file-card-head {
+  display: flex; align-items: center; gap: 0.65rem;
+  padding: 0.75rem 0.9rem; border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.cc-file-card-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: rgba(255,255,255,0.08);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 700; color: rgba(255,255,255,0.7);
+  letter-spacing: 0.02em; text-transform: uppercase;
+}
+.cc-file-card-meta { flex: 1; min-width: 0; }
+.cc-file-card-name {
+  font-size: 0.88rem; font-weight: 600; color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cc-file-card-size { font-size: 0.72rem; color: rgba(255,255,255,0.4); }
+.cc-file-card-actions { display: flex; gap: 0.35rem; }
+.cc-file-card-btn {
+  border: none; background: rgba(255,255,255,0.1); color: #fff;
+  border-radius: 999px; padding: 0.4rem 0.75rem; font-size: 0.75rem;
+  font-weight: 600; cursor: pointer;
+}
+.cc-file-card-btn.primary { background: #fff; color: #000; }
+.cc-file-card pre {
+  margin: 0; padding: 0.75rem 0.9rem; max-height: 180px; overflow: auto;
+  font-size: 0.72rem; line-height: 1.45; color: rgba(255,255,255,0.7);
+  background: rgba(0,0,0,0.25);
+}
+
+/* Scroll to bottom (chatbot-ui / vercel) */
+.cc-scroll-bottom {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+  z-index: 30; width: 36px; height: 36px; border-radius: 999px;
+  border: none; background: rgba(28,28,30,0.92); color: #fff;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5); cursor: pointer;
+  display: none; align-items: center; justify-content: center;
+}
+.cc-scroll-bottom.show { display: flex; }
+.cc-scroll-bottom svg { width: 18px; height: 18px; }
+
+/* Suggestion chips after bot message */
+.cc-suggest-row {
+  display: flex; flex-wrap: wrap; gap: 0.4rem;
+  margin: 0.35rem 0 0.6rem; max-width: 92%;
+}
+.cc-suggest-chip {
+  font-size: 0.75rem; padding: 0.4rem 0.7rem; border-radius: 999px;
+  background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7);
+  border: none; cursor: pointer;
+}
+.cc-suggest-chip:active { transform: scale(0.96); }
+</style>
+
+<script id="cc-top-agent">
+(function(){
+  window.CC = window.CC || {};
+
+  /* ---- File cards from AI ---- */
+  function extLabel(name) {
+    var e = (name.split('.').pop() || 'file').slice(0, 4);
+    return e;
+  }
+  function renderFileCard(filename, content) {
+    var wrap = document.createElement('div');
+    wrap.className = 'cc-file-card';
+    var safeName = String(filename || 'file.txt').replace(/[^\w.\-]+/g, '_').slice(0, 80);
+    var body = String(content || '');
+    var bytes = new Blob([body]).size;
+    var size = bytes < 1024 ? bytes + ' B' : (bytes/1024).toFixed(1) + ' KB';
+    wrap.innerHTML =
+      '<div class="cc-file-card-head">' +
+        '<div class="cc-file-card-icon">' + extLabel(safeName).replace(/</g,'') + '</div>' +
+        '<div class="cc-file-card-meta"><div class="cc-file-card-name"></div><div class="cc-file-card-size"></div></div>' +
+        '<div class="cc-file-card-actions">' +
+          '<button type="button" class="cc-file-card-btn copy">Copy</button>' +
+          '<button type="button" class="cc-file-card-btn primary dl">Download</button>' +
+        '</div>' +
+      '</div>' +
+      '<pre></pre>';
+    wrap.querySelector('.cc-file-card-name').textContent = safeName;
+    wrap.querySelector('.cc-file-card-size').textContent = size;
+    wrap.querySelector('pre').textContent = body.slice(0, 12000);
+    wrap.querySelector('.copy').onclick = function() {
+      try { navigator.clipboard.writeText(body); if (window.showToast) showToast('Copied'); } catch(e) {}
+    };
+    wrap.querySelector('.dl').onclick = function() {
+      var blob = new Blob([body], { type: 'text/plain;charset=utf-8' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = safeName;
+      a.click();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+    };
+    return wrap;
+  }
+
+  function processBotHtml(el) {
+    if (!el) return;
+    var text = el.innerText || el.textContent || '';
+    // UI tokens
+    if (window.CC.UI && window.CC.UI.parseAndRun) {
+      window.CC.UI.parseAndRun(text);
+    }
+    // File cards
+    var re = /\[\[CC_FILE:([^\]]+)\]\]([\s\S]*?)\[\[\/CC_FILE\]\]/g;
+    var m;
+    var files = [];
+    while ((m = re.exec(text))) {
+      files.push({ name: m[1].trim(), content: m[2].replace(/^\n+|\n+$/g, '') });
+    }
+    if (files.length) {
+      // strip tokens from visible text
+      var cleaned = text.replace(re, '').replace(/\[\[CC_UI:[^\]]+\]\]/g, '').trim();
+      if (cleaned && el.innerHTML && !el.querySelector('.cc-file-card')) {
+        try {
+          if (window.marked && window.DOMPurify) {
+            el.innerHTML = DOMPurify.sanitize(marked.parse(cleaned));
+          } else {
+            el.textContent = cleaned;
+          }
+        } catch(e) { el.textContent = cleaned; }
+      }
+      files.forEach(function(f) {
+        el.appendChild(renderFileCard(f.name, f.content));
+      });
+    } else if (/\[\[CC_UI:/.test(text)) {
+      var t2 = text.replace(/\[\[CC_UI:[^\]]+\]\]/g, '').trim();
+      if (t2 !== text) {
+        try {
+          if (window.marked && window.DOMPurify) el.innerHTML = DOMPurify.sanitize(marked.parse(t2));
+          else el.textContent = t2;
+        } catch(e) {}
+      }
+    }
+  }
+
+  // Expand UI agent
+  window.CC.UI = window.CC.UI || {};
+  var _apply = window.CC.UI.applyTheme;
+  window.CC.UI.parseAndRun = function(text) {
+    if (!text) return text;
+    var self = this;
+    String(text).replace(/\[\[CC_UI:theme=([a-zA-Z]+)\]\]/gi, function(_, n) {
+      if (self.applyTheme) self.applyTheme(n);
+      return '';
+    });
+    if (/\[\[CC_UI:settings\]\]/i.test(text) && self.openSettings) self.openSettings();
+    if (/\[\[CC_UI:newchat\]\]/i.test(text) && self.newChat) self.newChat();
+    if (/\[\[CC_UI:scroll=bottom\]\]/i.test(text)) {
+      var box = document.getElementById('flashMessages');
+      if (box) box.scrollTop = box.scrollHeight;
+    }
+    return String(text).replace(/\[\[CC_UI:[^\]]+\]\]/gi, '').trim();
+  };
+  window.CC.UI.tryLocalCommand = function(text) {
+    var t = String(text || '').trim();
+    // theme
+    var m = t.match(/^(?:change|set|switch)\s+theme\s+(?:to\s+)?(dark|light|waves?|blue|black|white|classic)/i);
+    if (m) { this.applyTheme && this.applyTheme(m[1]); return true; }
+    if (/^(open settings|открой настройки)$/i.test(t)) { this.openSettings && this.openSettings(); return true; }
+    if (/^(new chat|новый чат)$/i.test(t)) { this.newChat && this.newChat(); return true; }
+    // natural: create empty downloadable stub is server-side
+    return false;
+  };
+
+  /* Observe bot messages */
+  function observe() {
+    var box = document.getElementById('flashMessages');
+    if (!box || box.__ccTopObs) return;
+    box.__ccTopObs = true;
+    new MutationObserver(function(muts) {
+      muts.forEach(function(mu) {
+        mu.addedNodes.forEach(function(n) {
+          if (n.nodeType !== 1) return;
+          if (n.classList && (n.classList.contains('message') || n.classList.contains('msg') || n.classList.contains('bot'))) {
+            setTimeout(function(){ processBotHtml(n); }, 50);
+            setTimeout(function(){ processBotHtml(n); }, 400);
+          }
+          // also nested
+          if (n.querySelectorAll) {
+            n.querySelectorAll('.message.bot, .msg.bot, .bot').forEach(function(el){
+              setTimeout(function(){ processBotHtml(el); }, 80);
+            });
+          }
+        });
+      });
+    }).observe(box, { childList: true, subtree: true });
+  }
+  setTimeout(observe, 500);
+  setTimeout(observe, 2000);
+
+  /* Empty state */
+  function ensureEmpty() {
+    var box = document.getElementById('flashMessages');
+    if (!box) return;
+    var hasMsg = box.querySelector('.message, .msg');
+    var empty = document.getElementById('ccEmptyState');
+    if (!hasMsg) {
+      if (!empty) {
+        empty = document.createElement('div');
+        empty.id = 'ccEmptyState';
+        empty.className = 'cc-empty-state';
+        empty.innerHTML =
+          '<img class="cc-empty-logo" src="chatclaud-avatar-transparent.png" alt="" onerror="this.style.display=\'none\'"/>' +
+          '<h2>ChatClaud</h2>' +
+          '<p>Ask anything. Search the web. Create files. Change the theme — just say it.</p>' +
+          '<div class="cc-empty-hints">' +
+            '<button type="button" class="cc-empty-hint" data-q="/search latest AI news">/search news</button>' +
+            '<button type="button" class="cc-empty-hint" data-q="Create a simple index.html landing page as a file">Create a file</button>' +
+            '<button type="button" class="cc-empty-hint" data-q="change theme to waves">Theme: waves</button>' +
+            '<button type="button" class="cc-empty-hint" data-q="Explain quantum computing simply">Explain something</button>' +
+          '</div>';
+        box.appendChild(empty);
+        empty.querySelectorAll('.cc-empty-hint').forEach(function(btn){
+          btn.addEventListener('click', function(){
+            var q = btn.getAttribute('data-q');
+            var input = document.getElementById('flashInput') || document.querySelector('#flashChat textarea');
+            if (input) { input.value = q; input.focus(); }
+            var send = document.getElementById('flashSend');
+            if (send) send.click();
+          });
+        });
+      }
+    } else if (empty) {
+      empty.remove();
+    }
+  }
+  setInterval(ensureEmpty, 800);
+
+  /* Scroll to bottom button */
+  function ensureScrollBtn() {
+    var chat = document.getElementById('flashChat');
+    var box = document.getElementById('flashMessages');
+    if (!chat || !box) return;
+    var btn = document.getElementById('ccScrollBottom');
+    if (!btn) {
+      btn = document.createElement('button');
+      btn.id = 'ccScrollBottom';
+      btn.className = 'cc-scroll-bottom';
+      btn.type = 'button';
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>';
+      chat.style.position = chat.style.position || 'relative';
+      chat.appendChild(btn);
+      btn.onclick = function(){ box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' }); };
+    }
+    var nearBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 120;
+    btn.classList.toggle('show', !nearBottom && box.scrollHeight > box.clientHeight + 200);
+  }
+  setInterval(ensureScrollBtn, 400);
+  document.addEventListener('scroll', ensureScrollBtn, true);
+
+  window.CC.Files = { renderFileCard: renderFileCard, processBotHtml: processBotHtml };
+})();
+</script>
+
 </body>
 </html>
