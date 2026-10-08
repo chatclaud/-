@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>ChatClaud</title>
-    <link rel="icon" href="icon-512.png" type="image/jpeg">
+    <link rel="icon" href="icon-512.png" type="image/png">
     <link rel="icon" href="icon-512.png" type="image/png" sizes="192x192">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <link rel="apple-touch-icon" href="icon-512.png">
@@ -15675,6 +15675,60 @@ body.cc-bg-light #flashMessages .message.user {
   border: none; cursor: pointer;
 }
 .cc-suggest-chip:active { transform: scale(0.96); }
+
+/* === CC MODULE: ui-chrome (no strip, no frames) === */
+html, body {
+  background: var(--bg, #0a0a0a) !important;
+}
+.top-bar,
+#flashChat .top-bar,
+.chat-layout > .top-bar,
+header.top-bar,
+.chat-header {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.top-bar::before,
+.top-bar::after,
+.chat-header::before,
+.chat-header::after { display: none !important; content: none !important; }
+
+/* input: no box */
+.input-row,
+.input-shell,
+.chat-input-bar,
+#flashInput,
+textarea#flashInput,
+#expertInput {
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  background: rgba(255,255,255,0.04) !important;
+}
+.input-row:focus-within,
+.input-shell:focus-within {
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.08) !important;
+}
+
+/* messages: soft shadow only */
+.agent-message, .user-message, .msg-ai, .msg-user, .message.assistant, .message.user {
+  border: none !important;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.35) !important;
+}
+.user-message, .msg-user, .message.user {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4) !important;
+}
+
+/* side ambient */
+.chat-layout, #flashChat, .messages, #flashMessages {
+  box-shadow: inset 0 0 80px rgba(0,0,0,0.25);
+}
+
 </style>
 
 <script id="cc-top-agent">
