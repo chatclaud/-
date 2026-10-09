@@ -13,3 +13,5 @@ NOVA_API_TOKEN=
 TAVILY_KEY=
 RUNWAYML_API_SECRET=
 RUNWAY_VIDEO_MODEL=gen4.5
+
+# Plus: after /api/plus/grant client must send username + plusToken

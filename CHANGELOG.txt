@@ -1,0 +1,16 @@
+ChatClaud ultimate engineering upgrade
+
+Search / evidence:
+- Claim candidates + per-claim assess against sources
+- Primary-source scoring heuristic (official domains)
+- Snippet vs fetched distinction; temporal honesty note
+- Pipeline deadline + AbortController on Nova (prior)
+
+Auth:
+- Plus requires username + plusToken from /api/plus/grant (token stored server-side)
+- Client body.plus / isPlus ignored
+
+Security:
+- SSRF blocks private/metadata; untrusted content boundaries
+
+Tests: 41 automated (mocked). Live providers not called in CI environment.
