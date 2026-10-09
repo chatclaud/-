@@ -1,0 +1,20 @@
+Autonomous Learning Engine (ALE)
+
+From repos (ideas only, MIT-compatible patterns, no code copy):
+- Autonomous Research Agent: scheduled cycle, harvester, self-assess, finetune-as-dataset
+- Onyx: local structured store + FTS-style retrieval
+- RAG Agent: retrieve-then-generate into chat context
+- Firecrawl web-agent: not integrated (paid/API); Nova remains fetch path
+
+Implemented:
+- Level A: file KB data/ale/knowledge.json, queue/state, research cycle via existing pipeline
+- Level B: claim statuses into facts; admin metrics
+- Level C: finetune dataset export only (no GPU training on Render)
+- Admin API: /api/ale/status|start|stop|tick|search|finetune/export (ADMIN_SECRET)
+- Chat injects local KB hits before live search
+- Limits: tasks/cycle, pages, timeouts, cycle lock
+
+NOT claimed:
+- Live web harvest in tests (mocks only)
+- Actual model weight fine-tuning
+- Persistent disk on Render free (data/ale ephemeral unless disk attached)

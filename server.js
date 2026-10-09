@@ -1464,6 +1464,287 @@ async function multimodalPhotoSearch(imageDataUrl, userText) {
 
 
 /* ========== SERVER ========== */
+
+/* ========== ALE: Autonomous Learning Engine (Level A knowledge + Level B eval; Level C experimental) ==========
+ * Inspired by patterns from Autonomous Research Agent (scheduler+harvester+assess),
+ * Onyx (SQLite/FTS style local store), RAG agents (retrieve-then-generate).
+ * No Python deps. File-backed store under data/ale/ (ephemeral on Render free — use disk or external DB for prod).
+ */
+const ALE_DIR = path.join(ROOT, 'data', 'ale');
+const ALE_KB_FILE = path.join(ALE_DIR, 'knowledge.json');
+const ALE_QUEUE_FILE = path.join(ALE_DIR, 'queue.json');
+const ALE_STATE_FILE = path.join(ALE_DIR, 'state.json');
+const ALE_EVAL_FILE = path.join(ALE_DIR, 'eval-log.json');
+const ALE_FINETUNE_DIR = path.join(ALE_DIR, 'finetune-datasets');
+
+const ALE_DEFAULTS = {
+  enabled: false,
+  intervalMs: 30 * 60 * 1000, // 30 min default when enabled
+  maxTasksPerCycle: 2,
+  maxPagesPerTask: 3,
+  maxSearchCallsPerTask: 2,
+  taskTimeoutMs: 90000,
+  cycleBudgetMs: 120000,
+  topics: [
+    'artificial intelligence safety',
+    'web security OWASP',
+    'Node.js best practices',
+    'machine learning evaluation',
+    'software engineering documentation',
+  ],
+};
+
+function aleEnsureDir() {
+  try {
+    if (!fs.existsSync(ALE_DIR)) fs.mkdirSync(ALE_DIR, { recursive: true });
+    if (!fs.existsSync(ALE_FINETUNE_DIR)) fs.mkdirSync(ALE_FINETUNE_DIR, { recursive: true });
+  } catch (e) { console.warn('[ale] mkdir', e.message); }
+}
+
+function aleReadJson(file, fallback) {
+  try {
+    if (!fs.existsSync(file)) return fallback;
+    return JSON.parse(fs.readFileSync(file, 'utf8') || 'null') || fallback;
+  } catch (e) { return fallback; }
+}
+
+function aleWriteJson(file, obj) {
+  aleEnsureDir();
+  const tmp = file + '.tmp';
+  fs.writeFileSync(tmp, JSON.stringify(obj, null, 2), 'utf8');
+  fs.renameSync(tmp, file);
+}
+
+function aleGetState() {
+  return aleReadJson(ALE_STATE_FILE, {
+    enabled: false,
+    lastCycleAt: null,
+    nextCycleAt: null,
+    running: false,
+    lastError: null,
+    stats: { cycles: 0, pages: 0, docs: 0, facts: 0, errors: 0 },
+    config: Object.assign({}, ALE_DEFAULTS),
+  });
+}
+
+function aleSaveState(st) { aleWriteJson(ALE_STATE_FILE, st); }
+
+function aleGetKb() {
+  return aleReadJson(ALE_KB_FILE, { documents: [], facts: [], updatedAt: null });
+}
+
+function aleSaveKb(kb) {
+  kb.updatedAt = new Date().toISOString();
+  aleWriteJson(ALE_KB_FILE, kb);
+}
+
+function aleGetQueue() {
+  return aleReadJson(ALE_QUEUE_FILE, { pending: [], running: null, done: [], failed: [] });
+}
+
+function aleSaveQueue(q) { aleWriteJson(ALE_QUEUE_FILE, q); }
+
+function aleDocId(url) {
+  return require('crypto').createHash('sha1').update(String(url || '')).digest('hex').slice(0, 16);
+}
+
+function aleSearchLocal(query, limit) {
+  const kb = aleGetKb();
+  const q = String(query || '').toLowerCase();
+  const tokens = q.split(/[^a-zа-я0-9]+/i).filter((t) => t.length > 2).slice(0, 10);
+  if (!tokens.length) return [];
+  const scored = [];
+  for (const d of kb.documents || []) {
+    const blob = ((d.title || '') + ' ' + (d.text || '') + ' ' + (d.url || '')).toLowerCase();
+    let score = 0;
+    for (const t of tokens) if (blob.includes(t)) score += 1;
+    if (score > 0) scored.push({ score, doc: d });
+  }
+  for (const f of kb.facts || []) {
+    const blob = ((f.text || '') + ' ' + (f.topic || '')).toLowerCase();
+    let score = 0;
+    for (const t of tokens) if (blob.includes(t)) score += 1;
+    if (score > 0) scored.push({ score, fact: f });
+  }
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, limit || 8);
+}
+
+function aleBuildKbContext(query) {
+  const hits = aleSearchLocal(query, 6);
+  if (!hits.length) return '';
+  const lines = ['[Local knowledge base — prefer if dates are fresh; still verify with live search when needed]'];
+  hits.forEach((h, i) => {
+    if (h.doc) {
+      lines.push((i + 1) + '. DOC ' + (h.doc.title || '') + ' — ' + (h.doc.url || '') + ' [' + (h.doc.retrievedAt || '') + ']');
+      lines.push(String(h.doc.text || '').slice(0, 800));
+    } else if (h.fact) {
+      lines.push((i + 1) + '. FACT (' + (h.fact.status || '') + ') ' + (h.fact.text || '').slice(0, 300));
+      if (h.fact.sourceUrl) lines.push('   src: ' + h.fact.sourceUrl);
+    }
+  });
+  return lines.join('\n');
+}
+
+async function aleRunOneTask(topic, budgetMs) {
+  const started = Date.now();
+  const deadline = started + (budgetMs || ALE_DEFAULTS.taskTimeoutMs);
+  const remaining = () => Math.max(500, deadline - Date.now());
+  const result = { topic, docs: 0, facts: 0, errors: [], sources: [] };
+  try {
+    const pipe = await runSearchPipeline(topic, {
+      maxHops: 2,
+      maxFetch: 3,
+      maxSearchCalls: 2,
+      deadlineMs: remaining(),
+      forceDeep: false,
+    });
+    const kb = aleGetKb();
+    const now = new Date().toISOString();
+    for (const s of pipe.sources || []) {
+      if (!s.url || !isSafeUrl(s.url)) continue;
+      const id = aleDocId(s.url);
+      const existing = (kb.documents || []).find((d) => d.id === id);
+      const textSnippet = (s.snippet || '').slice(0, 2000);
+      if (existing) {
+        existing.lastSeenAt = now;
+        existing.title = s.title || existing.title;
+        if (s.fetched && s.relevant) existing.fetched = true;
+      } else {
+        kb.documents.push({
+          id, url: s.url, title: s.title || s.url,
+          text: textSnippet, retrievedAt: now, lastSeenAt: now,
+          fetched: !!(s.fetched && s.relevant), topic,
+        });
+        result.docs += 1;
+      }
+      result.sources.push(s.url);
+    }
+    // Facts from claim assessment
+    for (const c of pipe.claims || []) {
+      const status = c.verdict === 'supported' ? 'supported'
+        : c.verdict === 'partial' ? 'partial'
+        : c.verdict === 'snippet_only' ? 'snippet_only' : 'insufficient';
+      const src = (c.sources && c.sources[0]) || {};
+      kb.facts.push({
+        id: aleDocId(c.claim + '|' + (src.url || '')),
+        text: c.claim,
+        topic,
+        status,
+        sourceUrl: src.url || '',
+        sourceTitle: src.title || '',
+        checkedAt: now,
+        evidenceStatus: src.status || '',
+      });
+      result.facts += 1;
+    }
+    // Cap store size
+    if (kb.documents.length > 500) kb.documents = kb.documents.slice(-500);
+    if (kb.facts.length > 2000) kb.facts = kb.facts.slice(-2000);
+    aleSaveKb(kb);
+  } catch (e) {
+    result.errors.push(String(e.message || e).slice(0, 200));
+  }
+  return result;
+}
+
+let aleTimer = null;
+let aleCycleLock = false;
+
+async function aleRunCycle(trigger) {
+  const st = aleGetState();
+  if (aleCycleLock) return { ok: false, error: 'cycle already running' };
+  aleCycleLock = true;
+  st.running = true;
+  st.lastError = null;
+  aleSaveState(st);
+  const cycleStart = Date.now();
+  const config = Object.assign({}, ALE_DEFAULTS, st.config || {});
+  const results = [];
+  try {
+    const topics = (config.topics && config.topics.length) ? config.topics : ALE_DEFAULTS.topics;
+    const n = Math.min(config.maxTasksPerCycle || 2, topics.length);
+    // Pick topics: rotate by cycle count
+    const offset = (st.stats.cycles || 0) % topics.length;
+    for (let i = 0; i < n; i++) {
+      if (Date.now() - cycleStart > (config.cycleBudgetMs || 120000)) break;
+      const topic = topics[(offset + i) % topics.length];
+      const r = await aleRunOneTask(topic, config.taskTimeoutMs || 90000);
+      results.push(r);
+      st.stats.pages += (r.sources || []).length;
+      st.stats.docs += r.docs;
+      st.stats.facts += r.facts;
+      if (r.errors && r.errors.length) st.stats.errors += r.errors.length;
+    }
+    st.stats.cycles = (st.stats.cycles || 0) + 1;
+    st.lastCycleAt = new Date().toISOString();
+    st.nextCycleAt = new Date(Date.now() + (config.intervalMs || ALE_DEFAULTS.intervalMs)).toISOString();
+  } catch (e) {
+    st.lastError = String(e.message || e).slice(0, 300);
+  } finally {
+    st.running = false;
+    aleCycleLock = false;
+    aleSaveState(st);
+  }
+  return { ok: true, trigger: trigger || 'manual', results, stats: st.stats };
+}
+
+function aleStartScheduler() {
+  const st = aleGetState();
+  st.enabled = true;
+  st.config = Object.assign({}, ALE_DEFAULTS, st.config || {});
+  aleSaveState(st);
+  if (aleTimer) clearInterval(aleTimer);
+  const interval = Math.max(60 * 1000, Number(st.config.intervalMs) || ALE_DEFAULTS.intervalMs);
+  aleTimer = setInterval(function () {
+    const s = aleGetState();
+    if (!s.enabled) return;
+    if (aleCycleLock) return;
+    aleRunCycle('scheduler').catch(function (e) {
+      console.warn('[ale] cycle', e.message);
+    });
+  }, interval);
+  st.nextCycleAt = new Date(Date.now() + interval).toISOString();
+  aleSaveState(st);
+  return { ok: true, enabled: true, intervalMs: interval };
+}
+
+function aleStopScheduler() {
+  if (aleTimer) { clearInterval(aleTimer); aleTimer = null; }
+  const st = aleGetState();
+  st.enabled = false;
+  st.nextCycleAt = null;
+  aleSaveState(st);
+  return { ok: true, enabled: false };
+}
+
+/** Level C experimental: export finetune dataset only (no weight training on Render) */
+function aleExportFinetuneDataset() {
+  aleEnsureDir();
+  const kb = aleGetKb();
+  const examples = [];
+  for (const f of (kb.facts || []).filter((x) => x.status === 'supported').slice(-200)) {
+    examples.push({
+      instruction: 'Answer based on verified knowledge.',
+      input: f.topic || '',
+      output: f.text + (f.sourceUrl ? ' Source: ' + f.sourceUrl : ''),
+    });
+  }
+  const name = 'dataset-' + new Date().toISOString().replace(/[:.]/g, '-') + '.jsonl';
+  const file = path.join(ALE_FINETUNE_DIR, name);
+  fs.writeFileSync(file, examples.map((e) => JSON.stringify(e)).join('\n'), 'utf8');
+  return { ok: true, file: name, count: examples.length, note: 'Dataset only. Actual fine-tuning requires external GPU worker; not run on Render free tier.' };
+}
+
+function aleRequireAdmin(body, req) {
+  const secret = process.env.ADMIN_SECRET || process.env.PLUS_BOT_SECRET || '';
+  if (!secret) return { ok: false, error: 'ADMIN_SECRET not configured' };
+  const provided = (body && body.secret) || (req.headers['x-admin-secret'] || '');
+  if (String(provided) !== secret) return { ok: false, error: 'forbidden' };
+  return { ok: true };
+}
+
+
 const server = http.createServer(async (req, res) => {
   const u = new URL(req.url || '/', 'http://localhost');
   const pathname = u.pathname;
@@ -1490,6 +1771,20 @@ const server = http.createServer(async (req, res) => {
       if (!messages.length) return send(res, 400, { error: 'messages required' });
       const trimmed = messages.slice(-30);
       let novaSourcesForClient = [];
+      /* ALE: inject local knowledge when available */
+      try {
+        let lastQ = '';
+        for (let i = trimmed.length - 1; i >= 0; i--) {
+          if (trimmed[i] && trimmed[i].role === 'user') { lastQ = String(trimmed[i].content || ''); break; }
+        }
+        const kbCtx = aleBuildKbContext(lastQ.slice(0, 300));
+        if (kbCtx && lastQ) {
+          const idxU = trimmed.map((m, i) => (m && m.role === 'user' ? i : -1)).filter((i) => i >= 0).pop();
+          if (idxU >= 0) {
+            trimmed[idxU] = { role: 'user', content: String(trimmed[idxU].content || '') + '\n\n' + kbCtx };
+          }
+        }
+      } catch (e) { console.warn('[ale] kb inject', e.message); }
 
       /* === URL enrichment через Nova === */
       try {
@@ -2039,7 +2334,94 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  if (pathname === '/api/health') {
+  
+  /* --- ALE admin (requires ADMIN_SECRET) --- */
+  if (pathname === '/api/ale/status' && (req.method === 'GET' || req.method === 'POST')) {
+    try {
+      let body = {};
+      if (req.method === 'POST') body = await readBody(req);
+      const auth = aleRequireAdmin(body, req);
+      if (!auth.ok) return send(res, 403, { error: auth.error });
+      const st = aleGetState();
+      const kb = aleGetKb();
+      return send(res, 200, {
+        ok: true,
+        enabled: !!st.enabled,
+        running: !!st.running,
+        lastCycleAt: st.lastCycleAt,
+        nextCycleAt: st.nextCycleAt,
+        lastError: st.lastError,
+        stats: st.stats,
+        config: st.config,
+        knowledge: {
+          documents: (kb.documents || []).length,
+          facts: (kb.facts || []).length,
+          updatedAt: kb.updatedAt,
+        },
+        storageNote: 'File store under data/ale/. Ephemeral on Render free tier unless persistent disk attached.',
+      });
+    } catch (e) {
+      return send(res, 500, { error: e.message || 'ale status fail' });
+    }
+  }
+  if (pathname === '/api/ale/start' && req.method === 'POST') {
+    try {
+      const body = await readBody(req);
+      const auth = aleRequireAdmin(body, req);
+      if (!auth.ok) return send(res, 403, { error: auth.error });
+      if (body.config && typeof body.config === 'object') {
+        const st = aleGetState();
+        st.config = Object.assign({}, ALE_DEFAULTS, st.config || {}, body.config);
+        aleSaveState(st);
+      }
+      return send(res, 200, aleStartScheduler());
+    } catch (e) {
+      return send(res, 500, { error: e.message || 'ale start fail' });
+    }
+  }
+  if (pathname === '/api/ale/stop' && req.method === 'POST') {
+    try {
+      const body = await readBody(req);
+      const auth = aleRequireAdmin(body, req);
+      if (!auth.ok) return send(res, 403, { error: auth.error });
+      return send(res, 200, aleStopScheduler());
+    } catch (e) {
+      return send(res, 500, { error: e.message || 'ale stop fail' });
+    }
+  }
+  if (pathname === '/api/ale/tick' && req.method === 'POST') {
+    try {
+      const body = await readBody(req);
+      const auth = aleRequireAdmin(body, req);
+      if (!auth.ok) return send(res, 403, { error: auth.error });
+      const out = await aleRunCycle('manual');
+      return send(res, 200, out);
+    } catch (e) {
+      return send(res, 500, { error: e.message || 'ale tick fail' });
+    }
+  }
+  if (pathname === '/api/ale/search' && req.method === 'POST') {
+    try {
+      const body = await readBody(req);
+      const q = String(body.q || body.query || '').slice(0, 300);
+      const hits = aleSearchLocal(q, 10);
+      return send(res, 200, { ok: true, query: q, hits });
+    } catch (e) {
+      return send(res, 500, { error: e.message || 'ale search fail' });
+    }
+  }
+  if (pathname === '/api/ale/finetune/export' && req.method === 'POST') {
+    try {
+      const body = await readBody(req);
+      const auth = aleRequireAdmin(body, req);
+      if (!auth.ok) return send(res, 403, { error: auth.error });
+      return send(res, 200, aleExportFinetuneDataset());
+    } catch (e) {
+      return send(res, 500, { error: e.message || 'export fail' });
+    }
+  }
+
+if (pathname === '/api/health') {
     return send(res, 200, {
       ok: true,
       hasGroq: (typeof groqKeys === "function" ? groqKeys().length > 0 : !!(process.env.GROQ_KEY||process.env.GROQ_API_KEY)),

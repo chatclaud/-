@@ -14,4 +14,6 @@ TAVILY_KEY=
 RUNWAYML_API_SECRET=
 RUNWAY_VIDEO_MODEL=gen4.5
 
-# Plus: after /api/plus/grant client must send username + plusToken
+# ALE (optional)
+# ADMIN_SECRET=  # required for /api/ale/* admin routes
+# ALE starts disabled; POST /api/ale/start { "secret":"..." }
