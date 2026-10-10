@@ -3695,6 +3695,7 @@ body {
 }
 
 
+</style>
 <script>
 window.__ccBoot = { ok: false, errors: [] };
 window.__ccShowBootError = function(msg) {
@@ -3731,10 +3732,16 @@ setTimeout(function() {
 /* MUST load first — GitHub Pages → backend URL */
 (function () {
   var def = 'https://chatclaud.onrender.com';
+  var fromQ = '';
+  try {
+    var q = new URLSearchParams(location.search || '');
+    fromQ = (q.get('api') || q.get('backend') || '').trim();
+  } catch (e) {}
   try {
     var s = localStorage.getItem('CC_API_BASE');
     if (s && String(s).trim()) def = String(s).trim();
   } catch (e) {}
+  if (fromQ) def = fromQ;
   window.CC_API_BASE = String(def).replace(/\/+$/, '');
   window.ccApiUrl = function (path) {
     path = String(path || '');
@@ -3746,6 +3753,12 @@ setTimeout(function() {
 })();
 </script>
 
+<style id="cc-boot-guard">
+  /* Hidden overlays stay hidden until opened. */
+  .cc-imagine-modal:not(.open){display:none !important;}
+  .cc-imagine-modal.open{display:flex !important;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.72);align-items:center;justify-content:center;padding:1rem;}
+  .cc-imagine-panel{background:#14141a;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:18px;max-width:420px;width:100%;color:#eee;}
+</style>
 </head>
 <body>
 <!--
@@ -12949,7 +12962,7 @@ function buildImageUrl(userPrompt, opts) {
                 return await ccApiChat(msgs, CC_IDENTITY);
             } catch (e) { lastErr = e; }
             throw lastErr || new Error('Сейчас все каналы заняты. Напиши ещё раз через minу.');
-        }
+        };
 
         
         // ===== ChatClaud v2: empty Ask me + fuel + rate modals + /search =====

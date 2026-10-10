@@ -1,9 +1,24 @@
 /**
- * ChatClaud — сервер для Render
- * Env: GROQ_KEY, MISTRAL_API_KEY, NOVA_URL, NOVA_API_TOKEN,
- *      PLUS_BOT_SECRET, ADMIN_SECRET, NETLIFY_DEPLOY_TOKEN, PORT
+ * ChatClaud — server (Render / Railway). Also serves the web app from the same origin.
+ * Secrets ONLY via environment variables. Never commit keys.
+ * See RAILWAY_VARIABLES.md and .env.example in the repository root.
  */
 const http = require('http');
+// Env name aliases: the owner's Render/Railway variables may use these spellings.
+// Canonical names are preferred; a misspelled name is copied over only if the canonical one is empty.
+const ENV_ALIASES = {
+  MISTRAL_API_KEY: ['MINSTRAL_AIP_KEY', 'MINSTRAL_API_KEY', 'MISTRAL_AIP_KEY'],
+  NOVA_API_TOKEN: ['NOVA_AIP_TOKEN'],
+  TAVILY_API_KEY: ['TAVILY_AIP', 'TAVILY_AIP_KEY'],
+  TAVILY_KEY: ['TAVILY_AIP', 'TAVILY_AIP_KEY'],
+};
+for (const [canonical, aliases] of Object.entries(ENV_ALIASES)) {
+  if (!String(process.env[canonical] || '').trim()) {
+    for (const a of aliases) {
+      if (String(process.env[a] || '').trim()) { process.env[canonical] = process.env[a]; break; }
+    }
+  }
+}
 const fs = require('fs');
 const path = require('path');
 const { URL } = require('url');
@@ -26,6 +41,66 @@ const intelHttpGuard = intel.createIntelRequestGuard({
 const PORT = Number(process.env.PORT) || 10000;
 const HOST = '0.0.0.0';
 const ROOT = __dirname;
+
+/** CORS allowlist for GitHub Pages + local dev. Never use wildcard in production. */
+function parseAllowedOrigins() {
+  const raw = String(process.env.CORS_ORIGINS || process.env.ALLOWED_ORIGINS || '').trim();
+  const list = [];
+  if (raw) {
+    for (const part of raw.split(',')) {
+      const o = part.trim().replace(/\/+$/, '');
+      if (o) list.push(o);
+    }
+  }
+  // Safe local defaults for development
+  const defaults = [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:5173',
+    'http://localhost:8080',
+  ];
+  for (const d of defaults) {
+    if (!list.includes(d)) list.push(d);
+  }
+  return list;
+}
+const ALLOWED_ORIGINS = parseAllowedOrigins();
+
+function resolveCorsOrigin(req) {
+  const origin = String((req && req.headers && req.headers.origin) || '').trim();
+  if (!origin) return null;
+  // Exact match
+  if (ALLOWED_ORIGINS.includes(origin)) return origin;
+  // Allow any github.io pages under configured usernames/patterns via env CORS_ORIGINS
+  try {
+    const u = new URL(origin);
+    if (u.protocol === 'https:' && u.hostname.endsWith('.github.io')) {
+      // Only if user explicitly listed a github.io origin or wildcard pattern
+      for (const allowed of ALLOWED_ORIGINS) {
+        if (allowed === origin) return origin;
+        if (allowed.endsWith('.github.io') && origin.startsWith(allowed.replace(/\/+$/, ''))) return origin;
+      }
+      // If CORS_ALLOW_GITHUB_PAGES=1, allow any *.github.io (still better than *)
+      const allowGh = String(process.env.CORS_ALLOW_GITHUB_PAGES || '').trim().toLowerCase();
+      if (allowGh === '1' || allowGh === 'true' || allowGh === 'yes') return origin;
+    }
+  } catch (_) {}
+  return null;
+}
+
+function corsHeaders(req) {
+  const allowed = resolveCorsOrigin(req);
+  const headers = {
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Vary': 'Origin',
+  };
+  if (allowed) {
+    headers['Access-Control-Allow-Origin'] = allowed;
+  }
+  return headers;
+}
 
 const PLUS_FILE = path.join(ROOT, 'data', 'plus-grants.json');
 
@@ -185,14 +260,12 @@ function normalizeChatMessages(messages, system) {
   );
 }
 
-function send(res, code, body, type = 'application/json; charset=utf-8') {
-  res.writeHead(code, {
+function send(res, code, body, type = 'application/json; charset=utf-8', req = null) {
+  const headers = Object.assign({
     'Content-Type': type,
     'Cache-Control': 'no-store, no-cache, must-revalidate',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  });
+  }, corsHeaders(req || res.__req || null));
+  res.writeHead(code, headers);
   if (Buffer.isBuffer(body) || typeof body === 'string') res.end(body);
   else res.end(JSON.stringify(body));
 }
@@ -3038,7 +3111,8 @@ const server = http.createServer(async (req, res) => {
   const u = new URL(req.url || '/', 'http://localhost');
   const pathname = u.pathname;
 
-  if (req.method === 'OPTIONS') return send(res, 204, '');
+  res.__req = req;
+  if (req.method === 'OPTIONS') return send(res, 204, '', 'application/json; charset=utf-8', req);
 
   /* --- /api/chat --- */
   if (pathname === '/api/chat' && req.method === 'POST') {
@@ -3936,8 +4010,20 @@ module.exports = {
 if (require.main === module) {
   server.listen(PORT, HOST, () => {
     console.log('ChatClaud server on port', PORT);
+    console.log('CORS origins configured:', ALLOWED_ORIGINS.length);
   });
   server.on('error', (err) => console.error('ChatClaud server error:', err));
   process.on('unhandledRejection', (err) => console.error('Unhandled rejection:', err));
   process.on('uncaughtException', (err) => console.error('Uncaught exception:', err));
+  function shutdown(signal) {
+    console.log('Received', signal, '— shutting down');
+    try {
+      server.close(() => process.exit(0));
+      setTimeout(() => process.exit(0), 8000).unref();
+    } catch (_) {
+      process.exit(0);
+    }
+  }
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 }
