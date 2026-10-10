@@ -1382,6 +1382,9 @@ function parseAllowedOrigins() {
   }
   // Safe local defaults for development
   const defaults = [
+    // The production frontend is hosted at GitHub Pages; allow this exact origin,
+    // not a wildcard, so browser POST/preflight requests can reach this API.
+    'https://chatclaud.github.io',
     'http://localhost:3000',
     'http://localhost:5173',
     'http://127.0.0.1:3000',
