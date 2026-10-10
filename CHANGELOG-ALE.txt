@@ -82,3 +82,24 @@ NOT claimed:
 - aleRunCycle uses aleUpdateState for stats
 - locks: never unlink non-owned; no age/pid steal
 - RATE_FREE_HARD env for tests; real HTTP 429
+
+## Stage C — minimal intelligence core (2026-10-10)
+- modules/intelligence: planner, tool-registry, runner, verifier, flags
+- INTEL_ORCHESTRATOR default OFF
+- Routes: GET /api/intel/status, POST /api/intel/run (503 if off)
+- Tools: search, fetch_url (SSRF+no auto-redirect follow), kb_search, verify_claims
+- Hard limits: steps, tool calls, timeouts, sequential only
+- No DeepAgents/Mastra, no browser sidecar, no new memory/skills
+
+## Stage C.1 hardening + Stage D bounded research packet (2026-10-10)
+- Added SSRF-safe HTTP fetching with public-IP validation, DNS answer validation/pinning, bounded redirects, response caps, timeout and abort handling.
+- Kept the intelligence and Deep Research features disabled by default; Deep Research requires both INTEL_ORCHESTRATOR=1 and INTEL_DEEP_RESEARCH=1.
+- Added bounded request/active-task guard, cancellation propagation, more accurate partial/failed/cancelled statuses, and search-result/source validation.
+- Changed heuristic claim overlap to retrieval-only hints; it is not proof of factual support.
+- Restricted arbitrary page fetches to the local safe fetcher rather than forwarding caller-controlled URLs to the external Nova fetch endpoint.
+- Restricted Nova social extraction to canonical allowlisted social hosts and tightened YouTube/OEmbed URL parsing.
+- Added external page prompt-injection wrappers and corrected social metric labels so computed ratios are not represented as audience sentiment.
+- Removed stored email disclosure from the public username-only Plus status response; the existing Plus status and expiration fields remain for compatibility.
+- Added `POST /api/intel/research`, a separately feature-gated bounded source/evidence packet route. It is not a final LLM-synthesized answer and does not claim factual verification.
+- Added regression/security tests. Local result: node --check server.js passed; node --check modules/intelligence/deep-research.js passed; node --check modules/intelligence/safe-fetch.js passed; node --test tests/*.test.js: 162/162 passed.
+- Not tested: live provider credentials, real external websites, upstream builds/tests of all reference repositories, or production deployment.
