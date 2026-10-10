@@ -1341,6 +1341,8 @@ module.exports = { isHttpUrl, verifySearchResult, verifyFetchResult, verifyClaim
 // Canonical names are preferred; a misspelled name is copied over only if the canonical one is empty.
 const ENV_ALIASES = {
   MISTRAL_API_KEY: ['MINSTRAL_AIP_KEY', 'MINSTRAL_API_KEY', 'MISTRAL_AIP_KEY'],
+  // The deployed Render variable is historically misspelled MINSTRAL_MODEL.
+  MISTRAL_MODEL: ['MINSTRAL_MODEL'],
   NOVA_API_TOKEN: ['NOVA_AIP_TOKEN'],
   TAVILY_API_KEY: ['TAVILY_AIP', 'TAVILY_AIP_KEY'],
   TAVILY_KEY: ['TAVILY_AIP', 'TAVILY_AIP_KEY'],
@@ -2247,6 +2249,8 @@ async function mistralChat(messages, system, timeoutMs = PROVIDER_TIMEOUT_MS, ma
   throw new Error(String(lastErr).slice(0, 200));
 }
 
+// Hugging Face fallback intentionally removed: Groq -> Mistral is the configured chain.
+
 async function enhanceImaginePrompt(userPrompt, kind) {
   const source = String(userPrompt || '').trim().slice(0, 900);
   if (!source) return source;
@@ -2264,7 +2268,7 @@ async function enhanceImaginePrompt(userPrompt, kind) {
 }
 
 /** Analyze an uploaded data URL directly; do not let the vision provider fetch arbitrary URLs. */
-async function mistralVision(imageDataUrl, prompt) {
+async function mistralVision(imageDataUrl, prompt, timeoutMs = 20000) {
   const keys = mistralKeys();
   if (!keys.length) throw new Error('no mistral vision provider; configure MISTRAL_API_KEY');
   const dataUrl = String(imageDataUrl || '').trim();
@@ -2273,7 +2277,7 @@ async function mistralVision(imageDataUrl, prompt) {
   }
   if (dataUrl.length > 8_000_000) throw new Error('image_too_large_max_6mb_encoded');
   const configured = String(process.env.MISTRAL_VISION_MODEL || process.env.MISTRAL_MODEL || 'mistral-small-latest').trim();
-  const models = [...new Set([configured, 'mistral-small-latest', 'mistral-medium-latest'].filter(Boolean))];
+  const models = [...new Set([configured || 'mistral-small-latest'].filter(Boolean))];
   const visionPrompt = String(prompt || 'Describe the image accurately. Read visible text when possible. Separate direct observations from uncertainty.').slice(0, 4000);
   let lastErr = 'empty vision response';
   for (const key of keys) for (const model of models) {
@@ -2290,7 +2294,7 @@ async function mistralVision(imageDataUrl, prompt) {
           max_tokens: 1200,
           temperature: 0.1,
         }),
-      }, 55000);
+      }, Math.max(1000, Math.min(30000, Number(timeoutMs) || 20000)));
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         lastErr = (data.error && (data.error.message || data.error)) || ('mistral vision ' + res.status);
@@ -4586,7 +4590,7 @@ const server = http.createServer(async (req, res) => {
             console.log('[mm] done sources=', novaSourcesForClient.length, 'q=', (mm.query || '').slice(0, 80));
           } else {
             try {
-              const v = await mistralVision(img, `Analyze the attached image in the context of the user question. Describe observable objects, scene and visible text (OCR). Separate direct observations from uncertain inferences. Reply in the user's language. User request: ${lastUserImg.slice(0, 1000)}`);
+              const v = await mistralVision(img, `Analyze the attached image in the context of the user question. Describe observable objects, scene and visible text (OCR). Separate direct observations from uncertain inferences. Reply in the user's language. User request: ${lastUserImg.slice(0, 1000)}`, 9000);
               if (v && v.text) trimmed[lastIdxImg] = { role: 'user', content: lastUserImg + '\n\n[Image analysis — observations, not guaranteed facts]\n' + String(v.text).slice(0, 5000) };
             } catch (ve) { console.warn('[mm] vision-only', ve.message); }
           }
@@ -4677,9 +4681,18 @@ const server = http.createServer(async (req, res) => {
       const skillInstructions = intel.buildSkillInstructions(skillQuery, { hasImage: attachedImage });
       const providerSystem = [CC_SYSTEM, body.system, skillInstructions].filter(Boolean).join('\n\n');
       const isReasoning = !!body.reason || /^(think|reason|reasoning)$/i.test(String(body.mode || ''));
+      // The UI cancels /api/chat after 55s. Keep each fallback bounded so the
+      // server cannot spend several 45–55s provider timeouts on one user message.
+      // Provider order is deliberate: Groq first, Mistral second.
       const providers = isReasoning
-        ? [['groq', () => groqChat(trimmed, providerSystem, true)], ['mistral', () => mistralChat(trimmed, providerSystem)]]
-        : [['groq', () => groqChat(trimmed, providerSystem, false)], ['mistral', () => mistralChat(trimmed, providerSystem)]];
+        ? [
+            ['groq', () => groqChat(trimmed, providerSystem, true, 7500, 2)],
+            ['mistral', () => mistralChat(trimmed, providerSystem, 7500, 2)]
+          ]
+        : [
+            ['groq', () => groqChat(trimmed, providerSystem, false, 7500, 2)],
+            ['mistral', () => mistralChat(trimmed, providerSystem, 7500, 2)]
+          ];
       for (const [name, call] of providers) {
         try {
           result = await call();
@@ -4804,7 +4817,7 @@ const server = http.createServer(async (req, res) => {
         try { prompt = await enhanceImaginePrompt(prompt, 'image'); } catch (e) {}
       }
       const ratio = String(body.ratio || 'portrait');
-      // Image generation uses the configured Runway service; Hugging Face is not part of this route.
+      // Image generation uses the configured Runway service.
       const model = String(body.model || process.env.RUNWAY_IMAGE_MODEL || 'gen4_image_turbo');
       const task = await runwayFetch('/v1/text_to_image', {
         model: model === 'gen4_image' ? 'gen4_image' : 'gen4_image_turbo',
@@ -5123,7 +5136,7 @@ if (pathname === '/api/health') {
       hasClaude: false,
       claudeKeys: 0,
       hasMistralVision: mistralKeys().length > 0,
-      hasTavily: !!process.env.TAVILY_KEY,
+      hasTavily: !!(process.env.TAVILY_KEY || process.env.TAVILY_API_KEY || process.env.TAVILY_AIP),
       hasSerper: !!process.env.SERPER_KEY,
       hasNova: !!((process.env.NOVA_URL || 'https://nova-brawser.onrender.com') && (process.env.NOVA_API_TOKEN || process.env.NOVA_AIP_TOKEN || process.env.API_TOKEN)),
       hasFetchUrl: true,

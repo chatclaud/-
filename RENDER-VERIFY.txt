@@ -1,0 +1,19 @@
+ChatClaud MISTRAL release
+
+Provider chain: Groq -> Mistral. Hugging Face keys are not required.
+
+Render environment variables (set values privately in Render):
+- GROQ_KEY
+- GROQ_MODEL=openai/gpt-oss-120b
+- MINSTRAL_AIP_KEY (legacy spelling accepted)
+- MINSTRAL_MODEL=mistral-small-latest (legacy spelling accepted)
+- NOVA_URL=https://nova-brawser.onrender.com
+- NOVA_AIP_TOKEN (if Nova requires its token)
+- TAVILY_AIP (if Tavily search is enabled)
+
+Photo analysis uses Mistral Vision through POST /api/vision and is also integrated into POST /api/chat when an image is attached. The server does not expose API keys to the browser.
+
+After deploying on Render, open /api/health and confirm hasGroq=true and hasMistral=true. Then test a text chat and upload a real image. A local mocked test cannot verify whether your private API keys are valid or whether your provider account has quota.
+
+Start command: npm start
+Node.js: 18 or newer
