@@ -102,9 +102,13 @@ function safeJoin(root, urlPath) {
         lower.startsWith('node_modules/') || lower.startsWith('.git') || lower.startsWith('refs/')) {
       return null;
     }
+    // Root-level public images (app icons, logo) and the Google site-verification file.
+    const rootAsset = parts.length === 1 &&
+      (/\.(png|jpe?g|webp|svg|ico|gif)$/i.test(base) || /^google[a-z0-9]+\.html$/i.test(base));
     const allowed =
       PUBLIC_STATIC_ALLOW.has(rel) ||
       PUBLIC_STATIC_ALLOW.has(base) ||
+      rootAsset ||
       PUBLIC_STATIC_PREFIXES.some(function (pref) { return lower.startsWith(pref); });
     // Allow common SPA assets by extension under root only if allowlisted path or prefix
     if (!allowed) {
