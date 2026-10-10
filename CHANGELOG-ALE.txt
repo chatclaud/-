@@ -18,3 +18,67 @@ NOT claimed:
 - Live web harvest in tests (mocks only)
 - Actual model weight fine-tuning
 - Persistent disk on Render free (data/ale ephemeral unless disk attached)
+
+## Stage 1 — Quarantine & fact status model (2026-10-10)
+- Added ALE fact statuses: supported, uncertain, contradicted, stale, rejected, snippet_only, insufficient
+- Legacy status "partial" migrates to "uncertain"
+- Non-public facts kept in kb.quarantine (not deleted)
+- Chat context (aleBuildKbContext / aleSearchLocal publicOnly) injects only supported facts
+- Heuristic "supported" tagged verificationMethod=claim-heuristic with explicit dual-verify limitation note
+- Safe migration of existing knowledge.json (dedupe by id, history on status change)
+- /api/ale/status reports factsSupported and quarantine counts
+- Tests: tests/ale-quarantine.test.js
+- No dual-model verify, no storage backend change, no UI/search/auth changes
+
+## Stage 2 — Dual-verify + safer document context (2026-10-10)
+- Feature flag ALE_DUAL_VERIFY (default OFF). Optional ALE_DUAL_MAX_PER_TASK, ALE_DUAL_TIMEOUT_MS.
+- When enabled: each new claim checked by Mistral (support) + Groq (refute) with structured JSON.
+- Programmatic validation: invalid JSON, timeout, API error, missing/mismatched quotes → never supported.
+- Quote-in-source check required before status=supported; model agreement alone is not enough.
+- Documents in aleBuildKbContext wrapped via wrapUntrustedPage; labeled untrusted, not verified facts.
+- /api/ale/status includes dualVerifyEnabled.
+- Tests: tests/ale-dual-verify.test.js (mock/pure logic; no live API).
+
+## Stage 2 fix — dual-verify correctness (2026-10-10)
+- Snippet alone never yields supported (any length); requires fetched page body
+- Per-source quote matching (no concatenated multi-page string)
+- Both models must support AND each quote binds to a fetched body
+- evidenceUrl/title taken from confirming source, not always first linked
+- When ALE_DUAL_VERIFY=1, claim-heuristic facts excluded from chat context (kept in storage)
+- Production helpers exported via module.exports for real unit tests
+- server.listen only when require.main === module
+
+## Stage 2 fix — strict quote↔URL binding (2026-10-10)
+- preferredUrls non-empty: quote only validated on matching pipeline sources
+- no fall-through to other pages
+- normalize: host lower, default ports, strip hash, KEEP query
+- finalUrl only if stored by pipeline
+
+## Stage 3 — durable knowledge storage (2026-10-10)
+- ALE_DATA_DIR env for persistent disk path (default ./data/ale)
+- schemaVersion=1 on knowledge/queue/state
+- Atomic write: tmp + fsync + rename
+- Exclusive .ale.lock with timeout + stale lock recovery
+- Corrupt JSON: quarantine to *.corrupt-<ts>, never silent empty overwrite
+- Idempotent migration preserves facts, quarantine, history, documents
+- Tests: restart, migration, lock, corruption, queue/history retention
+
+## Audit fix pack (post stage3) — 2026-10-10
+- safeJoin + contentType + public static allowlist (blocks server.js, ENV, tests, data, backups, traversal)
+- /api/deploy requires ADMIN_SECRET before any Netlify call
+- /api/ale/search requires admin auth
+- /api/vision uses real checkRate (removed rate={ok:true})
+- clientIp trusts X-Forwarded-For only when TRUST_PROXY=1
+- Plus: legacy username-only grants no longer valid (token required)
+- Locks: owner lockId; steal only if pid dead; unlock only own lock
+- RMW: aleUpdateKb / aleUpdateState / aleUpdateQueue under lock
+- Corrupt/wrong-shape JSON → quarantine + recovery-needed marker; writes blocked
+- schemaVersion newer than app → refuse load/write (no downgrade)
+- Tests: HTTP smoke, static deny, auth, concurrent processes, recovery, locks
+
+## Patch — RMW merge saves, no lock steal, vision 429 test (2026-10-10)
+- aleSaveKb/aleSaveQueue merge into latest locked state
+- aleRunOneTask applies deltas under lock after network
+- aleRunCycle uses aleUpdateState for stats
+- locks: never unlink non-owned; no age/pid steal
+- RATE_FREE_HARD env for tests; real HTTP 429
