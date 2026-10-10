@@ -1,0 +1,18 @@
+ChatClaud — audit corrections (2026-10-10)
+
+This is a separate audited candidate, not a live deployment.
+
+Corrections:
+- Closed the initial top-level stylesheet before the bootstrap script; the old file swallowed the bootstrap/head/body/skeleton markup into the style element until line 6817.
+- Changed GitHub Pages project-path asset URLs for the hero icon and Service Worker registration to relative URLs.
+- Resized apple-touch-icon.png to 180x180 to match its declared size.
+- Removed the last-four-character API-key suffix from Mistral provider error logs.
+- Preserved two bounded model/key attempts per provider (8 seconds each) instead of disabling all in-provider fallbacks after the first model.
+- Ignored and removed a stale/noncanonical CC_API_BASE override so the production site uses its configured Render backend.
+- Added the npm run check:deploy script and a checker for required runtime files, JSON manifest, icon sizes, bootstrap placement and project-path assets.
+- Added regression tests for these issues.
+
+Still not verified from this environment:
+- The current live Render /api/health and POST /api/chat could not be queried from the audit runtime.
+- Real Groq/Mistral/Tavily/Nova/Firebase credentials and account-side limits were not validated by live authenticated API calls.
+- Mocked integration tests validate route wiring and response shape, not the quality or availability of external providers.

@@ -1,0 +1,14 @@
+{
+  "scripts_total": 23,
+  "inline_js_checked": 17,
+  "inline_js_failures": [],
+  "local_refs_checked": 10,
+  "local_refs_missing": [],
+  "external_hosts": {
+    "chatclaud.netlify.app": 1,
+    "cdnjs.cloudflare.com": 3,
+    "cdn.jsdelivr.net": 1,
+    "t.me": 1,
+    "www.gstatic.com": 3
+  }
+}

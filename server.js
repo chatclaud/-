@@ -837,7 +837,7 @@ async function mistralChat(messages, system, timeoutMs = PROVIDER_TIMEOUT_MS, ma
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
           lastErr = (data.error && (data.error.message || data.error)) || ('mistral ' + res.status);
-          console.log('[mistral] key ending ...' + key.slice(-4), 'model', model, '-> HTTP', res.status, JSON.stringify(data).slice(0, 200));
+          console.log('[mistral] model', model, '-> HTTP', res.status, JSON.stringify(data).slice(0, 200));
           continue;
         }
         const t = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
@@ -3042,8 +3042,21 @@ const server = http.createServer(async (req, res) => {
 
   /* --- /api/chat --- */
   if (pathname === '/api/chat' && req.method === 'POST') {
+    // Safe request tracing: do not log prompts, image payloads, IPs, or credentials.
+    const chatRequestStartedAt = Date.now();
+    const chatRequestId = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+    console.log('[chat] start id=' + chatRequestId);
+    res.once('close', () => {
+      if (!res.writableEnded) {
+        console.warn('[chat] client_disconnected id=' + chatRequestId +
+          ' elapsed_ms=' + (Date.now() - chatRequestStartedAt));
+      }
+    });
     try {
       const body = await readBody(req);
+      console.log('[chat] parsed id=' + chatRequestId +
+        ' messages=' + (Array.isArray(body.messages) ? body.messages.length : 0) +
+        ' mode=' + String(body.mode || 'fast').slice(0, 24));
       const isPlusUser = resolveIsPlus(req, body);
       const rate = checkRate(req, isPlusUser);
       if (!rate.ok) {
@@ -3261,6 +3274,7 @@ const server = http.createServer(async (req, res) => {
         const videoHit = await handleVideoSearch(lastUser2);
         if (videoHit && videoHit.text) {
           videoHit.left = rate.left;
+          console.log('[chat] success id=' + chatRequestId + ' path=video elapsed_ms=' + (Date.now() - chatRequestStartedAt));
           return send(res, 200, videoHit);
         }
       } catch (e) {}
@@ -3277,12 +3291,14 @@ const server = http.createServer(async (req, res) => {
       const skillInstructions = intel.buildSkillInstructions(skillQuery, { hasImage: attachedImage });
       const providerSystem = [CC_SYSTEM, body.system, skillInstructions].filter(Boolean).join('\n\n');
       const isReasoning = !!body.reason || /^(think|reason|reasoning)$/i.test(String(body.mode || ''));
-      const providers = isReasoning
-        ? [['groq', () => groqChat(trimmed, providerSystem, true)], ['mistral', () => mistralChat(trimmed, providerSystem)]]
-        : [['groq', () => groqChat(trimmed, providerSystem, false)], ['mistral', () => mistralChat(trimmed, providerSystem)]];
-      for (const [name, call] of providers) {
+      const providers = [['groq'], ['mistral']];
+      for (const [name] of providers) {
         try {
-          result = await call();
+          // Bound each model attempt while preserving a second model/key candidate.
+          // Two providers × two 8-second attempts remain below the browser's 55s timeout for ordinary chat.
+          result = name === 'groq'
+            ? await groqChat(trimmed, providerSystem, isReasoning, 8000, 2)
+            : await mistralChat(trimmed, providerSystem, 8000, 2);
           if (result && result.text) break;
         } catch (e) {
           lastErr = e.message || String(e);
@@ -3292,6 +3308,7 @@ const server = http.createServer(async (req, res) => {
         }
       }
       if (!result || !result.text) {
+        console.warn('[chat] no_provider id=' + chatRequestId + ' elapsed_ms=' + (Date.now() - chatRequestStartedAt));
         return send(res, 503, {
           error: 'ChatClaud is overloaded right now. Please try again later.',
           code: 'NO_PROVIDER',
@@ -3303,8 +3320,12 @@ const server = http.createServer(async (req, res) => {
       result.rate = rate;
       result.provider = 'chatclaud';
       result.sources = novaSourcesForClient;
+      console.log('[chat] success id=' + chatRequestId + ' elapsed_ms=' + (Date.now() - chatRequestStartedAt));
       return send(res, 200, result);
     } catch (e) {
+      console.error('[chat] fatal id=' + chatRequestId +
+        ' elapsed_ms=' + (Date.now() - chatRequestStartedAt) +
+        ' error=' + publicProviderError(e));
       return send(res, 503, { error: 'ChatClaud is overloaded right now. Please try again later.', code: 'OVERLOADED' });
     }
   }

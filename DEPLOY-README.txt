@@ -25,7 +25,7 @@ Intelligence safety switches:
 - INTEL_ORCHESTRATOR and INTEL_DEEP_RESEARCH remain OFF by default
 - Enable only after staging/API-key verification; no deployment was performed as part of Stage B work
 
-Before deployment: npm test, npm run check, verify Render keys and run manual text/image/audio/research smoke tests in staging.
+Before deployment: run `npm run check:deploy` and `npm test`; verify Render keys and run manual text/image/audio/research smoke tests in staging.
 
 
 Critical package layout note:
