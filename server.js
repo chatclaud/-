@@ -1,6 +1,6 @@
 /**
  * ChatClaud — сервер для Render
- * Env: GROQ_KEY, MISTRAL_API_KEY, HF_TOKEN, NOVA_URL, NOVA_API_TOKEN,
+ * Env: GROQ_KEY, MISTRAL_API_KEY, NOVA_URL, NOVA_API_TOKEN,
  *      PLUS_BOT_SECRET, ADMIN_SECRET, NETLIFY_DEPLOY_TOKEN, PORT
  */
 const http = require('http');
@@ -160,8 +160,8 @@ function groqKeys() {
 }
 
 // Normalize chat messages for every provider.
-// IMPORTANT: /api/chat uses this before calling Groq/Mistral/HF.
-// Without this helper every provider fails with ReferenceError, while /api/health still looks healthy.
+// IMPORTANT: /api/chat uses this before calling Groq/Mistral.
+// Keeps the configured providers on a shared, predictable message schema.
 function normalizeChatMessages(messages, system) {
   const embeddedSystem = (messages || []).find((m) => m && m.role === 'system');
   const sys = system || (embeddedSystem && embeddedSystem.content) ||
@@ -657,92 +657,51 @@ function checkRate(req, isPlus) {
 }
 const RATE_LIMIT = RATE_FREE_HARD;
 
-function hfKeys() {
-  const out = [];
-  const seen = new Set();
-  const push = (v) => { v = String(v || '').trim(); if (v && !seen.has(v)) { seen.add(v); out.push(v); } };
-  ['HF_KEY','HF_KEY2','HF_KEY_1','HF_KEY_2','HF_KEY_3','HF_TOKEN','HUGGINGFACE_KEY','HUGGINGFACE_KEY_2','HUGGINGFACE_TOKEN'].forEach(k => push(process.env[k]));
-  Object.keys(process.env).forEach(k => { if (/^HF_/i.test(k) || /HUGGINGFACE/i.test(k)) push(process.env[k]); });
-  return out;
-}
+async function groqTranscribe(audioBuffer, mimeType, language) {
+  const keys = groqKeys();
+  if (!keys.length) throw new Error('no groq transcription provider');
+  const bytes = Buffer.isBuffer(audioBuffer) ? audioBuffer : Buffer.from(audioBuffer || []);
+  if (!bytes.length) throw new Error('empty audio');
+  if (bytes.length > 10 * 1024 * 1024) throw new Error('audio_too_large_max_10mb');
+  if (typeof FormData !== 'function' || typeof Blob !== 'function') throw new Error('audio upload unsupported by this Node runtime');
 
-async function hfVision(imageDataUrl, prompt) {
-  const keys = hfKeys();
-  if (!keys.length) throw new Error('no hf vision — set HF_KEY in Render');
-  let dataUrl = String(imageDataUrl || '');
-  // strip whitespace
-  dataUrl = dataUrl.trim();
-  if (dataUrl.length > 2_500_000) {
-    // too large for many routers — still try but warn
-    console.log('[vision] large payload', dataUrl.length);
-  }
-  const models = [
-    'Qwen/Qwen2.5-VL-7B-Instruct:fastest',
-    'zai-org/GLM-4.5V:fastest',
-    'Qwen/Qwen2.5-VL-32B-Instruct:fastest',
-    'meta-llama/Llama-3.2-11B-Vision-Instruct:fastest',
-    'Qwen/Qwen2.5-VL-72B-Instruct:fastest',
-  ];
-  const visionPrompt = prompt || 'Describe this image in detail in English. Be accurate.';
-  let lastErr = 'empty';
-  for (const key of keys) {
-    for (const model of models) {
-      try {
-        const res = await fetchWithTimeout('https://router.huggingface.co/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
-          body: JSON.stringify({
-            model, max_tokens: 500, temperature: 0.2,
-            messages: [{ role: 'user', content: [
-              { type: 'text', text: visionPrompt },
-              { type: 'image_url', image_url: { url: dataUrl } },
-            ]}],
-          }),
-        }, 90000);
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          lastErr = (data.error && (data.error.message || data.error)) || ('HF ' + res.status);
-          console.log('[vision] fail', model, lastErr);
-          continue;
-        }
-        const t = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-        if (t && String(t).trim().length > 5) return { text: String(t).trim(), provider: 'hf-vis:' + model };
-        lastErr = 'empty content';
-      } catch (e) { lastErr = e.message || String(e); }
-    }
-  }
-  throw new Error(String(lastErr));
-}
-
-
-async function hfTranscribe(audioBuffer, mimeType, language) {
-  const keys = hfKeys();
-  if (!keys.length) throw new Error('HF_TOKEN не задан');
-  const models = [
-    'openai/whisper-large-v3',
-    'openai/whisper-large-v3-turbo',
-  ];
-  let lastErr = 'HF transcription empty';
-  for (const key of keys) {
-    for (const model of models) {
-      try {
-        const headers = { Authorization: 'Bearer ' + key, 'Content-Type': mimeType || 'audio/webm' };
-        const url = 'https://router.huggingface.co/hf-inference/models/' + encodeURIComponent(model);
-        const res = await fetchWithTimeout(url, { method: 'POST', headers, body: audioBuffer }, 90000);
-        const data = await res.json().catch(async () => ({ text: await res.text().catch(() => '') }));
-        if (!res.ok) {
-          lastErr = (data && (data.error || data.message)) || ('HF ASR ' + res.status);
-          continue;
-        }
-        const text = typeof data === 'string' ? data : (data.text || (data[0] && data[0].text) || '');
-        if (text && String(text).trim()) return { text: String(text).trim(), provider: 'hf-asr:' + model };
-      } catch (e) { lastErr = e.message || String(e); }
-    }
+  const models = [...new Set([
+    String(process.env.GROQ_TRANSCRIBE_MODEL || 'whisper-large-v3-turbo').trim(),
+    'whisper-large-v3-turbo', 'whisper-large-v3',
+  ].filter(Boolean))];
+  const requestedMime = String(mimeType || 'audio/webm').toLowerCase().split(';')[0].trim();
+  const mimeExtensions = { 'audio/webm':'webm', 'audio/ogg':'ogg', 'audio/wav':'wav', 'audio/x-wav':'wav',
+    'audio/mpeg':'mp3', 'audio/mp4':'m4a', 'audio/aac':'aac', 'audio/flac':'flac', 'audio/mp3':'mp3' };
+  const safeMime = Object.prototype.hasOwnProperty.call(mimeExtensions, requestedMime) ? requestedMime : 'audio/webm';
+  const ext = mimeExtensions[safeMime];
+  const lang = String(language || '').trim().toLowerCase();
+  const isoLang = /^[a-z]{2}$/.test(lang) ? lang : '';
+  let lastErr = 'empty transcription';
+  for (const key of keys) for (const model of models) {
+    try {
+      const form = new FormData();
+      form.append('file', new Blob([bytes], { type: safeMime || 'audio/webm' }), 'recording.' + ext);
+      form.append('model', model);
+      form.append('response_format', 'json');
+      form.append('temperature', '0');
+      if (isoLang) form.append('language', isoLang);
+      const res = await fetchWithTimeout('https://api.groq.com/openai/v1/audio/transcriptions', {
+        method: 'POST', headers: { Authorization: 'Bearer ' + key }, body: form,
+      }, 90000);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        lastErr = (data.error && (data.error.message || data.error)) || ('groq transcription ' + res.status);
+        continue;
+      }
+      const text = String(data.text || '').trim();
+      if (text) return { text, provider: 'groq-asr:' + model };
+      lastErr = 'empty transcription';
+    } catch (e) { lastErr = e.message || String(e); }
   }
   throw new Error(String(lastErr).slice(0, 240));
 }
 
-async function groqChat(messages, system, reasoning = false) {
+async function groqChat(messages, system, reasoning = false, timeoutMs = 55000, maxAttempts = 100) {
   const keys = groqKeys();
   if (!keys.length) throw new Error('no groq');
   const primary = String(process.env.GROQ_MODEL || 'openai/gpt-oss-120b').trim() || 'openai/gpt-oss-120b';
@@ -750,11 +709,14 @@ async function groqChat(messages, system, reasoning = false) {
   const sys = system || 'Ты ChatClaud. Отвечай на языке пользователя. Не раскрывай название модели, провайдера, API, ключи или внутреннюю инфраструктуру. Если спрашивают кто ты — отвечай: «Я ChatClaud». Будь очень точным, проверяй логику и не выдумывай факты.';
   const msgs = normalizeChatMessages((messages || []).slice(-20), sys).map(m => ({ role:m.role, content:String(m.content||'').slice(0,9000) }));
   let lastErr='empty';
+  let attempts = 0;
   for (const key of keys) for (const model of models) {
+    if (attempts >= maxAttempts) break;
+    attempts += 1;
     try {
       const body={model,messages:msgs,max_completion_tokens:reasoning?12000:8000,temperature:reasoning?0.45:0.55,top_p:0.95,include_reasoning:false};
       if (model.startsWith('openai/gpt-oss-')) body.reasoning_effort = reasoning ? 'high' : 'medium';
-      const res=await fetchWithTimeout('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify(body)},55000);
+      const res=await fetchWithTimeout('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+key},body:JSON.stringify(body)},timeoutMs);
       const data=await res.json().catch(()=>({}));
       if(!res.ok){lastErr=(data.error&&data.error.message)||('groq '+res.status);continue;}
       const t=data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content;
@@ -836,11 +798,11 @@ function mistralKeys() {
   return out;
 }
 
-async function mistralChat(messages, system) {
+async function mistralChat(messages, system, timeoutMs = PROVIDER_TIMEOUT_MS, maxAttempts = 100) {
   const keys = mistralKeys();
   if (!keys.length) throw new Error('no mistral');
   const configured = String(process.env.MISTRAL_MODEL || '').trim();
-  const models = [configured, 'mistral-medium-latest', 'mistral-small-latest', 'mistral-large-latest']
+  const models = [configured || 'mistral-small-latest', 'mistral-small-latest', 'mistral-medium-latest']
     .filter((m, i, a) => m && a.indexOf(m) === i);
   const sys = system || 'Ты ChatClaud. Отвечай на языке пользователя. Помни контекст диалога.';
   const msgs = [{ role: 'system', content: sys }].concat(
@@ -850,142 +812,89 @@ async function mistralChat(messages, system) {
     }))
   );
   let lastErr = 'empty';
+  let attempts = 0;
   for (const key of keys) {
-    for (const model of models) try {
-      const res = await fetchWithTimeout('https://api.mistral.ai/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
-        body: JSON.stringify({ model, messages: msgs, max_tokens: 8000, temperature: 0.5 }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        lastErr = (data.error && (data.error.message || data.error)) || ('mistral ' + res.status);
-        console.log('[mistral] key ending ...' + key.slice(-4), 'model', model, '-> HTTP', res.status, JSON.stringify(data).slice(0, 200));
-        continue;
-      }
-      const t = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-      if (t && String(t).trim()) return { text: String(t).trim(), provider: 'mistral:' + model };
-    } catch (e) { lastErr = e.message || String(e); }
-  }
-  throw new Error(String(lastErr).slice(0, 200));
-}
-
-async function hfChat(messages, system) {
-  const keys = typeof hfKeys === 'function' ? hfKeys() : [
-    process.env.HF_KEY || process.env.HF_KEY2 || process.env.HF_KEY_1 || '',
-    process.env.HF_KEY_2 || process.env.HF_KEY2 || '',
-  ].filter(Boolean);
-  if (!keys.length) throw new Error('no hf');
-
-  // только chat-compatible на router.huggingface.co
-  const models = [
-    'deepseek-ai/DeepSeek-R1:fastest',
-    'openai/gpt-oss-120b:fastest',
-    'Qwen/Qwen2.5-72B-Instruct:fastest',
-    'meta-llama/Llama-3.3-70B-Instruct:fastest',
-    'Qwen/Qwen2.5-32B-Instruct:fastest',
-  ];
-
-  const msgs = normalizeChatMessages(
-    (messages || []).slice(-20),
-    system || 'Ты ChatClaud. Сентябрь 2026. Помни диалог. Отвечай на языке пользователя.'
-  ).map((m) => ({ role: m.role, content: String(m.content || '').slice(0, 4000) }));
-
-  let lastErr = 'empty';
-  for (let ki = 0; ki < keys.length; ki++) {
-    for (let mi = 0; mi < models.length; mi++) {
+    for (const model of models) {
+      if (attempts >= maxAttempts) break;
+      attempts += 1;
       try {
-        const res = await fetchWithTimeout('https://router.huggingface.co/v1/chat/completions', {
+        const res = await fetchWithTimeout('https://api.mistral.ai/v1/chat/completions', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + keys[ki] },
-          body: JSON.stringify({ model: models[mi], messages: msgs, max_tokens: 1200, temperature: 0.55 }),
-        });
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
+          body: JSON.stringify({ model, messages: msgs, max_tokens: 8000, temperature: 0.5 }),
+        }, timeoutMs);
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          lastErr = (data.error && (data.error.message || data.error)) || ('HF ' + res.status);
+          lastErr = (data.error && (data.error.message || data.error)) || ('mistral ' + res.status);
+          console.log('[mistral] key ending ...' + key.slice(-4), 'model', model, '-> HTTP', res.status, JSON.stringify(data).slice(0, 200));
           continue;
         }
         const t = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-        if (t && String(t).trim()) return { text: String(t).trim(), provider: 'hf:' + models[mi] };
+        if (t && String(t).trim()) return { text: String(t).trim(), provider: 'mistral:' + model };
       } catch (e) { lastErr = e.message || String(e); }
     }
   }
   throw new Error(String(lastErr).slice(0, 200));
 }
 
-
-
-async function hfEnhancePrompt(userPrompt, kind) {
-  const keys = hfKeys();
-  if (!keys.length) return userPrompt;
-  const sys = kind === 'video'
-    ? 'Expand this into a detailed cinematic video prompt in English. Motion, camera, lighting. Max 80 words. Output ONLY the prompt.'
-    : 'Expand this into a detailed photorealistic image prompt in English. 8k, sharp. Max 70 words. Output ONLY the prompt.';
-  const models = [
-    process.env.HF_PROMPT_MODEL || 'HuggingFaceH4/zephyr-7b-beta',
-    'mistralai/Mistral-7B-Instruct-v0.2',
-  ];
-  for (const key of keys) {
-    for (const model of models) {
-      try {
-        const r = await fetch('https://api-inference.huggingface.co/models/' + model, {
-          method: 'POST',
-          headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            inputs: sys + '\n\nUser: ' + userPrompt + '\n\nPrompt:',
-            parameters: { max_new_tokens: 120, temperature: 0.7, return_full_text: false },
-          }),
-        });
-        if (!r.ok) continue;
-        const data = await r.json();
-        let t = '';
-        if (Array.isArray(data) && data[0] && data[0].generated_text) t = data[0].generated_text;
-        else if (data.generated_text) t = data.generated_text;
-        t = String(t || '').replace(/^Prompt:\s*/i, '').trim();
-        if (t.length > 15) return t.slice(0, 500);
-      } catch (e) {}
-    }
+async function enhanceImaginePrompt(userPrompt, kind) {
+  const source = String(userPrompt || '').trim().slice(0, 900);
+  if (!source) return source;
+  const system = kind === 'video'
+    ? 'Rewrite the idea as a concise cinematic video-generation prompt in English. Preserve the exact subject and action; add helpful camera movement, lighting and scene continuity only. Do not add unrelated objects. Output only the prompt, max 100 words.'
+    : 'Rewrite the idea as a concise image-generation prompt in English. Preserve the exact subject, named entities and composition; add useful visual detail without changing the request. Do not add unrelated objects. Output only the prompt, max 80 words.';
+  try {
+    const result = await mistralChat([{ role: 'user', content: source }], system);
+    const enhanced = String(result && result.text || '').trim().replace(/^prompt:\s*/i, '');
+    if (enhanced.length >= 8) return enhanced.slice(0, 1000);
+  } catch (e) {
+    console.warn('[imagine prompt enhancement] original prompt retained:', String(e.message || e).slice(0, 140));
   }
-  return userPrompt;
+  return source;
 }
 
-async function hfTextToImage(prompt, opts) {
-  const keys = hfKeys();
-  if (!keys.length) throw new Error('HF keys not set');
-  const model = (opts && opts.model) || process.env.HF_IMAGE_MODEL || 'black-forest-labs/FLUX.1-schnell';
-  const w = (opts && opts.width) || 768;
-  const h = (opts && opts.height) || 1344;
-  let lastErr = '';
-  for (const key of keys) {
+/** Analyze an uploaded data URL directly; do not let the vision provider fetch arbitrary URLs. */
+async function mistralVision(imageDataUrl, prompt) {
+  const keys = mistralKeys();
+  if (!keys.length) throw new Error('no mistral vision provider; configure MISTRAL_API_KEY');
+  const dataUrl = String(imageDataUrl || '').trim();
+  if (!/^data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=\r\n]+$/i.test(dataUrl)) {
+    throw new Error('image_must_be_a_base64_image_data_url');
+  }
+  if (dataUrl.length > 8_000_000) throw new Error('image_too_large_max_6mb_encoded');
+  const configured = String(process.env.MISTRAL_VISION_MODEL || process.env.MISTRAL_MODEL || 'mistral-small-latest').trim();
+  const models = [...new Set([configured, 'mistral-small-latest', 'mistral-medium-latest'].filter(Boolean))];
+  const visionPrompt = String(prompt || 'Describe the image accurately. Read visible text when possible. Separate direct observations from uncertainty.').slice(0, 4000);
+  let lastErr = 'empty vision response';
+  for (const key of keys) for (const model of models) {
     try {
-      const r = await fetch('https://api-inference.huggingface.co/models/' + model, {
+      const res = await fetchWithTimeout('https://api.mistral.ai/v1/chat/completions', {
         method: 'POST',
-        headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
         body: JSON.stringify({
-          inputs: prompt,
-          parameters: { width: w, height: h, num_inference_steps: 4 },
+          model,
+          messages: [{ role: 'user', content: [
+            { type: 'text', text: visionPrompt },
+            { type: 'image_url', image_url: { url: dataUrl } },
+          ] }],
+          max_tokens: 1200,
+          temperature: 0.1,
         }),
-      });
-      if (!r.ok) {
-        lastErr = await r.text().catch(() => 'hf ' + r.status);
+      }, 55000);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        lastErr = (data.error && (data.error.message || data.error)) || ('mistral vision ' + res.status);
+        console.warn('[vision] model', model, 'HTTP', res.status, String(lastErr).slice(0, 180));
         continue;
       }
-      const ct = r.headers.get('content-type') || '';
-      if (ct.includes('application/json')) {
-        const j = await r.json();
-        if (j.error) { lastErr = j.error; continue; }
-      }
-      const buf = Buffer.from(await r.arrayBuffer());
-      if (buf.length < 500) { lastErr = 'empty image'; continue; }
-      const b64 = 'data:image/jpeg;base64,' + buf.toString('base64');
-      return { url: b64, model };
-    } catch (e) {
-      lastErr = e.message || String(e);
-    }
+      const content = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+      const text = Array.isArray(content) ? content.map((part) => part && (part.text || '')).join(' ').trim() : String(content || '').trim();
+      if (text.length > 5) return { text, provider: 'mistral-vision:' + model };
+      lastErr = 'empty vision response';
+    } catch (e) { lastErr = e.message || String(e); }
   }
-  throw new Error(String(lastErr).slice(0, 180) || 'HF image failed');
+  throw new Error(String(lastErr).slice(0, 220));
 }
-
 
 /* ========== Runway Imagine (image + video) ========== */
 function runwayKey() {
@@ -1591,7 +1500,7 @@ async function multimodalPhotoSearch(imageDataUrl, userText) {
   const trace = [];
   let visionText = '';
   try {
-    const v = await hfVision(
+    const v = await mistralVision(
       imageDataUrl,
       'Describe this image for web search. Focus on: product/packaging, brand names, text/OCR, logos, materials, any readable labels. Separate confirmed observations from guesses. Be factual and concise. English.'
     );
@@ -3255,29 +3164,19 @@ const server = http.createServer(async (req, res) => {
             break;
           }
         }
-        const wantsSearch = /\/(search|find|nova|seasch)\b/i.test(lastUserImg)
-          || /\b(найди|поищи|search|find|look\s*up|что\s+за|what\s+is\s+this|identify|упаковк)/i.test(lastUserImg);
-        if (img && String(img).length > 40 && lastIdxImg >= 0 && (wantsSearch || /\/search/i.test(lastUserImg) )) {
-          // if image attached, always run vision; run full search when /search or identify intent, else vision-only context
-          const doFull = wantsSearch || /\/(search|find)\b/i.test(lastUserImg);
-          if (doFull) {
+        const explicitImageSearch = /\/(search|find|nova|seasch)\b/i.test(lastUserImg)
+          || /\b(найди|поищи|загугли|погугли|search the web|search online|look\s*up online|find online)\b/i.test(lastUserImg);
+        if (img && String(img).length > 40 && lastIdxImg >= 0) {
+          if (explicitImageSearch) {
             console.log('[mm] photo+search start');
             const mm = await multimodalPhotoSearch(img, lastUserImg);
             novaSourcesForClient = mm.sources || [];
-            trimmed[lastIdxImg] = {
-              role: 'user',
-              content: lastUserImg + '\n\n' + mm.context,
-            };
+            trimmed[lastIdxImg] = { role: 'user', content: lastUserImg + '\n\n' + mm.context };
             console.log('[mm] done sources=', novaSourcesForClient.length, 'q=', (mm.query || '').slice(0, 80));
           } else {
             try {
-              const v = await hfVision(img, 'Describe this image clearly. OCR any text. English.');
-              if (v && v.text) {
-                trimmed[lastIdxImg] = {
-                  role: 'user',
-                  content: lastUserImg + '\n\n[Image analysis]\n' + String(v.text).slice(0, 4000),
-                };
-              }
+              const v = await mistralVision(img, `Analyze the attached image in the context of the user question. Describe observable objects, scene and visible text (OCR). Separate direct observations from uncertain inferences. Reply in the user's language. User request: ${lastUserImg.slice(0, 1000)}`);
+              if (v && v.text) trimmed[lastIdxImg] = { role: 'user', content: lastUserImg + '\n\n[Image analysis — observations, not guaranteed facts]\n' + String(v.text).slice(0, 5000) };
             } catch (ve) { console.warn('[mm] vision-only', ve.message); }
           }
         }
@@ -3359,10 +3258,17 @@ const server = http.createServer(async (req, res) => {
       let result = null;
       let lastErr = null;
       const failures = [];
+      let skillQuery = '';
+      for (let i = trimmed.length - 1; i >= 0; i--) {
+        if (trimmed[i] && trimmed[i].role === 'user') { skillQuery = String(trimmed[i].content || ''); break; }
+      }
+      const attachedImage = [body.image, body.dataUrl, body.photo].some((v) => typeof v === 'string' && /^data:image\//i.test(v));
+      const skillInstructions = intel.buildSkillInstructions(skillQuery, { hasImage: attachedImage });
+      const providerSystem = [CC_SYSTEM, body.system, skillInstructions].filter(Boolean).join('\n\n');
       const isReasoning = !!body.reason || /^(think|reason|reasoning)$/i.test(String(body.mode || ''));
       const providers = isReasoning
-        ? [['groq', () => groqChat(trimmed, [CC_SYSTEM, body.system].filter(Boolean).join('\n\n'), true)], ['hf', () => hfChat(trimmed, [CC_SYSTEM, body.system].filter(Boolean).join('\n\n'))], ['mistral', () => mistralChat(trimmed, [CC_SYSTEM, body.system].filter(Boolean).join('\n\n'))]]
-        : [['groq', () => groqChat(trimmed, [CC_SYSTEM, body.system].filter(Boolean).join('\n\n'), false)], ['mistral', () => mistralChat(trimmed, [CC_SYSTEM, body.system].filter(Boolean).join('\n\n'))], ['hf', () => hfChat(trimmed, [CC_SYSTEM, body.system].filter(Boolean).join('\n\n'))]];
+        ? [['groq', () => groqChat(trimmed, providerSystem, true)], ['mistral', () => mistralChat(trimmed, providerSystem)]]
+        : [['groq', () => groqChat(trimmed, providerSystem, false)], ['mistral', () => mistralChat(trimmed, providerSystem)]];
       for (const [name, call] of providers) {
         try {
           result = await call();
@@ -3418,8 +3324,8 @@ const server = http.createServer(async (req, res) => {
       if (!m) { console.log('[transcribe] FAILED: bad data URL format, prefix was:', dataUrl.slice(0, 40)); return send(res, 400, { error: 'audio required' }); }
       const buf = Buffer.from(m[2], 'base64');
       if (!buf.length) { console.log('[transcribe] FAILED: empty buffer after decode'); return send(res, 400, { error: 'empty audio' }); }
-      console.log('[transcribe] calling hfTranscribe, bytes:', buf.length, 'mime:', m[1], '| hfKeys count:', hfKeys().length);
-      const result = await hfTranscribe(buf, m[1], body.language || '');
+      console.log('[transcribe] calling Groq transcription, bytes:', buf.length, 'mime:', m[1]);
+      const result = await groqTranscribe(buf, m[1], body.language || '');
       console.log('[transcribe] SUCCESS:', JSON.stringify(result).slice(0, 150));
       return send(res, 200, result);
     } catch (e) {
@@ -3453,15 +3359,15 @@ const server = http.createServer(async (req, res) => {
       if (!rate.ok) return send(res, 429, { error: 'rate limit', retryAfterMs: rate.retryAfterMs, until: rate.until });
 
       const img = body.image || body.dataUrl || '';
-      console.log('[vision] image payload length:', img.length, '| hfKeys count:', hfKeys().length);
+      console.log('[vision] image payload length:', img.length, '| Mistral Vision model:', process.env.MISTRAL_VISION_MODEL || process.env.MISTRAL_MODEL || 'mistral-small-latest');
       if (!img || img.length < 20) { console.log('[vision] FAILED: no image in body'); return send(res, 400, { error: 'image required' }); }
       let result = null;
       try {
-        result = await hfVision(img, body.prompt);
+        result = await mistralVision(img, body.prompt);
         console.log('[vision] SUCCESS via', result.provider);
       } catch (e) {
         console.log('[vision] FAILED ->', e.message || e);
-        return send(res, 503, { error: 'Vision unavailable: ' + String(e.message || e).slice(0, 180) + ' (check HF_KEY on Render)' });
+        return send(res, 503, { error: 'Vision unavailable: ' + String(e.message || e).slice(0, 180) + ' (check MISTRAL_API_KEY and MISTRAL_VISION_MODEL on Render)' });
       }
       return send(res, 200, result);
     } catch (e) {
@@ -3484,22 +3390,10 @@ const server = http.createServer(async (req, res) => {
       if (!lim.ok) return send(res, 429, { error: 'Daily image limit reached', left: 0, max: lim.max });
       const enhance = body.enhance !== false;
       if (enhance) {
-        try { prompt = await hfEnhancePrompt(prompt, 'image'); } catch (e) {}
+        try { prompt = await enhanceImaginePrompt(prompt, 'image'); } catch (e) {}
       }
       const ratio = String(body.ratio || 'portrait');
-      const dims = ratio === 'landscape' ? { width: 1344, height: 768 }
-        : ratio === 'square' ? { width: 1024, height: 1024 }
-        : { width: 768, height: 1344 };
-      // Prefer HuggingFace (free-ish) then Runway if configured
-      try {
-        const hf = await hfTextToImage(prompt, dims);
-        bumpImagine(clientIp(req), 'image');
-        const left = checkImagineLimit(clientIp(req), 'image', isPlus).left;
-        return send(res, 200, { ok: true, url: hf.url, type: 'image', model: hf.model, prompt, left, provider: 'chatclaud-imagine' });
-      } catch (hfErr) {
-        console.warn('[imagine image hf]', hfErr.message);
-      }
-      if (!runwayKey()) return send(res, 503, { error: 'Image generator unavailable' });
+      // Image generation uses the configured Runway service; Hugging Face is not part of this route.
       const model = String(body.model || process.env.RUNWAY_IMAGE_MODEL || 'gen4_image_turbo');
       const task = await runwayFetch('/v1/text_to_image', {
         model: model === 'gen4_image' ? 'gen4_image' : 'gen4_image_turbo',
@@ -3531,10 +3425,10 @@ const server = http.createServer(async (req, res) => {
       const lim = checkImagineLimit(clientIp(req), 'video', isPlus);
       if (!lim.ok) return send(res, 429, { error: 'Daily video limit reached', left: 0, max: lim.max });
       if (body.enhance !== false) {
-        try { prompt = await hfEnhancePrompt(prompt, 'video'); } catch (e) {}
+        try { prompt = await enhanceImaginePrompt(prompt, 'video'); } catch (e) {}
       }
       if (!runwayKey()) {
-        return send(res, 503, { error: 'Video needs RUNWAYML_API_SECRET or use Photo mode (HF)', prompt });
+        return send(res, 503, { error: 'Video generation needs RUNWAYML_API_SECRET configured.', prompt });
       }
       const model = String(body.model || process.env.RUNWAY_VIDEO_MODEL || 'gen4.5');
       const ratio = String(body.ratio || '720:1280');
@@ -3809,19 +3703,20 @@ if (pathname === '/api/health') {
       ok: true,
       hasGroq: (typeof groqKeys === "function" ? groqKeys().length > 0 : !!(process.env.GROQ_KEY||process.env.GROQ_API_KEY)),
       hasMistral: (typeof mistralKeys === "function" ? mistralKeys().length > 0 : !!process.env.MISTRAL_API_KEY),
-      mistralModel: process.env.MISTRAL_MODEL || 'mistral-medium-latest',
+      mistralModel: process.env.MISTRAL_MODEL || 'mistral-small-latest',
+      mistralVisionModel: process.env.MISTRAL_VISION_MODEL || process.env.MISTRAL_MODEL || 'mistral-small-latest',
       groqModel: process.env.GROQ_MODEL || 'openai/gpt-oss-120b',
       minAiResponseMs: MIN_AI_RESPONSE_MS,
       hasOpenAI: false,
       openAiKeys: 0,
       hasClaude: false,
       claudeKeys: 0,
-      hasHf: hfKeys().length > 0, // HF_TOKEN/HF_KEY
+      hasMistralVision: mistralKeys().length > 0,
       hasTavily: !!process.env.TAVILY_KEY,
       hasSerper: !!process.env.SERPER_KEY,
       hasNova: !!((process.env.NOVA_URL || 'https://nova-brawser.onrender.com') && (process.env.NOVA_API_TOKEN || process.env.NOVA_AIP_TOKEN || process.env.API_TOKEN)),
       hasFetchUrl: true,
-      hasTranscribe: hfKeys().length > 0,
+      hasTranscribe: groqKeys().length > 0,
       hasNetlifyDeploy: !!(process.env.NETLIFY_DEPLOY_TOKEN || process.env.NETLIFY_TOKEN || process.env.NETLIFY_SITE_ID),
       maxBodyBytes: MAX_BODY_BYTES,
       hasSocialDeep: true,
@@ -3867,6 +3762,44 @@ if (pathname === '/api/health') {
         timeoutMs: intel.INTEL_LIMITS.taskTimeoutMs,
         validateSource: (url) => intel.validateUrl(url).ok,
       });
+      // Synthesize only from the collected, allowlisted evidence packet. This creates a readable
+      // answer but deliberately does not upgrade lexical overlap or retrieval ranking to proof.
+      if (!controller.signal.aborted && body.synthesize !== false && Array.isArray(result.sources) && result.sources.length && result.status !== 'failed' && result.status !== 'cancelled') {
+        const synthesisInput = intel.buildResearchSynthesisPrompt(q, result);
+        let synthesisDraft = null;
+        let synthesisRoute = '';
+        if (groqKeys().length) {
+          try {
+            synthesisDraft = await groqChat([{ role: 'user', content: synthesisInput.prompt }], synthesisInput.system, false, 12000, 1);
+            synthesisRoute = 'primary';
+          } catch (e) { console.warn('[deep-research] primary synthesis unavailable:', String(e.message || e).slice(0, 140)); }
+        }
+        if (!synthesisDraft && mistralKeys().length) {
+          try {
+            synthesisDraft = await mistralChat([{ role: 'user', content: synthesisInput.prompt }], synthesisInput.system, 12000, 1);
+            synthesisRoute = 'fallback';
+          } catch (e) { console.warn('[deep-research] fallback synthesis unavailable:', String(e.message || e).slice(0, 140)); }
+        }
+        if (synthesisDraft && synthesisDraft.text) {
+          const checked = intel.validateResearchSynthesis(synthesisDraft.text, result.sources);
+          result.answer = checked.answer;
+          result.synthesis = {
+            status: checked.ok ? 'completed' : 'failed',
+            route: synthesisRoute,
+            factualVerification: false,
+            citedSources: checked.citedSources || [],
+            invalidCitations: checked.invalidCitations || [],
+            warning: checked.warning || 'Synthesis is not independent factual verification.'
+          };
+        } else {
+          result.synthesis = { status: 'unavailable', factualVerification: false, warning: 'No AI synthesis was available; the structured evidence packet is preserved.' };
+        }
+      } else {
+        result.synthesis = {
+          status: body.synthesize === false ? 'skipped_by_request' : (result.status === 'failed' || result.status === 'cancelled' ? 'skipped_no_completed_research' : 'skipped_no_sources'),
+          factualVerification: false
+        };
+      }
       const statusCode = result.status === 'completed' ? 200 : (result.status === 'partial' ? 207 : (result.status === 'cancelled' ? 409 : 502));
       return send(res, statusCode, result);
     } catch (e) {

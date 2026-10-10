@@ -1,14 +1,28 @@
-ChatClaud — WORKING build (GitHub Pages + Render)
+ChatClaud — WORKING BUILD (GitHub Pages + Render)
 
-Frontend: GitHub Pages (index.html + icons + manifest + sw.js)
-Backend:  https://chatclaud.onrender.com  (server.js on Render)
+Frontend: index.html + icons + manifest.json + sw.js
+Backend: server.js on Render
 
-ENV on Render: GROQ_KEY, GROQ_MODEL=openai/gpt-oss-120b,
-MISTRAL_API_KEY, MISTRAL_MODEL=mistral-medium-latest,
-HF_KEY, NOVA_URL, NOVA_AIP_TOKEN
+Required/optional Render environment variables:
+- GROQ_KEY (or GROQ_API_KEY): primary chat provider; GROQ_MODEL defaults to openai/gpt-oss-120b
+- MISTRAL_API_KEY: fallback chat provider and image analysis
+- MISTRAL_MODEL defaults to mistral-small-latest; MISTRAL_VISION_MODEL may override vision separately
+- GROQ_TRANSCRIBE_MODEL defaults to whisper-large-v3-turbo; second candidate whisper-large-v3; JSON upload body limit effectively caps audio around 10 MB
+- NOVA_URL, NOVA_API_TOKEN (or existing supported token aliases): current search/social integration
+- PLUS_BOT_SECRET or ADMIN_SECRET: guarded Plus/admin actions
+- NETLIFY_DEPLOY_TOKEN / NETLIFY_TOKEN only if the separate Netlify feature is used
+- PORT is supplied by Render
 
-Images: Pollination FLUX 1280x1920 + enhance
-Commands: type /  →  /img /veo /search /nova /plus /settings /help
-Video: POST /api/video-summary { url }
-Imagine button: hidden (Pollination only)
-Date context: 6 октября 2026
+Provider behavior in Stage B:
+- Main chat: Groq first, then Mistral fallback
+- Image analysis: Mistral Vision via /api/vision and uploaded-image chat flow
+- Audio transcription: Groq Whisper via /api/transcribe
+- Prompt enhancement: Mistral; if it fails, original prompt is retained
+- Image/video generation: existing Runway service; this change does not add a new generator
+- Hugging Face credentials are no longer required by server code
+
+Intelligence safety switches:
+- INTEL_ORCHESTRATOR and INTEL_DEEP_RESEARCH remain OFF by default
+- Enable only after staging/API-key verification; no deployment was performed as part of Stage B work
+
+Before deployment: npm test, npm run check, verify Render keys and run manual text/image/audio/research smoke tests in staging.
