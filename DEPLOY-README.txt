@@ -26,3 +26,10 @@ Intelligence safety switches:
 - Enable only after staging/API-key verification; no deployment was performed as part of Stage B work
 
 Before deployment: npm test, npm run check, verify Render keys and run manual text/image/audio/research smoke tests in staging.
+
+
+Critical package layout note:
+- Extract this ZIP so that server.js, package.json, and modules/ are all directly in the service root.
+- Do NOT commit only index.html and server.js. The modules/ directory is required at runtime.
+- Run `npm run check:deploy` before deployment. This checks the intelligence module and required local files.
+- The explicit server.js entry point checks for modules/intelligence.js using an absolute path and prints the expected deployed location if missing.

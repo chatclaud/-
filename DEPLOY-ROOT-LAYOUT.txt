@@ -1,0 +1,20 @@
+CRITICAL DEPLOYMENT LAYOUT
+
+This archive is intentionally FLAT at its ZIP root. When extracted, the files must look like:
+
+  server.js
+  package.json
+  modules/
+    intelligence.js
+    intelligence/
+      index.js
+      flags.js
+      ...
+  index.html
+  tests/
+
+Do not upload only server.js and index.html. Do not leave the whole project nested under another ChatClaud/ folder inside the service root.
+
+For Render, keep Build Command `yarn install` (or `npm install`) and use Start Command `npm start`. The `start` script runs a deployment preflight before starting the HTTP server. If you keep `node server.js`, the server itself still checks the intelligence entry file, but `npm start` also verifies the rest of the module tree before listening.
+
+Set API credentials in the host's environment-variable settings; never put keys in index.html, public JavaScript, or a public repository.

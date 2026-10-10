@@ -4,9 +4,10 @@
   "private": true,
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node scripts/verify-deploy.js && node server.js",
     "check": "node --check server.js",
-    "test": "node --test tests/*.test.js"
+    "test": "node --test tests/*.test.js",
+    "check:deploy": "node scripts/verify-deploy.js"
   },
   "engines": {
     "node": ">=18"

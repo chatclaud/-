@@ -7,7 +7,14 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { URL } = require('url');
-const intel = require('./modules/intelligence');
+const intelligenceEntry = path.join(__dirname, 'modules', 'intelligence.js');
+if (!fs.existsSync(intelligenceEntry)) {
+  throw new Error(
+    `ChatClaud startup: missing ${intelligenceEntry}. ` +
+    'Deploy the complete project tree, including modules/intelligence.js and modules/intelligence/.',
+  );
+}
+const intel = require(intelligenceEntry);
 const intelHttpGuard = intel.createIntelRequestGuard({
   windowMs: intel.INTEL_LIMITS.requestWindowMs,
   maxRequests: intel.INTEL_LIMITS.maxRequestsPerWindow,
