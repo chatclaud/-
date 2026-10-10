@@ -1,9 +1,0 @@
-Production readiness (security + pipeline)
-
-- Plus: client body.plus/isPlus ignored; server-side plus-grants.json by username only
-- SSRF: isSafeUrl blocks metadata, private, link-local, credentials
-- Pipeline: real deadline budget, AbortController on Nova, evidence-based verify (relevance), partial results on timeout
-- Untrusted wrap strengthened for page/snippet content
-- Tests: SSRF, injection, auth, pipeline behavioral (mocked)
-
-Live provider calls not verified in this environment.
