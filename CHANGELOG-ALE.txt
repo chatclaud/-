@@ -1,0 +1,105 @@
+Autonomous Learning Engine (ALE)
+
+From repos (ideas only, MIT-compatible patterns, no code copy):
+- Autonomous Research Agent: scheduled cycle, harvester, self-assess, finetune-as-dataset
+- Onyx: local structured store + FTS-style retrieval
+- RAG Agent: retrieve-then-generate into chat context
+- Firecrawl web-agent: not integrated (paid/API); Nova remains fetch path
+
+Implemented:
+- Level A: file KB data/ale/knowledge.json, queue/state, research cycle via existing pipeline
+- Level B: claim statuses into facts; admin metrics
+- Level C: finetune dataset export only (no GPU training on Render)
+- Admin API: /api/ale/status|start|stop|tick|search|finetune/export (ADMIN_SECRET)
+- Chat injects local KB hits before live search
+- Limits: tasks/cycle, pages, timeouts, cycle lock
+
+NOT claimed:
+- Live web harvest in tests (mocks only)
+- Actual model weight fine-tuning
+- Persistent disk on Render free (data/ale ephemeral unless disk attached)
+
+## Stage 1 — Quarantine & fact status model (2026-10-10)
+- Added ALE fact statuses: supported, uncertain, contradicted, stale, rejected, snippet_only, insufficient
+- Legacy status "partial" migrates to "uncertain"
+- Non-public facts kept in kb.quarantine (not deleted)
+- Chat context (aleBuildKbContext / aleSearchLocal publicOnly) injects only supported facts
+- Heuristic "supported" tagged verificationMethod=claim-heuristic with explicit dual-verify limitation note
+- Safe migration of existing knowledge.json (dedupe by id, history on status change)
+- /api/ale/status reports factsSupported and quarantine counts
+- Tests: tests/ale-quarantine.test.js
+- No dual-model verify, no storage backend change, no UI/search/auth changes
+
+## Stage 2 — Dual-verify + safer document context (2026-10-10)
+- Feature flag ALE_DUAL_VERIFY (default OFF). Optional ALE_DUAL_MAX_PER_TASK, ALE_DUAL_TIMEOUT_MS.
+- When enabled: each new claim checked by Mistral (support) + Groq (refute) with structured JSON.
+- Programmatic validation: invalid JSON, timeout, API error, missing/mismatched quotes → never supported.
+- Quote-in-source check required before status=supported; model agreement alone is not enough.
+- Documents in aleBuildKbContext wrapped via wrapUntrustedPage; labeled untrusted, not verified facts.
+- /api/ale/status includes dualVerifyEnabled.
+- Tests: tests/ale-dual-verify.test.js (mock/pure logic; no live API).
+
+## Stage 2 fix — dual-verify correctness (2026-10-10)
+- Snippet alone never yields supported (any length); requires fetched page body
+- Per-source quote matching (no concatenated multi-page string)
+- Both models must support AND each quote binds to a fetched body
+- evidenceUrl/title taken from confirming source, not always first linked
+- When ALE_DUAL_VERIFY=1, claim-heuristic facts excluded from chat context (kept in storage)
+- Production helpers exported via module.exports for real unit tests
+- server.listen only when require.main === module
+
+## Stage 2 fix — strict quote↔URL binding (2026-10-10)
+- preferredUrls non-empty: quote only validated on matching pipeline sources
+- no fall-through to other pages
+- normalize: host lower, default ports, strip hash, KEEP query
+- finalUrl only if stored by pipeline
+
+## Stage 3 — durable knowledge storage (2026-10-10)
+- ALE_DATA_DIR env for persistent disk path (default ./data/ale)
+- schemaVersion=1 on knowledge/queue/state
+- Atomic write: tmp + fsync + rename
+- Exclusive .ale.lock with timeout + stale lock recovery
+- Corrupt JSON: quarantine to *.corrupt-<ts>, never silent empty overwrite
+- Idempotent migration preserves facts, quarantine, history, documents
+- Tests: restart, migration, lock, corruption, queue/history retention
+
+## Audit fix pack (post stage3) — 2026-10-10
+- safeJoin + contentType + public static allowlist (blocks server.js, ENV, tests, data, backups, traversal)
+- /api/deploy requires ADMIN_SECRET before any Netlify call
+- /api/ale/search requires admin auth
+- /api/vision uses real checkRate (removed rate={ok:true})
+- clientIp trusts X-Forwarded-For only when TRUST_PROXY=1
+- Plus: legacy username-only grants no longer valid (token required)
+- Locks: owner lockId; steal only if pid dead; unlock only own lock
+- RMW: aleUpdateKb / aleUpdateState / aleUpdateQueue under lock
+- Corrupt/wrong-shape JSON → quarantine + recovery-needed marker; writes blocked
+- schemaVersion newer than app → refuse load/write (no downgrade)
+- Tests: HTTP smoke, static deny, auth, concurrent processes, recovery, locks
+
+## Patch — RMW merge saves, no lock steal, vision 429 test (2026-10-10)
+- aleSaveKb/aleSaveQueue merge into latest locked state
+- aleRunOneTask applies deltas under lock after network
+- aleRunCycle uses aleUpdateState for stats
+- locks: never unlink non-owned; no age/pid steal
+- RATE_FREE_HARD env for tests; real HTTP 429
+
+## Stage C — minimal intelligence core (2026-10-10)
+- modules/intelligence: planner, tool-registry, runner, verifier, flags
+- INTEL_ORCHESTRATOR default OFF
+- Routes: GET /api/intel/status, POST /api/intel/run (503 if off)
+- Tools: search, fetch_url (SSRF+no auto-redirect follow), kb_search, verify_claims
+- Hard limits: steps, tool calls, timeouts, sequential only
+- No DeepAgents/Mastra, no browser sidecar, no new memory/skills
+
+## Stage C.1 hardening + Stage D bounded research packet (2026-10-10)
+- Added SSRF-safe HTTP fetching with public-IP validation, DNS answer validation/pinning, bounded redirects, response caps, timeout and abort handling.
+- Kept the intelligence and Deep Research features disabled by default; Deep Research requires both INTEL_ORCHESTRATOR=1 and INTEL_DEEP_RESEARCH=1.
+- Added bounded request/active-task guard, cancellation propagation, more accurate partial/failed/cancelled statuses, and search-result/source validation.
+- Changed heuristic claim overlap to retrieval-only hints; it is not proof of factual support.
+- Restricted arbitrary page fetches to the local safe fetcher rather than forwarding caller-controlled URLs to the external Nova fetch endpoint.
+- Restricted Nova social extraction to canonical allowlisted social hosts and tightened YouTube/OEmbed URL parsing.
+- Added external page prompt-injection wrappers and corrected social metric labels so computed ratios are not represented as audience sentiment.
+- Removed stored email disclosure from the public username-only Plus status response; the existing Plus status and expiration fields remain for compatibility.
+- Added `POST /api/intel/research`, a separately feature-gated bounded source/evidence packet route. It is not a final LLM-synthesized answer and does not claim factual verification.
+- Added regression/security tests. Local result: node --check server.js passed; node --check modules/intelligence/deep-research.js passed; node --check modules/intelligence/safe-fetch.js passed; node --test tests/*.test.js: 162/162 passed.
+- Not tested: live provider credentials, real external websites, upstream builds/tests of all reference repositories, or production deployment.

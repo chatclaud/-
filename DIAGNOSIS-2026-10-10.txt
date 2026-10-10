@@ -1,0 +1,16 @@
+ChatClaud deployment diagnosis — 2026-10-10
+
+What was verified locally:
+- Current uploaded server.js and index.html were combined with the complete modules/ and tests/ tree from the full Stage B project archive.
+- `node --check server.js` passes.
+- `npm test` passes all 171 tests (0 failures).
+- Starting the server locally returns JSON from GET /api/health.
+
+Important deployment notes:
+- This archive is flat at the ZIP root. Deploy/extract the CONTENTS, not a nested ChatClaud/ folder.
+- Render needs `server.js`, `package.json`, `modules/`, and `tests/` at the service root. Deploying only server.js + index.html is incomplete because server.js imports modules/intelligence.js.
+- Render commands: Build `npm install`; Start `npm start`.
+- After deploying, GET https://chatclaud.onrender.com/api/health should return a JSON object beginning with `{"ok":true,...}`. If it still returns `{"error":"forbidden"}`, the live Render endpoint is not serving this version or a protection layer is blocking the request; check that the correct Web Service/repository/branch/root directory is deployed.
+- API secrets are not included in this archive. Keep them in Render Environment. Confirm that the health response shows `hasGroq: true` and/or `hasMistral: true` after deployment.
+
+The local health test was run without API credentials, so `hasGroq` and `hasMistral` were false in that local response. No real provider request could be validated without live credentials.
