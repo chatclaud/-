@@ -3693,7 +3693,7 @@ body {
   width: min(100%, 420px) !important;
   min-height: 200px !important;
 }
-</style>
+
 
 <script>
 window.__ccBoot = { ok: false, errors: [] };
@@ -3733,12 +3733,7 @@ setTimeout(function() {
   var def = 'https://chatclaud.onrender.com';
   try {
     var s = localStorage.getItem('CC_API_BASE');
-    if (s && String(s).trim()) {
-      var candidate = String(s).trim().replace(/\/+$/, '');
-      // Production frontend has one canonical backend. Drop stale/debug URLs silently.
-      if (/^https:\/\/chatclaud\.onrender\.com$/i.test(candidate)) def = candidate;
-      else localStorage.removeItem('CC_API_BASE');
-    }
+    if (s && String(s).trim()) def = String(s).trim();
   } catch (e) {}
   window.CC_API_BASE = String(def).replace(/\/+$/, '');
   window.ccApiUrl = function (path) {
@@ -6939,7 +6934,7 @@ body {
     
     <div id="heroScreen" class="screen hidden">
         <div class="hero-wrap">
-            <div class="hero-logo"><img src="./icon-512.png" alt="ChatClaud" onerror="this.style.display='none'"></div>
+            <div class="hero-logo"><img src="/icon-512.png" alt="ChatClaud" onerror="this.style.display='none'"></div>
             <div class="hero-title brand-shine">ChatClaud</div>
             <div class="hero-sub">Твой ИИ для работы, учёбы и творчества</div>
             <div class="hero-about">
@@ -7708,23 +7703,22 @@ if (typeof window.ccApiUrl !== 'function') {
 
         function ccPublicError(err) {
             const s = String(err && err.message || err || '');
-            const code = String(err && (err.code || (err.data && err.data.code)) || '');
             if (/NO_PROVIDER|рабочий канал|no (groq|mistral|openai)|не задан|не подключён|не настроен/i.test(s)) {
                 return 'Сервер не видит рабочий AI-канал. Проверь Environment на Render и перезапусти именно Web Service.';
             }
             if (/401|403|auth|unauthor|invalid.*key|ключ/i.test(s)) {
                 return 'Render отклонил ключ провайдера. Проверь имя переменной, сам ключ и лимиты аккаунта.';
             }
-            if (/overloaded|NO_PROVIDER|503/i.test(s) || /OVERLOADED|NO_PROVIDER/i.test(code)) {
+            if (/overloaded|NO_PROVIDER|503/i.test(s) || (data && data.code === 'OVERLOADED') || (data && data.code === 'NO_PROVIDER')) {
               if (typeof showLimitBanner === 'function') showLimitBanner('ChatClaud is overloaded right now. Please try again later.');
               else if (typeof showToast === 'function') showToast('ChatClaud is overloaded. Try later.');
             }
             if (/rate|limit|429|TPM|TPD|quota|credit/i.test(s)) {
-                try { if (typeof showLimitBanner === 'function') showToast('Повтори через пару sec'); } catch(e) {}
+                try { if (typeof showLimitBanner === 'function') try { showToast('Повтори через пару sec'); } catch(e) {} } catch(e) {}
                 return 'Провайдер отклонил запрос по лимиту или квоте. Ключ может быть сохранён, но лимит исчерпан.';
             }
-            if (/network|fetch|Failed|timeout|abort|did not respond|55 sec|таймаут|истекло время/i.test(s)) {
-                return 'Нет ответа от сервера ChatClaud. Проверь подключение и адрес API; если повторяется, нужны логи Render с этой отправки.';
+            if (/network|fetch|Failed|timeout|abort/i.test(s)) {
+                return 'Приложение не достучалось до Render /api/chat. Открой приложение с адреса Render, а не как статическую копию.';
             }
             if (s) return 'Ошибка сервера: ' + s.slice(0, 220);
             return 'Сервер не вернул ответ. Проверь соединение и настройки модели.';
@@ -13014,7 +13008,7 @@ function buildImageUrl(userPrompt, opts) {
             };
         })();
 
-        if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
 
         // ===== PWA INSTALL (iOS-style sheet) =====
         (function pwaInstall() {
